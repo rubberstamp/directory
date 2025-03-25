@@ -6,10 +6,17 @@ class Admin::HeadshotsController < Admin::BaseController
     @profiles_with_local_images = Profile.where("headshot_url LIKE ?", "/uploads/headshots/%").count
     @profiles_with_google_drive_links = Profile.where("headshot_url LIKE ?", "%drive.google.com%").count
     
-    @profiles_needing_attention = Profile.where("headshot_url LIKE ?", "%drive.google.com%")
-                                        .or(Profile.where(headshot_url: nil))
-                                        .order(:name)
-                                        .page(params[:page]).per(20)
+    profiles_query = Profile.where("headshot_url LIKE ?", "%drive.google.com%")
+                           .or(Profile.where(headshot_url: nil))
+                           .order(:name)
+    
+    # Handle pagination with or without kaminari
+    if Profile.respond_to?(:page)
+      @profiles_needing_attention = profiles_query.page(params[:page]).per(20)
+    else
+      # Basic pagination if kaminari is not available
+      @profiles_needing_attention = profiles_query.limit(20)
+    end
   end
   
   def update

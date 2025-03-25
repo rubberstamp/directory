@@ -65,14 +65,15 @@
           Uses UI Avatars service - no local storage needed.
         </p>
         
-        <%= form_tag "#", method: :post do %>
-          <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Generate Placeholders
-          </button>
+        <%= link_to admin_headshots_path, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Generate Placeholders
         <% end %>
+        <div class="mt-2 text-xs text-gray-500">
+          This feature will be implemented in a future update.
+        </div>
       </div>
     </div>
   </div>
@@ -208,8 +209,8 @@
       </table>
     </div>
     
-    <!-- Pagination -->
-    <% if @profiles_needing_attention.respond_to?(:total_pages) && @profiles_needing_attention.total_pages > 1 %>
+    <!-- Pagination (only shown if kaminari is available) -->
+    <% if defined?(Kaminari) && @profiles_needing_attention.respond_to?(:total_pages) && @profiles_needing_attention.total_pages && @profiles_needing_attention.total_pages > 1 %>
       <div class="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
         <div class="flex-1 flex justify-between sm:hidden">
           <%= link_to_prev_page @profiles_needing_attention, 'Previous', class: 'relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700' %>
@@ -229,6 +230,16 @@
             </nav>
           </div>
         </div>
+      </div>
+    <% else %>
+      <!-- Simple info text when pagination isn't available -->
+      <div class="bg-white dark:bg-gray-800 px-4 py-3 text-center border-t border-gray-200 dark:border-gray-700">
+        <p class="text-sm text-gray-700 dark:text-gray-300">
+          Showing <%= @profiles_needing_attention.count %> profiles that need attention.
+          <% if @profiles_needing_attention.count == 20 %>
+            <br>Displaying up to 20 profiles per page.
+          <% end %>
+        </p>
       </div>
     <% end %>
   </div>
