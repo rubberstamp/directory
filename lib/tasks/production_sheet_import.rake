@@ -94,7 +94,10 @@ namespace :production do
         puts "Warning: CSV parsing error: #{e.message}. Attempting alternative parsing..."
         
         # Read the file directly and process line by line
-        lines = File.readlines(file_path, encoding: 'ISO-8859-1:UTF-8')
+        content = File.read(file_path, encoding: 'ISO-8859-1:UTF-8')
+        # Replace carriage returns in the middle of fields
+        content = content.gsub(/\r\n(?=[^,]*,)/, ' ')
+        lines = content.split(/\r?\n/)
         
         # Skip header row
         header_line = lines.first
@@ -373,13 +376,22 @@ namespace :production do
         puts "Warning: CSV parsing error: #{e.message}. Will try alternative parsing..."
         
         # Read the file directly and process line by line
-        lines = File.readlines(file_path, encoding: 'ISO-8859-1:UTF-8')
+        content = File.read(file_path, encoding: 'ISO-8859-1:UTF-8')
+        # Replace carriage returns in the middle of fields
+        content = content.gsub(/\r\n(?=[^,]*,)/, ' ')
+        lines = content.split(/\r?\n/)
         row_count = lines.count
         
         # Basic header extraction
-        headers = lines.first.split(',')
-        headers.each_with_index do |header, i|
-          sample_values[i] = []
+        headers = []
+        header_line = lines.first
+        if header_line
+          headers = header_line.split(',')
+          headers.each_with_index do |header, i|
+            sample_values[i] = []
+          end
+        else
+          puts "Warning: Could not read header line"
         end
         
         # Process remaining lines
@@ -403,14 +415,26 @@ namespace :production do
       puts "\nColumn analysis:"
       puts "----------------"
       
-      headers.each_with_index do |header, i|
-        next if header.blank?
-        
-        fill_rate = (column_counts[i].to_f / (row_count - 1) * 100).round(1)
-        puts "Column #{i+1}: \"#{header}\" - #{column_counts[i]} values (#{fill_rate}% filled)"
-        
-        if sample_values[i].any?
-          puts "  Sample values: #{sample_values[i].join(' | ')}"
+      if headers && !headers.empty?
+        headers.each_with_index do |header, i|
+          next if header.blank?
+          
+          fill_rate = (column_counts[i].to_f / (row_count - 1) * 100).round(1)
+          puts "Column #{i+1}: \"#{header}\" - #{column_counts[i]} values (#{fill_rate}% filled)"
+          
+          if sample_values[i] && sample_values[i].any?
+            puts "  Sample values: #{sample_values[i].join(' | ')}"
+          end
+        end
+      else
+        # If no headers, just show column numbers
+        column_counts.keys.sort.each do |i|
+          fill_rate = (column_counts[i].to_f / (row_count - 1) * 100).round(1)
+          puts "Column #{i+1}: #{column_counts[i]} values (#{fill_rate}% filled)"
+          
+          if sample_values[i] && sample_values[i].any?
+            puts "  Sample values: #{sample_values[i].join(' | ')}"
+          end
         end
       end
       
