@@ -75,6 +75,28 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     london_profile.destroy
   end
   
+  test "should filter by cached geocoded location" do
+    # Create a profile with geocoded information
+    geocoded_profile = Profile.create!(
+      name: "London Geocoded", 
+      email: "london-geo-#{rand(1000)}@example.com",
+      latitude: 51.5074, 
+      longitude: -0.1278, 
+      cached_city: "London",
+      cached_country: "United Kingdom"
+    )
+    
+    # Get profiles with location filter that should match the cached city
+    get profiles_url, params: { location: "London" }
+    assert_response :success
+    
+    # Check that we have the location filter applied
+    assert_select "input#location[value=?]", "London"
+    
+    # Clean up
+    geocoded_profile.destroy
+  end
+  
   test "should filter by guest status" do
     # Update our profile to be a podcast guest
     @profile.update(submission_date: Date.today)
