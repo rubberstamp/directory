@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   resources :episodes, only: [:index, :show]
   resources :testimonials, only: [:index]
   get '/map', to: 'map#index', as: :map
+  get '/about', to: 'about#index', as: :about
   
   # Admin routes
   namespace :admin do
@@ -30,6 +31,7 @@ Rails.application.routes.draw do
       end
       collection do
         post :run_import
+        post :migrate_to_active_storage
       end
     end
   end
