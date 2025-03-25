@@ -22,7 +22,8 @@ namespace :production do
       # First pass: collect all episode data
       episode_data = {}
       
-      CSV.foreach(file_path, headers: true, encoding: 'ISO-8859-1:UTF-8') do |row|
+      begin
+        CSV.foreach(file_path, headers: true, encoding: 'ISO-8859-1:UTF-8', liberal_parsing: true) do |row|
         # Skip header row that might appear again in the CSV
         next if row[0] == "ƒcofu" || row[0] == "cofu"
         
@@ -87,6 +88,79 @@ namespace :production do
             mp3_link: row[22].to_s.strip,
             transcript_link: row[26].to_s.strip
           }
+        end
+        end
+      rescue CSV::MalformedCSVError => e
+        puts "Warning: CSV parsing error: #{e.message}. Attempting alternative parsing..."
+        
+        # Read the file directly and process line by line
+        lines = File.readlines(file_path, encoding: 'ISO-8859-1:UTF-8')
+        
+        # Skip header row
+        header_line = lines.first
+        data_lines = lines[1..-1]
+        
+        data_lines.each_with_index do |line, index|
+          # Basic CSV parsing
+          values = line.split(',')
+          
+          # Skip empty rows or rows with no episode number
+          next if values[1].blank? || values[0].blank?
+          
+          # Extract episode number
+          episode_number = values[1].to_i
+          
+          # Skip if no valid episode number
+          if episode_number == 0
+            puts "Skipping row with invalid episode number: #{values[1]}"
+            skipped_rows += 1
+            next
+          end
+          
+          # Extract other fields
+          episode_title = values[2].to_s.strip
+          footage_link = values[7].to_s.strip
+          video_id = extract_video_id(footage_link)
+          
+          # If no footage link, try the final video column
+          if video_id.blank?
+            final_video = values[21].to_s.strip
+            video_id = extract_video_id(final_video)
+          end
+          
+          # Skip if no video ID found
+          if video_id.blank?
+            puts "Skipping row with no video ID (episode ##{episode_number}): #{episode_title}"
+            skipped_rows += 1
+            next
+          end
+          
+          # Get filming date or release date
+          filming_date = parse_date(values[9]) || parse_date(values[11])
+          
+          # Get profile name for guest (from episode title if available)
+          guest_name = extract_guest_name(episode_title)
+          
+          # Get headshot URL
+          headshot_url = values[5].to_s.strip if values[5].present?
+          
+          # Only process each episode once (first row with valid data)
+          unless episode_data[episode_number]
+            episode_data[episode_number] = {
+              number: episode_number,
+              title: episode_title,
+              video_id: video_id,
+              air_date: filming_date,
+              guest_name: guest_name,
+              headshot_url: headshot_url,
+              job_title: values[6].to_s.strip,
+              production_status: values[3].to_s.strip,
+              writing_status: values[4].to_s.strip,
+              producer: values[12].to_s.strip,
+              mp3_link: values[22].to_s.strip,
+              transcript_link: values[26].to_s.strip
+            }
+          end
         end
       end
       
@@ -271,7 +345,8 @@ namespace :production do
       column_counts = Hash.new(0)
       sample_values = {}
       
-      CSV.foreach(file_path, encoding: 'ISO-8859-1:UTF-8') do |row|
+      begin
+        CSV.foreach(file_path, encoding: 'ISO-8859-1:UTF-8', liberal_parsing: true) do |row|
         row_count += 1
         
         if row_count == 1
@@ -290,6 +365,34 @@ namespace :production do
             # Collect sample values (up to 3 per column)
             if sample_values[i].size < 3 && value.to_s.strip.present?
               sample_values[i] << value.to_s.strip
+            end
+          end
+        end
+        end
+      rescue CSV::MalformedCSVError => e
+        puts "Warning: CSV parsing error: #{e.message}. Will try alternative parsing..."
+        
+        # Read the file directly and process line by line
+        lines = File.readlines(file_path, encoding: 'ISO-8859-1:UTF-8')
+        row_count = lines.count
+        
+        # Basic header extraction
+        headers = lines.first.split(',')
+        headers.each_with_index do |header, i|
+          sample_values[i] = []
+        end
+        
+        # Process remaining lines
+        lines[1..-1].each do |line|
+          values = line.split(',')
+          values.each_with_index do |value, i|
+            if value.present?
+              column_counts[i] += 1
+              
+              # Collect sample values
+              if sample_values[i].size < 3 && value.to_s.strip.present?
+                sample_values[i] << value.to_s.strip
+              end
             end
           end
         end
