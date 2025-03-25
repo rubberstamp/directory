@@ -48,6 +48,9 @@ gem "mini_magick", "~> 4.12"
 # Use Kaminari for pagination
 gem "kaminari", "~> 1.2"
 
+# Use Geocoder for location-based features
+gem "geocoder", "~> 1.8"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
