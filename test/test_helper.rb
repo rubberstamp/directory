@@ -51,4 +51,9 @@ class ActionDispatch::IntegrationTest
       user: { email: @user.email, password: 'password123' } 
     }
   end
+  
+  # Access controller instance variables in integration tests
+  def assigns(variable_name)
+    @controller.instance_variable_get("@#{variable_name}")
+  end
 end
