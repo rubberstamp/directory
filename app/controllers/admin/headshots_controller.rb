@@ -65,6 +65,13 @@ class Admin::HeadshotsController < Admin::BaseController
   def process_uploaded_image
     uploaded_file = params[:profile][:headshot_image]
     
+    # Check if it's a Google Drive URL entered in the file field (text input)
+    if uploaded_file.is_a?(String) && uploaded_file.include?('drive.google.com')
+      @profile.update(headshot_url: uploaded_file)
+      flash[:notice] = "Google Drive URL saved as headshot for #{@profile.name}"
+      return
+    end
+    
     # Ensure uploads directory exists
     storage_dir = Rails.root.join('public', 'uploads', 'headshots')
     FileUtils.mkdir_p(storage_dir) unless Dir.exist?(storage_dir)
@@ -74,29 +81,40 @@ class Admin::HeadshotsController < Admin::BaseController
     local_path = File.join(storage_dir, filename)
     
     begin
-      # Save the uploaded file
+      # Save the uploaded file without processing
       File.open(local_path, 'wb') do |file|
         file.write(uploaded_file.read)
       end
       
-      # Verify and process the image with MiniMagick
-      image = MiniMagick::Image.open(local_path)
-      
-      # Resize if necessary
-      if image.width > 1000 || image.height > 1000
-        image.resize "1000x1000>"
+      # Try to use MiniMagick if available
+      begin
+        # Check if ImageMagick is installed
+        image_magick_installed = system("which convert > /dev/null 2>&1")
+        
+        if image_magick_installed
+          # Verify and process the image with MiniMagick
+          image = MiniMagick::Image.open(local_path)
+          
+          # Resize if necessary
+          if image.width > 1000 || image.height > 1000
+            image.resize "1000x1000>"
+          end
+          
+          # Convert to jpg and set quality
+          image.format "jpg"
+          image.quality 85
+          image.write local_path
+        end
+      rescue StandardError => e
+        # Log the error but continue with the unprocessed image
+        Rails.logger.error("MiniMagick error: #{e.message}")
       end
-      
-      # Convert to jpg and set quality
-      image.format "jpg"
-      image.quality 85
-      image.write local_path
       
       # Update the profile
       new_url = "/uploads/headshots/#{filename}"
       @profile.update(headshot_url: new_url)
       
-      flash[:notice] = "Headshot uploaded and processed for #{@profile.name}"
+      flash[:notice] = "Headshot uploaded for #{@profile.name}"
     rescue StandardError => e
       flash[:alert] = "Error processing image: #{e.message}"
       File.delete(local_path) if File.exist?(local_path)

@@ -1,0 +1,37 @@
+<%= form_with(model: [:admin, specialization], class: "space-y-6") do |form| %>
+  <% if specialization.errors.any? %>
+    <div class="bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-200 p-4 rounded mb-6">
+      <h2><%= pluralize(specialization.errors.count, "error") %> prohibited this specialization from being saved:</h2>
+      <ul class="list-disc pl-5 mt-2">
+        <% specialization.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <h2 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">Specialization Details</h2>
+      
+      <div class="space-y-4">
+        <div>
+          <%= form.label :name, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= form.text_field :name, class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "E.g., Financial Planning" %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Required. Must be unique.</p>
+        </div>
+
+        <div>
+          <%= form.label :description, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= form.text_area :description, rows: 4, class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Describe this specialization area..." %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Optional. Provide details about what this specialization entails.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6 bg-gray-50 dark:bg-gray-900 flex items-center justify-end space-x-3">
+      <%= link_to "Cancel", admin_specializations_path, class: "rounded-md bg-white dark:bg-gray-800 py-2 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700" %>
+      <%= form.submit class: "rounded-md bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" %>
+    </div>
+  </div>
+<% end %>

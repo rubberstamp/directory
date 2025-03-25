@@ -1,0 +1,8 @@
+<div class="container mx-auto">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">New Profile</h1>
+    <%= link_to "Back to Profiles", admin_profiles_path, class: "px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700" %>
+  </div>
+  
+  <%= render 'form', profile: @profile %>
+</div>

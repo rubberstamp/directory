@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .shadow-custom {
+    @apply shadow-md;
+  }
+  .shadow-hover {
+    @apply shadow-lg;
+  }
+}

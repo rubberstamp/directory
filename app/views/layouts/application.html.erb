@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "Fractional CFO Finder" %></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      .shadow-custom {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      .shadow-hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+    </style>
+  </head>
+
+  <body class="bg-gradient-to-br from-blue-50 to-purple-50 text-gray-800 dark:from-gray-900 dark:to-black dark:text-gray-200">
+    <header class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md py-4 px-6 fixed w-full top-0 z-10 shadow-md border-b border-gray-100 dark:border-gray-800">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-semibold text-blue-600 dark:text-blue-400">Fractional CFO Finder</a>
+            <nav class="hidden md:block">
+                <ul class="flex space-x-6">
+                    <li><%= link_to "Profiles", profiles_path, class: "hover:text-purple-600 dark:hover:text-purple-300 transition duration-300 text-gray-700 dark:text-gray-300" %></li>
+                    <li><%= link_to "Map", map_path, class: "hover:text-purple-600 dark:hover:text-purple-300 transition duration-300 text-gray-700 dark:text-gray-300" %></li>
+                    <li><%= link_to "Episodes", episodes_path, class: "hover:text-purple-600 dark:hover:text-purple-300 transition duration-300 text-gray-700 dark:text-gray-300" %></li>
+                    <li><%= link_to "Testimonials", testimonials_path, class: "hover:text-purple-600 dark:hover:text-purple-300 transition duration-300 text-gray-700 dark:text-gray-300" %></li>
+                    <li><a href="#about" class="hover:text-purple-600 dark:hover:text-purple-300 transition duration-300 text-gray-700 dark:text-gray-300">About</a></li>
+                    <li><a href="#contact" class="hover:text-purple-600 dark:hover:text-purple-300 transition duration-300 text-gray-700 dark:text-gray-300">Contact</a></li>
+                </ul>
+            </nav>
+            <button onclick="window.location.href='#contact'" class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300 shadow-md hover:shadow-lg">Find a CFO</button>
+        </div>
+    </header>
+
+    <% if notice %>
+      <p class="notice bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-200 p-4 mb-4"><%= notice %></p>
+    <% end %>
+    <% if alert %>
+      <p class="alert bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-200 p-4 mb-4"><%= alert %></p>
+    <% end %>
+
+    <%= yield %>
+
+    <footer class="bg-gray-100 dark:bg-gray-800 py-6 text-center text-gray-600 dark:text-gray-400 mt-12">
+        <p>&copy; <%= Date.today.year %> Fractional CFO Finder. All rights reserved.</p>
+    </footer>
+  </body>
+</html>

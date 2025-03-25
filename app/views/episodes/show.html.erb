@@ -1,0 +1,291 @@
+<% content_for :title do %>
+  Episode #<%= @episode.number %> - <%= @episode.title %> | Procurement Express
+<% end %>
+
+<div class="container mx-auto px-4 py-8 mt-16">
+  <!-- Breadcrumbs -->
+  <nav class="mb-6">
+    <ol class="flex text-sm text-gray-500 dark:text-gray-400">
+      <li>
+        <%= link_to "Home", root_path, class: "hover:text-blue-600 dark:hover:text-blue-400" %>
+      </li>
+      <li class="mx-2">/</li>
+      <li>
+        <%= link_to "Episodes", episodes_path, class: "hover:text-blue-600 dark:hover:text-blue-400" %>
+      </li>
+      <li class="mx-2">/</li>
+      <li class="text-gray-900 dark:text-white font-medium">Episode #<%= @episode.number %></li>
+    </ol>
+  </nav>
+  
+  <!-- Episode Header -->
+  <div class="mb-8">
+    <div class="flex items-center mb-2">
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 mr-2">
+        Episode #<%= @episode.number %>
+      </span>
+      <span class="text-sm text-gray-500 dark:text-gray-400">
+        <time datetime="<%= @episode.air_date.iso8601 %>"><%= @episode.air_date.strftime("%B %d, %Y") %></time>
+      </span>
+      <% if @episode.duration_seconds.present? %>
+        <span class="text-sm text-gray-500 dark:text-gray-400 ml-2 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <%= @episode.duration_formatted %>
+        </span>
+      <% end %>
+    </div>
+    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white"><%= @episode.title %></h1>
+  </div>
+  
+  <!-- Video and Guest Info -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Video Player -->
+    <div class="lg:col-span-2">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="aspect-w-16 aspect-h-9">
+          <iframe 
+            src="<%= @episode.embed_url %>" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen
+            class="w-full h-full"
+          ></iframe>
+        </div>
+        
+        <% if @episode.notes.present? %>
+          <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Episode Notes</h2>
+            <div class="prose dark:prose-invert max-w-none">
+              <%= simple_format(@episode.notes) %>
+            </div>
+          </div>
+        <% end %>
+        
+        <!-- Watch on YouTube -->
+        <div class="p-6 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex justify-center sm:justify-start">
+          <a 
+            href="<%= @episode.youtube_url %>" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill-rule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z" clip-rule="evenodd" />
+            </svg>
+            Watch on YouTube
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Guest Information -->
+    <div>
+      <!-- Primary Guest -->
+      <% if @primary_guest %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden mb-6">
+          <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Main Guest</h2>
+            
+            <div class="flex items-start mb-4">
+              <% if @primary_guest.headshot_url.present? %>
+                <div class="flex-shrink-0">
+                  <%= link_to profile_path(@primary_guest) do %>
+                    <% if @primary_guest.headshot_url.include?('drive.google.com') %>
+                      <div class="h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center">
+                        <span class="text-base font-bold text-gray-600 dark:text-gray-200">
+                          <%= @primary_guest.name.split(" ").map { |n| n[0].upcase }.join("") %>
+                        </span>
+                      </div>
+                    <% else %>
+                      <img src="<%= @primary_guest.headshot_url %>" alt="<%= @primary_guest.name %>" class="h-16 w-16 rounded-full object-cover">
+                    <% end %>
+                  <% end %>
+                </div>
+              <% end %>
+              
+              <div class="<%= @primary_guest.headshot_url.present? ? 'ml-4' : '' %>">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                  <%= link_to @primary_guest.name, profile_path(@primary_guest), class: "hover:text-blue-600 dark:hover:text-blue-400" %>
+                </h3>
+                
+                <% if @primary_guest.company.present? %>
+                  <p class="text-gray-500 dark:text-gray-400"><%= @primary_guest.company %></p>
+                <% end %>
+                
+                <!-- Guest appearance info -->
+                <% appearance = @primary_guest.appearance_on(@episode) %>
+                <% if appearance&.segment_title.present? || appearance&.segment_start_time.present? %>
+                  <div class="mt-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-2 rounded">
+                    <% if appearance.segment_title.present? %>
+                      <p><strong>Segment:</strong> <%= appearance.segment_title %></p>
+                    <% end %>
+                    
+                    <% if appearance.segment_start_time.present? %>
+                      <p>
+                        <strong>Timestamp:</strong> 
+                        <a href="<%= appearance.segment_youtube_url %>" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
+                          <%= appearance.segment_start_formatted %>
+                        </a>
+                      </p>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+            
+            <!-- Social links -->
+            <div class="mt-2 flex space-x-3">
+              <% if @primary_guest.linkedin_url.present? %>
+                <a href="<%= @primary_guest.linkedin_url %>" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-blue-500">
+                  <span class="sr-only">LinkedIn</span>
+                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                  </svg>
+                </a>
+              <% end %>
+              <% if @primary_guest.twitter_url.present? %>
+                <a href="<%= @primary_guest.twitter_url %>" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-blue-400">
+                  <span class="sr-only">Twitter/X</span>
+                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/>
+                  </svg>
+                </a>
+              <% end %>
+              <% if @primary_guest.website.present? %>
+                <a href="<%= @primary_guest.website %>" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-gray-600">
+                  <span class="sr-only">Website</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                </a>
+              <% end %>
+            </div>
+            
+            <%= link_to profile_path(@primary_guest), class: "mt-4 inline-block text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm" do %>
+              View full profile
+              <span aria-hidden="true">→</span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+      
+      <!-- Other Guests -->
+      <% if @other_guests.any? %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+          <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              <%= @other_guests.size == 1 ? "Co-Host" : "Also Featuring" %>
+            </h2>
+            
+            <div class="space-y-6">
+              <% @other_guests.each do |profile_episode| %>
+                <% guest = profile_episode.profile %>
+                <div class="flex items-start <%= profile_episode != @other_guests.last ? 'pb-6 border-b border-gray-200 dark:border-gray-700' : '' %>">
+                  <% if guest.headshot_url.present? %>
+                    <div class="flex-shrink-0">
+                      <%= link_to profile_path(guest) do %>
+                        <% if guest.headshot_url.include?('drive.google.com') %>
+                          <div class="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center">
+                            <span class="text-xs font-bold text-gray-600 dark:text-gray-200">
+                              <%= guest.name.split(" ").map { |n| n[0].upcase }.join("") %>
+                            </span>
+                          </div>
+                        <% else %>
+                          <img src="<%= guest.headshot_url %>" alt="<%= guest.name %>" class="h-10 w-10 rounded-full object-cover">
+                        <% end %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                  
+                  <div class="<%= guest.headshot_url.present? ? 'ml-3' : '' %>">
+                    <div class="flex items-center">
+                      <h3 class="text-base font-medium text-gray-900 dark:text-white">
+                        <%= link_to guest.name, profile_path(guest), class: "hover:text-blue-600 dark:hover:text-blue-400" %>
+                      </h3>
+                      
+                      <% if profile_episode.appearance_type.present? %>
+                        <span class="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                          <%= profile_episode.appearance_type %>
+                        </span>
+                      <% end %>
+                    </div>
+                    
+                    <% if guest.company.present? %>
+                      <p class="text-sm text-gray-500 dark:text-gray-400"><%= guest.company %></p>
+                    <% end %>
+                    
+                    <% if profile_episode.segment_title.present? || profile_episode.segment_start_time.present? %>
+                      <div class="mt-1 text-xs text-gray-700 dark:text-gray-300">
+                        <% if profile_episode.segment_title.present? %>
+                          <span class="font-medium"><%= profile_episode.segment_title %></span>
+                        <% end %>
+                        
+                        <% if profile_episode.segment_start_time.present? %>
+                          <span class="ml-1">
+                            <a href="<%= profile_episode.segment_youtube_url %>" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
+                              (<%= profile_episode.segment_start_formatted %>)
+                            </a>
+                          </span>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Episode Navigation -->
+  <div class="mt-12 grid grid-cols-2 gap-4">
+    <% prev_episode = Episode.where("number < ?", @episode.number).order(number: :desc).first %>
+    <% next_episode = Episode.where("number > ?", @episode.number).order(number: :asc).first %>
+    
+    <div>
+      <% if prev_episode %>
+        <%= link_to episode_path(prev_episode), class: "block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition" do %>
+          <div class="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Previous Episode
+          </div>
+          <div class="mt-1 text-base font-medium text-gray-900 dark:text-white truncate">
+            Episode #<%= prev_episode.number %>: <%= prev_episode.title %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+    
+    <div class="text-right">
+      <% if next_episode %>
+        <%= link_to episode_path(next_episode), class: "block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition" do %>
+          <div class="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-end">
+            Next Episode
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+          <div class="mt-1 text-base font-medium text-gray-900 dark:text-white truncate">
+            Episode #<%= next_episode.number %>: <%= next_episode.title %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Back to episodes link -->
+  <div class="mt-8 text-center">
+    <%= link_to episodes_path, class: "inline-flex items-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+      </svg>
+      Back to all episodes
+    <% end %>
+  </div>
+</div>

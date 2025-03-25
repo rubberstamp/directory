@@ -1,0 +1,474 @@
+<% content_for :title do %>
+  <%= @profile.name %> | Fractional CFO Finder
+<% end %>
+
+<div class="container mx-auto px-4 py-8 mt-16">
+  <!-- Profile Header -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-8">
+    <div class="relative h-48 md:h-64 bg-gradient-to-r from-blue-500 to-purple-600">
+      <!-- Decorative background elements -->
+      <div class="absolute inset-0 bg-opacity-10 bg-black">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden">
+          <svg class="absolute w-full" style="top: -50%;" viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
+            <path fill="rgba(255, 255, 255, 0.1)" d="M0,192L48,208C96,224,192,256,288,250.7C384,245,480,203,576,202.7C672,203,768,245,864,261.3C960,277,1056,267,1152,218.7C1248,171,1344,85,1392,42.7L1440,0L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+    
+    <div class="relative px-6 sm:px-8 py-8">
+      <!-- Profile image -->
+      <div class="absolute -top-20 w-32 h-32 md:w-40 md:h-40 mx-auto overflow-hidden rounded-full border-4 border-white dark:border-gray-800 shadow-lg">
+        <% if @profile.headshot_url.present? %>
+          <% if @profile.headshot_url.include?('drive.google.com') %>
+            <!-- Generate a fallback placeholder for Google Drive links -->
+            <div class="w-full h-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center">
+              <span class="text-lg font-bold text-gray-600 dark:text-gray-200">
+                <%= @profile.name.split(" ").map { |n| n[0].upcase }.join("") %>
+              </span>
+            </div>
+          <% else %>
+            <img src="<%= @profile.headshot_url %>" alt="<%= @profile.name %>" class="w-full h-full object-cover">
+          <% end %>
+        <% elsif @profile.image_url.present? %>
+          <img src="<%= @profile.image_url %>" alt="<%= @profile.name %>" class="w-full h-full object-cover">
+        <% else %>
+          <div class="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-4xl font-bold">
+            <%= @profile.name.split(" ").map { |n| n[0].upcase }.join("") %>
+          </div>
+        <% end %>
+      </div>
+      
+      <!-- Profile info header -->
+      <div class="mt-16 md:mt-24 text-center md:text-left md:flex md:justify-between md:items-end">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white"><%= @profile.name %></h1>
+          <% if @profile.headline.present? %>
+            <p class="text-lg text-gray-600 dark:text-gray-300 mt-1"><%= @profile.headline %></p>
+          <% end %>
+          <% if @profile.company.present? %>
+            <p class="text-gray-500 dark:text-gray-400 mt-2">
+              <%= @profile.company %>
+              <% if @profile.formatted_location.present? %>
+                • <%= @profile.formatted_location %>
+              <% end %>
+            </p>
+          <% end %>
+        </div>
+        
+        <!-- Action buttons -->
+        <div class="mt-6 md:mt-0 flex flex-col sm:flex-row justify-center md:justify-start space-y-3 sm:space-y-0 sm:space-x-3">
+          <% if @profile.email.present? %>
+            <a href="mailto:<%= @profile.email %>" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Contact
+            </a>
+          <% end %>
+          <% if @profile.website.present? %>
+            <a href="<%= @profile.website %>" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+              Website
+            </a>
+          <% end %>
+        </div>
+      </div>
+      
+      <!-- Social links and specializations -->
+      <div class="mt-6 flex flex-wrap justify-center md:justify-start gap-4 border-t border-gray-200 dark:border-gray-700 pt-6">
+        <!-- Social links -->
+        <div class="flex space-x-3">
+          <% if @profile.linkedin_url.present? %>
+            <a href="<%= @profile.linkedin_url %>" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-blue-500 dark:hover:text-blue-400">
+              <span class="sr-only">LinkedIn</span>
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+              </svg>
+            </a>
+          <% end %>
+          <% if @profile.twitter_url.present? %>
+            <a href="<%= @profile.twitter_url %>" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-blue-400">
+              <span class="sr-only">Twitter/X</span>
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/>
+              </svg>
+            </a>
+          <% end %>
+          <% if @profile.facebook_url.present? %>
+            <a href="<%= @profile.facebook_url %>" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-blue-600">
+              <span class="sr-only">Facebook</span>
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" />
+              </svg>
+            </a>
+          <% end %>
+          <% if @profile.instagram_url.present? %>
+            <a href="<%= @profile.instagram_url %>" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-pink-600">
+              <span class="sr-only">Instagram</span>
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" />
+              </svg>
+            </a>
+          <% end %>
+          <% if @profile.tiktok_url.present? %>
+            <a href="<%= @profile.tiktok_url %>" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-black dark:hover:text-white">
+              <span class="sr-only">TikTok</span>
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 448 512" aria-hidden="true">
+                <path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185,188.31V278.2a74.62,74.62,0,1,0,52.23,71.18V0l88,0a121.18,121.18,0,0,0,1.86,22.17h0A122.18,122.18,0,0,0,381,102.39a121.43,121.43,0,0,0,67,20.14Z"/>
+              </svg>
+            </a>
+          <% end %>
+          <% if @profile.youtube_url.present? %>
+            <a href="<%= @profile.youtube_url %>" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-600">
+              <span class="sr-only">YouTube</span>
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill-rule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z" clip-rule="evenodd" />
+              </svg>
+            </a>
+          <% end %>
+        </div>
+        
+        <!-- Specializations -->
+        <% if @profile.specializations.any? %>
+          <div class="flex flex-wrap gap-2 ml-0 md:ml-auto">
+            <% @profile.specializations.each do |specialization| %>
+              <span class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                <%= specialization.name %>
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Content Section -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="md:col-span-2 space-y-8">
+      <!-- About Section -->
+      <% if @profile.bio.present? %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">About</h2>
+          <div class="prose dark:prose-invert max-w-none">
+            <%= simple_format(@profile.bio) %>
+          </div>
+        </div>
+      <% end %>
+      
+      <!-- Company Information -->
+      <% if @profile.company.present? %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Company</h2>
+          <div class="space-y-4">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white"><%= @profile.company %></h3>
+              <% if @profile.website.present? %>
+                <a href="<%= @profile.website %>" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mt-1 inline-block">
+                  <%= @profile.website.sub(/^https?:\/\//, '').sub(/^www\./, '') %>
+                </a>
+              <% end %>
+            </div>
+            
+            <% if @profile.formatted_location.present? %>
+              <div>
+                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Location</h4>
+                <p class="mt-1 text-gray-900 dark:text-white"><%= @profile.formatted_location %></p>
+              </div>
+            <% end %>
+            
+            <% if false # Hide mailing address for privacy %>
+              <div>
+                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Address</h4>
+                <p class="mt-1 text-gray-900 dark:text-white">[Hidden for privacy]</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+      
+      <!-- Podcast Episodes Section -->
+      <% if @profile.episodes.any? || @profile.has_podcast_episode? %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            <div class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-red-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill-rule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z" clip-rule="evenodd" />
+              </svg>
+              Podcast Episodes
+            </div>
+          </h2>
+          
+          <!-- New Model Episodes -->
+          <% if @profile.episodes.any? %>
+            <div class="space-y-8">
+              <% @profile.episodes_by_date.each_with_index do |episode, index| %>
+                <div class="<%= index > 0 ? 'border-t border-gray-200 dark:border-gray-700 pt-8' : '' %>">
+                  <div class="aspect-w-16 aspect-h-9 mb-4">
+                    <iframe 
+                      src="<%= episode.embed_url %>" 
+                      frameborder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowfullscreen
+                      class="w-full h-full rounded-lg shadow-md"
+                    ></iframe>
+                  </div>
+                  
+                  <div class="space-y-3">
+                    <div class="flex items-center">
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        Episode #<%= episode.number %>: <%= episode.title %>
+                      </h3>
+                      
+                      <% appearance = @profile.appearance_on(episode) %>
+                      <% if appearance %>
+                        <span class="ml-3 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                          <%= appearance.appearance_type %>
+                        </span>
+                      <% end %>
+                    </div>
+                    
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                      Aired on <%= episode.air_date.strftime("%B %d, %Y") %>
+                    </p>
+                    
+                    <% if appearance&.segment_title.present? %>
+                      <div class="text-sm bg-gray-50 dark:bg-gray-700 p-3 rounded-md">
+                        <p class="font-medium">Segment: <%= appearance.segment_title %></p>
+                        <% if appearance.segment_start_time.present? %>
+                          <p>
+                            <% if appearance.segment_youtube_url %>
+                              <a href="<%= appearance.segment_youtube_url %>" class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank">
+                                Jump to <%= appearance.segment_start_formatted %>
+                              </a>
+                            <% else %>
+                              Time: <%= appearance.segment_start_formatted %>
+                            <% end %>
+                          </p>
+                        <% end %>
+                      </div>
+                    <% end %>
+                    
+                    <% if appearance&.notes.present? %>
+                      <p class="text-sm italic"><%= appearance.notes %></p>
+                    <% end %>
+                    
+                    <div class="mt-4">
+                      <a 
+                        href="<%= episode.youtube_url %>" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path fill-rule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z" clip-rule="evenodd" />
+                        </svg>
+                        Watch on YouTube
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+            
+            <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
+              <a 
+                href="<%= Episode::YOUTUBE_CHANNEL_URL %>" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+              >
+                View All Episodes on YouTube
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          
+          <!-- Legacy Episode Display -->
+          <% elsif @profile.has_podcast_episode? %>
+            <div class="aspect-w-16 aspect-h-9 mb-4">
+              <% if @profile.episode_embed_url.present? %>
+                <iframe 
+                  src="<%= @profile.episode_embed_url %>" 
+                  frameborder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowfullscreen
+                  class="w-full h-full rounded-lg shadow-md"
+                ></iframe>
+              <% end %>
+            </div>
+            
+            <div class="space-y-3">
+              <% if @profile.deprecated_episode_title.present? %>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <% if @profile.deprecated_episode_number.present? %>
+                    Episode #<%= @profile.deprecated_episode_number %>: 
+                  <% end %>
+                  <%= @profile.deprecated_episode_title %>
+                </h3>
+              <% end %>
+              
+              <% if @profile.deprecated_episode_date.present? %>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  Aired on <%= @profile.deprecated_episode_date.strftime("%B %d, %Y") %>
+                </p>
+              <% end %>
+              
+              <div class="mt-4">
+                <a 
+                  href="<%= @profile.formatted_episode_url %>" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z" clip-rule="evenodd" />
+                  </svg>
+                  Watch on YouTube
+                </a>
+                
+                <a 
+                  href="<%= Episode::YOUTUBE_CHANNEL_URL %>" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                >
+                  View Channel
+                </a>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+      
+      <!-- Testimonial Section -->
+      <% if @profile.testimonial.present? %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Podcast Testimonial</h2>
+          <blockquote class="relative p-4 my-4 border-l-4 border-blue-500 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 rounded-r">
+            <svg class="absolute top-3 left-3 transform -translate-x-6 -translate-y-2 h-8 w-8 text-blue-300 dark:text-blue-700" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z" />
+            </svg>
+            <p class="relative ml-6 italic text-gray-900 dark:text-gray-100"><%= @profile.testimonial %></p>
+            <% if @profile.submission_date.present? %>
+              <footer class="mt-2 ml-6 text-sm text-gray-500 dark:text-gray-400">
+                Submitted <%= @profile.submission_date.strftime("%B %d, %Y") %>
+              </footer>
+            <% end %>
+          </blockquote>
+        </div>
+      <% end %>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="space-y-8">
+      <!-- Contact Info Card -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Contact Information</h2>
+        <ul class="space-y-4">
+          <% if @profile.email.present? %>
+            <li class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-3 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <div>
+                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</h3>
+                <a href="mailto:<%= @profile.email %>" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mt-1 block"><%= @profile.email %></a>
+              </div>
+            </li>
+          <% end %>
+          
+          <% if @profile.phone.present? %>
+            <li class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-3 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              <div>
+                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</h3>
+                <a href="tel:<%= @profile.phone %>" class="text-gray-900 dark:text-white mt-1 block"><%= @profile.phone %></a>
+              </div>
+            </li>
+          <% end %>
+          
+          <% if @profile.formatted_location.present? %>
+            <li class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-3 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <div>
+                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Location</h3>
+                <p class="text-gray-900 dark:text-white mt-1"><%= @profile.formatted_location %></p>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+      
+      <!-- Expertise Card -->
+      <% if @profile.specializations.any? %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Expertise</h2>
+          <div class="flex flex-wrap gap-2">
+            <% @profile.specializations.each do |specialization| %>
+              <%= link_to profiles_path(specialization_id: specialization.id), class: "group" do %>
+                <div class="bg-blue-100 group-hover:bg-blue-200 text-blue-800 dark:bg-blue-900 dark:group-hover:bg-blue-800 dark:text-blue-200 text-sm font-medium px-3 py-1.5 rounded-full transition duration-200">
+                  <%= specialization.name %>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+          <% if @profile.specializations.any? && @profile.specializations.first.description.present? %>
+            <div class="mt-4 text-sm text-gray-600 dark:text-gray-300">
+              <p><%= @profile.specializations.first.description %></p>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+      
+      <!-- Guest Status Card -->
+      <% if @profile.submission_date.present? || @profile.interested_in_procurement %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Guest Information</h2>
+          <ul class="space-y-3">
+            <% if @profile.submission_date.present? %>
+              <li class="flex items-center">
+                <div class="flex-shrink-0 rounded-full p-1 bg-green-100 dark:bg-green-800">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 dark:text-green-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <span class="ml-3 text-gray-700 dark:text-gray-300">Podcast Guest</span>
+              </li>
+            <% end %>
+            
+            <% if @profile.interested_in_procurement %>
+              <li class="flex items-center">
+                <div class="flex-shrink-0 rounded-full p-1 bg-blue-100 dark:bg-blue-800">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 dark:text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <span class="ml-3 text-gray-700 dark:text-gray-300">Interested in Procurement Express</span>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Back to profiles -->
+  <div class="mt-8 text-center">
+    <%= link_to profiles_path, class: "inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+      </svg>
+      Back to directory
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,65 @@
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+    <h2 class="text-xl font-semibold mb-4">Profiles</h2>
+    <div class="flex items-center space-x-4">
+      <div class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 p-4 rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-2xl font-bold"><%= @profile_count %></h3>
+        <p class="text-gray-500 dark:text-gray-400">Total Profiles</p>
+      </div>
+    </div>
+    <div class="mt-4">
+      <a href="<%= admin_profiles_path %>" class="text-blue-600 dark:text-blue-400 hover:underline">View all profiles →</a>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+    <h2 class="text-xl font-semibold mb-4">Specializations</h2>
+    <div class="flex items-center space-x-4">
+      <div class="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 p-4 rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" />
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-2xl font-bold"><%= @specialization_count %></h3>
+        <p class="text-gray-500 dark:text-gray-400">Total Specializations</p>
+      </div>
+    </div>
+    <div class="mt-4">
+      <a href="<%= admin_specializations_path %>" class="text-purple-600 dark:text-purple-400 hover:underline">View all specializations →</a>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 md:col-span-2">
+    <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <a href="<%= new_admin_profile_path %>" class="bg-blue-50 dark:bg-blue-800/50 hover:bg-blue-100 dark:hover:bg-blue-800 p-4 rounded-lg flex items-center space-x-3">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-blue-600 dark:text-blue-400">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM4 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 10.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+        </svg>
+        <span>Add New Profile</span>
+      </a>
+      
+      <a href="<%= new_admin_specialization_path %>" class="bg-purple-50 dark:bg-purple-800/50 hover:bg-purple-100 dark:hover:bg-purple-800 p-4 rounded-lg flex items-center space-x-3">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-purple-600 dark:text-purple-400">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        <span>Add New Specialization</span>
+      </a>
+      
+      <a href="<%= profiles_path %>" class="bg-green-50 dark:bg-green-800/50 hover:bg-green-100 dark:hover:bg-green-800 p-4 rounded-lg flex items-center space-x-3">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-green-600 dark:text-green-400">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+        </svg>
+        <span>View Public Directory</span>
+      </a>
+    </div>
+  </div>
+</div>

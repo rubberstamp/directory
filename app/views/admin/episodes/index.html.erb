@@ -1,0 +1,111 @@
+<% content_for :title do %>
+  Episodes - Admin
+<% end %>
+
+<% content_for :header do %>
+  Episodes
+<% end %>
+
+<div class="mb-6 flex justify-between items-center">
+  <h1 class="text-2xl font-bold">Podcast Episodes</h1>
+  <div>
+    <%= link_to "New Episode", new_admin_episode_path, class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+  </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+  <%= form_with url: admin_episodes_path, method: :get, class: "flex items-center space-x-4" do |form| %>
+    <div class="flex-1">
+      <%= form.text_field :search, 
+                         value: params[:search], 
+                         placeholder: "Search by title or episode number", 
+                         class: "w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+    </div>
+    <%= form.submit "Search", class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+    <% if params[:search].present? %>
+      <%= link_to "Clear", admin_episodes_path, class: "px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300" %>
+    <% end %>
+  <% end %>
+</div>
+
+<div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            #
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            Thumbnail
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            Title
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            Air Date
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            Guests
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            Duration
+          </th>
+          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+        <% if @episodes.any? %>
+          <% @episodes.each do |episode| %>
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                <%= episode.number %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <img src="<%= episode.thumbnail_url_or_default %>" alt="Episode #<%= episode.number %>" class="h-12 w-20 object-cover rounded">
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 max-w-md truncate">
+                <%= episode.title %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                <%= episode.air_date&.strftime("%Y-%m-%d") %>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                <% if episode.profiles.any? %>
+                  <span class="text-green-600 dark:text-green-400 font-medium"><%= episode.profiles.count %></span>
+                <% else %>
+                  <span class="text-red-600 dark:text-red-400">None</span>
+                <% end %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                <%= episode.duration_formatted || "N/A" %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex justify-end space-x-2">
+                  <%= link_to "View", admin_episode_path(episode), class: "text-blue-600 dark:text-blue-400 hover:text-blue-900" %>
+                  <%= link_to "Edit", edit_admin_episode_path(episode), class: "text-indigo-600 dark:text-indigo-400 hover:text-indigo-900" %>
+                  <%= button_to "Delete", admin_episode_path(episode), method: :delete, form: { data: { turbo_confirm: "Are you sure you want to delete this episode?" } }, class: "text-red-600 dark:text-red-400 hover:text-red-900 bg-transparent border-none p-0 cursor-pointer" %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+              No episodes found
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if @episodes.respond_to?(:total_pages) && @episodes.total_pages > 1 %>
+  <div class="mt-4 flex justify-center">
+    <%= paginate @episodes %>
+  </div>
+<% end %>

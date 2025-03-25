@@ -22,41 +22,59 @@ namespace :production do
       # First pass: collect all episode data
       episode_data = {}
       
-      begin
-        CSV.foreach(file_path, headers: true, encoding: 'ISO-8859-1:UTF-8', liberal_parsing: true) do |row|
-        # Skip header row that might appear again in the CSV
-        next if row[0] == "ƒcofu" || row[0] == "cofu"
+      # Read the entire file at once for better handling of malformed CSV
+      content = File.read(file_path, encoding: 'ISO-8859-1:UTF-8')
+      
+      # Clean up the content
+      content = content.gsub(/\r\n(?=[^,]*,)/, ' ') # Replace newlines within fields
+      
+      # Split into lines
+      lines = content.split(/\r?\n/)
+      
+      # Skip header (which spans the first two lines)
+      header_text = lines[0].tr("\r\n", " ") + " " + lines[1].tr("\r\n", " ")
+      data_lines = lines[2..-1]
+      
+      # Process data rows
+      data_lines.each_with_index do |line, index|
+        # Skip empty lines
+        next if line.strip.empty?
         
-        # Skip empty rows or rows with no episode number
-        if row[1].blank? || row[0].blank?
-          skipped_rows += 1
-          next
-        end
+        # Basic split by comma and clean up values
+        values = line.split(',').map(&:strip)
+        
+        # Ensure we have enough values
+        next if values.size < 8
+        
+        # Skip rows that don't look like data rows
+        next if values[0].blank? || values[1].blank?
         
         # Extract episode number
-        episode_number = row[1].to_i
+        episode_number = values[1].to_i
         
         # Skip if no valid episode number
-        if episode_number == 0
-          puts "Skipping row with invalid episode number: #{row[1]}"
+        if episode_number <= 0
           skipped_rows += 1
           next
         end
         
-        # Extract episode title
-        episode_title = row[2].to_s.strip
+        # Extract key fields
+        episode_title = values[2].to_s
         
-        # Extract YouTube link or video ID from footage
-        footage_link = row[7].to_s.strip
+        # Extract headshot URL if available
+        headshot_url = values[5].to_s if values[5].present?
+        
+        # Try to get footage link
+        footage_link = values[7].to_s
         video_id = extract_video_id(footage_link)
         
-        # If no footage link, try the final video column
+        # If no footage link or couldn't extract ID, try the final video column
         if video_id.blank?
-          final_video = row[21].to_s.strip
-          video_id = extract_video_id(final_video)
+          final_video = values[21].to_s if values.size > 21
+          video_id = extract_video_id(final_video.to_s)
         end
         
-        # Skip if no video ID found
+        # Skip if still no video ID
         if video_id.blank?
           puts "Skipping row with no video ID (episode ##{episode_number}): #{episode_title}"
           skipped_rows += 1
@@ -64,13 +82,10 @@ namespace :production do
         end
         
         # Get filming date or release date
-        filming_date = parse_date(row[9]) || parse_date(row[11])
+        filming_date = parse_date(values[9].to_s) || parse_date(values[11].to_s)
         
         # Get profile name for guest (from episode title if available)
         guest_name = extract_guest_name(episode_title)
-        
-        # Get headshot URL
-        headshot_url = row[5].to_s.strip if row[5].present?
         
         # Only process each episode once (first row with valid data)
         unless episode_data[episode_number]
@@ -81,89 +96,15 @@ namespace :production do
             air_date: filming_date,
             guest_name: guest_name,
             headshot_url: headshot_url,
-            job_title: row[6].to_s.strip,
-            production_status: row[3].to_s.strip,
-            writing_status: row[4].to_s.strip,
-            producer: row[12].to_s.strip,
-            mp3_link: row[22].to_s.strip,
-            transcript_link: row[26].to_s.strip
+            job_title: values[6].to_s,
+            production_status: values[3].to_s,
+            writing_status: values[4].to_s,
+            producer: values[12].to_s,
+            mp3_link: values.size > 22 ? values[22].to_s : nil,
+            transcript_link: values.size > 26 ? values[26].to_s : nil
           }
-        end
-        end
-      rescue CSV::MalformedCSVError => e
-        puts "Warning: CSV parsing error: #{e.message}. Attempting alternative parsing..."
-        
-        # Read the file directly and process line by line
-        content = File.read(file_path, encoding: 'ISO-8859-1:UTF-8')
-        # Replace carriage returns in the middle of fields
-        content = content.gsub(/\r\n(?=[^,]*,)/, ' ')
-        lines = content.split(/\r?\n/)
-        
-        # Skip header row
-        header_line = lines.first
-        data_lines = lines[1..-1]
-        
-        data_lines.each_with_index do |line, index|
-          # Basic CSV parsing
-          values = line.split(',')
           
-          # Skip empty rows or rows with no episode number
-          next if values[1].blank? || values[0].blank?
-          
-          # Extract episode number
-          episode_number = values[1].to_i
-          
-          # Skip if no valid episode number
-          if episode_number == 0
-            puts "Skipping row with invalid episode number: #{values[1]}"
-            skipped_rows += 1
-            next
-          end
-          
-          # Extract other fields
-          episode_title = values[2].to_s.strip
-          footage_link = values[7].to_s.strip
-          video_id = extract_video_id(footage_link)
-          
-          # If no footage link, try the final video column
-          if video_id.blank?
-            final_video = values[21].to_s.strip
-            video_id = extract_video_id(final_video)
-          end
-          
-          # Skip if no video ID found
-          if video_id.blank?
-            puts "Skipping row with no video ID (episode ##{episode_number}): #{episode_title}"
-            skipped_rows += 1
-            next
-          end
-          
-          # Get filming date or release date
-          filming_date = parse_date(values[9]) || parse_date(values[11])
-          
-          # Get profile name for guest (from episode title if available)
-          guest_name = extract_guest_name(episode_title)
-          
-          # Get headshot URL
-          headshot_url = values[5].to_s.strip if values[5].present?
-          
-          # Only process each episode once (first row with valid data)
-          unless episode_data[episode_number]
-            episode_data[episode_number] = {
-              number: episode_number,
-              title: episode_title,
-              video_id: video_id,
-              air_date: filming_date,
-              guest_name: guest_name,
-              headshot_url: headshot_url,
-              job_title: values[6].to_s.strip,
-              production_status: values[3].to_s.strip,
-              writing_status: values[4].to_s.strip,
-              producer: values[12].to_s.strip,
-              mp3_link: values[22].to_s.strip,
-              transcript_link: values[26].to_s.strip
-            }
-          end
+          puts "Found Episode ##{episode_number}: #{episode_title}"
         end
       end
       
@@ -493,5 +434,26 @@ namespace :production do
     puts "\nCompleted linking episodes to profiles"
     puts "Successfully linked #{linked_count} episodes"
     puts "Could not find profiles for #{not_found_count} episodes"
+  end
+  
+  desc "Display the first few lines of the production sheet"
+  task peek: :environment do
+    file_path = ENV['FILE'] || "data/production_sheet.csv"
+    
+    unless File.exist?(file_path)
+      puts "File not found at #{file_path}"
+      puts "Usage: rails production:peek FILE=path/to/file.csv"
+      exit
+    end
+    
+    puts "Displaying first 10 lines of #{file_path}:"
+    puts "----------------------------------------"
+    
+    content = File.read(file_path, encoding: 'ISO-8859-1:UTF-8')
+    lines = content.split(/\r?\n/)
+    
+    lines.first(10).each_with_index do |line, i|
+      puts "#{i+1}: #{line}"
+    end
   end
 end

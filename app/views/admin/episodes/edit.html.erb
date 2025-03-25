@@ -1,0 +1,147 @@
+<% content_for :title do %>
+  Edit Episode #<%= @episode.number %> - Admin
+<% end %>
+
+<% content_for :header do %>
+  Edit Episode #<%= @episode.number %>
+<% end %>
+
+<div class="mb-6">
+  <%= link_to "← Back to Episode", admin_episode_path(@episode), class: "text-blue-600 dark:text-blue-400 hover:underline" %>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Episode Details Card -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+    <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
+        Edit Episode
+      </h3>
+      <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+        Update the details for episode #<%= @episode.number %>
+      </p>
+    </div>
+    <div class="px-4 py-5 sm:p-6">
+      <%= render 'form', episode: @episode %>
+    </div>
+  </div>
+
+  <!-- Profile Association Card -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+    <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
+        Associated Profiles
+      </h3>
+      <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+        Manage the profiles associated with this episode
+      </p>
+    </div>
+    
+    <div class="px-4 py-5 sm:px-6">
+      <!-- Add New Profile Form -->
+      <h4 class="text-md font-medium text-gray-900 dark:text-white mb-3">Add Profile</h4>
+      <%= form_with url: attach_profile_admin_episode_path(@episode), method: :post, class: "space-y-4 md:space-y-0 md:flex md:items-end md:space-x-4 mb-6" do |form| %>
+        <div class="flex-1">
+          <label for="profile_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Profile</label>
+          <%= form.select :profile_id, 
+                options_for_select(@profiles.map { |p| [p.name, p.id] }), 
+                { include_blank: "Select a profile" }, 
+                class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+        </div>
+        
+        <div class="w-40">
+          <label for="appearance_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
+          <%= form.select :appearance_type, 
+                options_for_select([
+                  "Main Guest", 
+                  "Co-Host", 
+                  "Panel Member", 
+                  "Special Guest",
+                  "Expert Commentary"
+                ]), 
+                { }, 
+                class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+        </div>
+        
+        <div class="w-32">
+          <div class="flex items-center mt-6">
+            <%= form.check_box :is_primary, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
+            <label for="is_primary" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">Primary Guest</label>
+          </div>
+        </div>
+        
+        <div>
+          <%= form.submit "Add", class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+        </div>
+      <% end %>
+      
+      <!-- Current Profiles Table -->
+      <h4 class="text-md font-medium text-gray-900 dark:text-white mb-3">Current Profiles</h4>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Name
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Role
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Primary
+              </th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <% if @episode.profile_episodes.includes(:profile).any? %>
+              <% @episode.profile_episodes.includes(:profile).each do |profile_episode| %>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <% if profile_episode.profile.headshot_url.present? %>
+                        <div class="flex-shrink-0 h-8 w-8">
+                          <img class="h-8 w-8 rounded-full object-cover" src="<%= profile_episode.profile.headshot_url %>" alt="<%= profile_episode.profile.name %>">
+                        </div>
+                      <% end %>
+                      <div class="<%= profile_episode.profile.headshot_url.present? ? 'ml-2' : '' %>">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                          <%= link_to profile_episode.profile.name, admin_profile_path(profile_episode.profile), class: "hover:underline" %>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <%= profile_episode.appearance_type || "Guest" %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <% if profile_episode.is_primary_guest %>
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        Yes
+                      </span>
+                    <% else %>
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                        No
+                      </span>
+                    <% end %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <%= button_to "Remove", detach_profile_admin_episode_path(@episode, profile_id: profile_episode.profile.id), method: :delete, form: { data: { turbo_confirm: "Are you sure you want to remove #{profile_episode.profile.name} from this episode?" } }, class: "text-red-600 dark:text-red-400 hover:text-red-900 bg-transparent border-none p-0 cursor-pointer" %>
+                  </td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                  No profiles associated with this episode
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  number: 1
+  title: Episode One
+  video_id: video_id_1
+  air_date: 2025-03-25
+  notes: Notes for episode one
+
+two:
+  number: 2
+  title: Episode Two
+  video_id: video_id_2
+  air_date: 2025-03-26
+  notes: Notes for episode two

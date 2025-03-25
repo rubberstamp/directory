@@ -1,132 +1,162 @@
-<div class="container mx-auto">
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold">Profile Headshots Management</h1>
-  </div>
-  
-  <!-- Stats Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
-      <h3 class="text-lg font-medium mb-2">Total Profiles</h3>
-      <p class="text-3xl font-bold"><%= @profile_count %></p>
-    </div>
-    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
-      <h3 class="text-lg font-medium mb-2">With Headshots</h3>
-      <p class="text-3xl font-bold"><%= @profiles_with_headshots %></p>
-      <p class="text-sm text-gray-500"><%= (@profiles_with_headshots.to_f / @profile_count * 100).round(1) %>%</p>
-    </div>
-    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
-      <h3 class="text-lg font-medium mb-2">Local Images</h3>
-      <p class="text-3xl font-bold"><%= @profiles_with_local_images %></p>
-    </div>
-    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
-      <h3 class="text-lg font-medium mb-2">Placeholder Avatars</h3>
-      <p class="text-3xl font-bold"><%= @profiles_with_placeholder_avatars %></p>
-    </div>
-    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow <% if @profiles_with_google_drive_links > 0 %>bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-900 border<% end %>">
-      <h3 class="text-lg font-medium mb-2">Google Drive Links</h3>
-      <p class="text-3xl font-bold"><%= @profiles_with_google_drive_links %></p>
-      <% if @profiles_with_google_drive_links > 0 %>
-        <p class="text-sm text-yellow-600 dark:text-yellow-400">Needs processing</p>
-      <% end %>
-    </div>
-  </div>
-  
-  <!-- Bulk Actions -->
-  <div class="bg-white dark:bg-gray-800 p-6 rounded shadow mb-6">
-    <h2 class="text-xl font-bold mb-4">Bulk Actions</h2>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div>
-        <h3 class="text-lg font-semibold mb-2">Import from Google Drive</h3>
-        <p class="mb-4 text-gray-600 dark:text-gray-400">
-          Process Google Drive links and save images locally. 
-          This works best with a Google API key.
-        </p>
-        
-        <%= form_tag run_import_admin_headshots_path, method: :post do %>
-          <div class="flex items-center space-x-2">
-            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
-              Start Import
-            </button>
-            <div class="text-sm text-gray-500">
-              This runs in the background. Refresh page to see results.
-            </div>
-          </div>
-        <% end %>
+<% content_for :title do %>
+  Headshots Management - Admin
+<% end %>
+
+<% content_for :header do %>
+  Headshots Management
+<% end %>
+
+<div class="mb-6">
+  <%= link_to "← Back to Dashboard", admin_dashboard_path, class: "text-blue-600 dark:text-blue-400 hover:underline" %>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
+  <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+    <div class="flex items-center">
+      <div class="p-3 mr-4 bg-blue-500 text-white rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656.126-1.283.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656-.126-1.283-.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
       </div>
-      
       <div>
-        <h3 class="text-lg font-semibold mb-2">Generate Placeholder Avatars</h3>
-        <p class="mb-4 text-gray-600 dark:text-gray-400">
-          Create initial-based avatars for profiles without headshots.
-          Uses UI Avatars service - no local storage needed.
-        </p>
-        
-        <%= link_to admin_headshots_path, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500" do %>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          Generate Placeholders
-        <% end %>
-        <div class="mt-2 text-xs text-gray-500">
-          This feature will be implemented in a future update.
-        </div>
+        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">Total Profiles</p>
+        <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"><%= @profile_count %></p>
       </div>
     </div>
   </div>
   
-  <!-- Profiles Needing Attention -->
-  <div class="bg-white dark:bg-gray-800 rounded shadow overflow-hidden">
-    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-      <h2 class="text-xl font-bold">Profiles Needing Attention</h2>
-      <p class="text-gray-600 dark:text-gray-400">
-        These profiles either have Google Drive links or no headshots at all.
-      </p>
+  <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+    <div class="flex items-center">
+      <div class="p-3 mr-4 bg-green-500 text-white rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <div>
+        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">With Headshots</p>
+        <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"><%= @profiles_with_headshots %></p>
+      </div>
     </div>
-    
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead class="bg-gray-50 dark:bg-gray-900">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              Profile
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              Current Headshot
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              URL
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-          <% if @profiles_needing_attention.any? %>
-            <% @profiles_needing_attention.each do |profile| %>
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div>
-                      <div class="text-sm font-medium text-gray-900 dark:text-white">
-                        <%= profile.name %>
-                      </div>
-                      <div class="text-sm text-gray-500 dark:text-gray-400">
-                        <%= profile.company if profile.company.present? %>
-                      </div>
+  </div>
+  
+  <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+    <div class="flex items-center">
+      <div class="p-3 mr-4 bg-yellow-500 text-white rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <div>
+        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">Google Drive URLs</p>
+        <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"><%= @profiles_with_google_drive_links %></p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+    <div class="flex items-center">
+      <div class="p-3 mr-4 bg-indigo-500 text-white rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <div>
+        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">Local Images</p>
+        <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"><%= @profiles_with_local_images %></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Info Alert -->
+<div class="p-4 mb-8 bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 rounded-r-lg">
+  <div class="flex">
+    <div class="flex-shrink-0">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z" clip-rule="evenodd" />
+      </svg>
+    </div>
+    <div class="ml-3">
+      <h3 class="text-sm font-medium text-blue-600 dark:text-blue-400">About Headshots</h3>
+      <div class="mt-2 text-sm text-blue-600 dark:text-blue-400">
+        <p>There are three ways to add headshots:
+          <ol class="list-decimal pl-5 mt-1 space-y-1">
+            <li>Paste a Google Drive URL (recommended, no processing needed)</li>
+            <li>Upload an image file (requires ImageMagick for optimal results)</li>
+            <li>Generate a placeholder avatar based on the profile name</li>
+          </ol>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="mb-8 flex flex-wrap gap-4">
+  <%= button_to run_import_admin_headshots_path, method: :post, form: { data: { turbo_confirm: "This will run a background job to process Google Drive links. Continue?" } }, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" do %>
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+    </svg>
+    Run Google Drive Import
+  <% end %>
+</div>
+
+<!-- Profiles Table -->
+<div class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+  <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+      Profiles Needing Attention
+    </h3>
+    <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+      Showing profiles with missing headshots or Google Drive links
+    </p>
+  </div>
+  
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Profile
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Headshot
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            URL
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+        <% if @profiles_needing_attention.any? %>
+          <% @profiles_needing_attention.each do |profile| %>
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                      <%= profile.name %>
+                    </div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                      <%= profile.company if profile.company.present? %>
                     </div>
                   </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <% if profile.headshot_url.present? %>
-                    <% if profile.headshot_url.start_with?('/uploads/') %>
-                      <img src="<%= profile.headshot_url %>" alt="<%= profile.name %>" class="h-16 w-16 rounded-full object-cover">
-                    <% elsif profile.headshot_url.include?('drive.google.com') %>
-                      <div class="flex items-center space-x-2">
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <% if profile.headshot_url.present? %>
+                  <% if profile.headshot_url.include?('drive.google.com') %>
+                    <div class="flex flex-col items-center">
+                      <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div class="mt-1">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200">
                           Google Drive
                         </span>
@@ -169,20 +199,40 @@
                   <!-- Hidden upload form -->
                   <div id="upload-form-<%= profile.id %>" class="hidden mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
                     <%= form_for profile, url: admin_headshot_path(profile), method: :patch, multipart: true, html: { class: "space-y-4" } do |f| %>
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Upload image</label>
-                        <%= f.file_field :headshot_image, class: "mt-1 block w-full text-sm text-gray-900 dark:text-gray-300
-                                                           file:mr-4 file:py-2 file:px-4
-                                                           file:rounded-md file:border-0
-                                                           file:text-sm file:font-semibold
-                                                           file:bg-indigo-50 file:text-indigo-700
-                                                           dark:file:bg-indigo-900 dark:file:text-indigo-300
-                                                           hover:file:bg-indigo-100 dark:hover:file:bg-indigo-800" %>
+                      <!-- Tab Navigation -->
+                      <div class="border-b border-gray-200 dark:border-gray-600">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                          <a href="#" id="tab-url-<%= profile.id %>" onclick="switchTab('<%= profile.id %>', 'url'); return false;" class="border-indigo-500 text-indigo-600 dark:text-indigo-400 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" aria-current="page">
+                            Google Drive URL
+                          </a>
+                          <a href="#" id="tab-upload-<%= profile.id %>" onclick="switchTab('<%= profile.id %>', 'upload'); return false;" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                            Upload Image
+                          </a>
+                        </nav>
                       </div>
                       
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Or enter URL</label>
-                        <input type="text" name="headshot_url" placeholder="https://example.com/image.jpg" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                      <!-- URL Tab (Default active) -->
+                      <div id="tab-content-url-<%= profile.id %>" class="space-y-3">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Google Drive URL</label>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Paste the Google Drive share link here. No image processing needed.</p>
+                          <input type="text" name="headshot_url" placeholder="https://drive.google.com/file/d/..." class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                      </div>
+                      
+                      <!-- Upload Tab (Default hidden) -->
+                      <div id="tab-content-upload-<%= profile.id %>" class="hidden space-y-3">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Upload image</label>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">This requires ImageMagick to be installed for optimal results.</p>
+                          <%= f.file_field :headshot_image, class: "mt-1 block w-full text-sm text-gray-900 dark:text-gray-300
+                                                             file:mr-4 file:py-2 file:px-4
+                                                             file:rounded-md file:border-0
+                                                             file:text-sm file:font-semibold
+                                                             file:bg-indigo-50 file:text-indigo-700
+                                                             dark:file:bg-indigo-900 dark:file:text-indigo-300
+                                                             hover:file:bg-indigo-100 dark:hover:file:bg-indigo-800" %>
+                        </div>
                       </div>
                       
                       <div class="flex justify-end space-x-2">
@@ -231,16 +281,34 @@
           </div>
         </div>
       </div>
-    <% else %>
-      <!-- Simple info text when pagination isn't available -->
-      <div class="bg-white dark:bg-gray-800 px-4 py-3 text-center border-t border-gray-200 dark:border-gray-700">
-        <p class="text-sm text-gray-700 dark:text-gray-300">
-          Showing <%= @profiles_needing_attention.count %> profiles that need attention.
-          <% if @profiles_needing_attention.count == 20 %>
-            <br>Displaying up to 20 profiles per page.
-          <% end %>
-        </p>
-      </div>
     <% end %>
   </div>
-</div>
+
+<script>
+  function switchTab(profileId, tabName) {
+    // Get all tab elements
+    var tabUrl = document.getElementById('tab-url-' + profileId);
+    var tabUpload = document.getElementById('tab-upload-' + profileId);
+    
+    // Get all content elements
+    var contentUrl = document.getElementById('tab-content-url-' + profileId);
+    var contentUpload = document.getElementById('tab-content-upload-' + profileId);
+    
+    // Update active classes for tabs
+    if (tabName === 'url') {
+      tabUrl.className = 'border-indigo-500 text-indigo-600 dark:text-indigo-400 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm';
+      tabUpload.className = 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm';
+      
+      // Show URL content, hide upload content
+      contentUrl.classList.remove('hidden');
+      contentUpload.classList.add('hidden');
+    } else {
+      tabUrl.className = 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm';
+      tabUpload.className = 'border-indigo-500 text-indigo-600 dark:text-indigo-400 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm';
+      
+      // Show upload content, hide URL content
+      contentUrl.classList.add('hidden');
+      contentUpload.classList.remove('hidden');
+    }
+  }
+</script>

@@ -1,0 +1,2 @@
+web: bin/rails server -p 9090
+css: bin/rails tailwindcss:build && bin/rails tailwindcss:watch

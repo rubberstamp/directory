@@ -7,6 +7,8 @@ Rails.application.routes.draw do
   
   resources :profiles, only: [:index, :show]
   resources :episodes, only: [:index, :show]
+  resources :testimonials, only: [:index]
+  get '/map', to: 'map#index', as: :map
   
   # Admin routes
   namespace :admin do
@@ -14,6 +16,12 @@ Rails.application.routes.draw do
     get '/', to: 'dashboard#index', as: :dashboard
     resources :profiles
     resources :specializations
+    resources :episodes do
+      member do
+        post :attach_profile
+        delete :detach_profile
+      end
+    end
     
     # Headshots management
     resources :headshots, only: [:index, :update] do

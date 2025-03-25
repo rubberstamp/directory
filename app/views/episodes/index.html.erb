@@ -1,0 +1,170 @@
+<% content_for :title do %>
+  Podcast Episodes | Procurement Express
+<% end %>
+
+<div class="container mx-auto px-4 py-8 mt-16">
+  <!-- Page Header -->
+  <div class="max-w-7xl mx-auto mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Podcast Episodes</h1>
+    <p class="text-xl text-gray-600 dark:text-gray-300">
+      Browse all episodes of the Procurement Express podcast
+    </p>
+  </div>
+  
+  <!-- Search and Filters -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+    <%= form_with url: episodes_path, method: :get, class: "space-y-4 md:space-y-0 md:flex md:items-end md:space-x-4", data: { turbo: false } do |form| %>
+      <div class="flex-1">
+        <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search Episodes</label>
+        <%= form.text_field :search, value: params[:search], placeholder: "Search by title or episode number", class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+      </div>
+      
+      <div>
+        <label for="year" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Year</label>
+        <%= form.select :year, 
+            options_for_select([["All Years", ""]] + @years.map { |y| [y.to_s, y.to_s] }, params[:year]),
+            {}, 
+            class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+      </div>
+      
+      <div class="flex space-x-2">
+        <%= form.submit "Filter", class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+        
+        <% if params[:search].present? || params[:year].present? %>
+          <%= link_to "Clear", episodes_path, class: "px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white rounded-md hover:bg-gray-400 dark:hover:bg-gray-600" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+  
+  <!-- Episodes Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <% if @episodes.any? %>
+      <% @episodes.each do |episode| %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
+          <!-- Video Thumbnail -->
+          <div class="aspect-w-16 aspect-h-9 bg-gray-200 dark:bg-gray-700">
+            <a href="<%= episode_path(episode) %>" class="relative block w-full h-full">
+              <img 
+                src="<%= episode.thumbnail_url_or_default %>" 
+                alt="Episode #<%= episode.number %>" 
+                class="w-full h-full object-cover"
+              >
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+              </div>
+            </a>
+          </div>
+          
+          <!-- Episode Info -->
+          <div class="p-6">
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  Episode #<%= episode.number %>
+                </span>
+                <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                  <%= episode.air_date.strftime("%B %d, %Y") %>
+                </span>
+              </div>
+              
+              <% if episode.duration_seconds.present? %>
+                <span class="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <%= episode.duration_formatted %>
+                </span>
+              <% end %>
+            </div>
+            
+            <h3 class="mt-2 text-xl font-semibold text-gray-900 dark:text-white line-clamp-2">
+              <%= link_to episode.title, episode_path(episode), class: "hover:text-blue-600 dark:hover:text-blue-400" %>
+            </h3>
+            
+            <!-- Guests -->
+            <div class="mt-4 space-y-2">
+              <% primary_guest = episode.profile_episodes.find_by(is_primary_guest: true)&.profile %>
+              <% if primary_guest %>
+                <div class="flex items-center">
+                  <% if primary_guest.headshot_url.present? %>
+                    <% if primary_guest.headshot_url.include?('drive.google.com') %>
+                      <div class="h-8 w-8 rounded-full mr-2 bg-blue-100 dark:bg-blue-800 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-200">
+                        <%= primary_guest.name.split(" ").map { |n| n[0].upcase }.join("") %>
+                      </div>
+                    <% else %>
+                      <img src="<%= primary_guest.headshot_url %>" alt="<%= primary_guest.name %>" class="h-8 w-8 rounded-full mr-2 object-cover">
+                    <% end %>
+                  <% end %>
+                  <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                      <%= link_to primary_guest.name, profile_path(primary_guest), class: "hover:underline" %>
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                      <%= primary_guest.company.present? ? primary_guest.company : "Main Guest" %>
+                    </p>
+                  </div>
+                </div>
+              <% end %>
+              
+              <% other_guests_count = episode.profile_episodes.where(is_primary_guest: false).count %>
+              <% if other_guests_count > 0 %>
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                  + <%= other_guests_count %> <%= "guest".pluralize(other_guests_count) %>
+                </div>
+              <% end %>
+            </div>
+            
+            <!-- Links -->
+            <div class="mt-4 flex justify-between items-center">
+              <%= link_to episode_path(episode), class: "text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm" do %>
+                View details
+                <span aria-hidden="true">→</span>
+              <% end %>
+              
+              <a href="<%= episode.youtube_url %>" target="_blank" rel="noopener noreferrer" class="flex items-center text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z" clip-rule="evenodd" />
+                </svg>
+                YouTube
+              </a>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="col-span-full p-8 bg-white dark:bg-gray-800 rounded-lg shadow text-center">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">No episodes found</h3>
+        <p class="mt-2 text-gray-500 dark:text-gray-400">
+          <%= params[:search].present? || params[:year].present? ? 
+              "Try adjusting your search or filters." : 
+              "Episodes will appear here once they are added." %>
+        </p>
+        <% if params[:search].present? || params[:year].present? %>
+          <div class="mt-4">
+            <%= link_to "Clear filters", episodes_path, class: "text-blue-600 dark:text-blue-400 hover:underline" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+  
+  <!-- YouTube Channel Link -->
+  <div class="mt-12 text-center">
+    <a 
+      href="<%= Episode::YOUTUBE_CHANNEL_URL %>" 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill-rule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z" clip-rule="evenodd" />
+      </svg>
+      View All Episodes on YouTube
+    </a>
+  </div>
+</div>
