@@ -9,9 +9,13 @@ class MapControllerTest < ActionDispatch::IntegrationTest
   end
   
   test "should get index json" do
-    # First, create a profile with geocoding
-    profile = profiles(:one)
-    profile.update(latitude: 40.7128, longitude: -74.0060)
+    # Create a test profile with geo coordinates
+    profile = Profile.create!(
+      name: "Test Profile", 
+      email: "test@example.com",
+      latitude: 40.7128, 
+      longitude: -74.0060
+    )
     
     get map_url, as: :json
     assert_response :success
@@ -24,10 +28,14 @@ class MapControllerTest < ActionDispatch::IntegrationTest
     
     if json_response.length > 0
       # Verify the structure of the json response
-      assert_equal profile.id, json_response.first["id"]
-      assert_equal profile.name, json_response.first["name"]
-      assert_equal profile.latitude.to_s, json_response.first["latitude"].to_s
-      assert_equal profile.longitude.to_s, json_response.first["longitude"].to_s
+      profile_in_json = json_response.find { |p| p["id"] == profile.id }
+      assert_not_nil profile_in_json
+      assert_equal profile.name, profile_in_json["name"]
+      assert_equal profile.latitude.to_s, profile_in_json["latitude"].to_s
+      assert_equal profile.longitude.to_s, profile_in_json["longitude"].to_s
     end
+    
+    # Clean up
+    profile.destroy
   end
 end

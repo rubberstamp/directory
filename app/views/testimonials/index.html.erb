@@ -20,7 +20,9 @@
             <!-- Profile image -->
             <div class="flex items-center mb-4">
               <div class="mr-4 w-16 h-16 rounded-full overflow-hidden border-2 border-white dark:border-gray-800 shadow-lg">
-                <% if profile.headshot_url.present? %>
+                <% if profile.headshot.attached? %>
+                  <%= image_tag profile.headshot, alt: profile.name, class: "w-full h-full object-cover" %>
+                <% elsif profile.headshot_url.present? %>
                   <% if profile.headshot_url.include?('drive.google.com') %>
                     <!-- Generate a fallback placeholder for Google Drive links -->
                     <div class="w-full h-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center">

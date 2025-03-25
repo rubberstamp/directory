@@ -57,6 +57,30 @@ class Episode < ApplicationRecord
     "#{minutes}:#{seconds.to_s.rjust(2, '0')}"
   end
   
+  # Fetch YouTube video data
+  def fetch_youtube_data
+    return false if video_id.blank? || video_id.start_with?("EP")
+    
+    begin
+      yt_video = Yt::Video.new(id: clean_video_id)
+      
+      # Update episode with YouTube data
+      self.title = yt_video.title if self.title.blank?
+      self.duration_seconds = yt_video.duration
+      self.notes = yt_video.description if self.notes.blank?
+      self.thumbnail_url = yt_video.thumbnail_url(:high)
+      
+      save
+      return true
+    rescue Yt::Errors::NoItems => e
+      Rails.logger.error "YouTube video not found: #{e.message}"
+      return false
+    rescue => e
+      Rails.logger.error "Error fetching YouTube data: #{e.message}"
+      return false
+    end
+  end
+  
   def thumbnail_url_or_default
     if thumbnail_url.present?
       thumbnail_url

@@ -201,8 +201,10 @@
 
 <script>
   // Initialize and manage map with OpenStreetMap and Leaflet
-  // Only listen for one event to avoid duplicate initializations
+  // Listen for multiple Turbo events to ensure map loads correctly
+  document.addEventListener('DOMContentLoaded', initMap);
   document.addEventListener('turbo:load', initMap);
+  document.addEventListener('turbo:render', initMap);
   
   // Global variables to track map state
   let map;
@@ -215,7 +217,7 @@
   }
   
   // Clean up map resources on navigation
-  document.addEventListener('turbo:before-render', function() {
+  document.addEventListener('turbo:before-cache', function() {
     logMapState('before cleanup');
     if (map) {
       console.log('Removing map...');
@@ -227,6 +229,16 @@
     logMapState('after cleanup');
   });
   
+  document.addEventListener('turbo:before-render', function() {
+    if (map) {
+      console.log('Removing map before render...');
+      map.remove();
+      map = null;
+      markers = [];
+      mapInitialized = false;
+    }
+  });
+  
   function initMap() {
     console.log('initMap called');
     // Only initialize if the map container exists
@@ -236,17 +248,23 @@
       return;
     }
     
-    // Avoid re-initializing if already done
-    logMapState('before initialization check');
-    if (mapInitialized && map) {
-      console.log('Map already initialized, skipping');
-      return;
+    // Always clean up previous map instances to avoid duplicates
+    if (map) {
+      console.log('Cleaning up existing map instance before initialization');
+      map.remove();
+      map = null;
+      markers = [];
     }
+    
+    // Reset initialization state
+    mapInitialized = false;
     
     // Clear any existing content
     mapContainer.innerHTML = '';
     
-    console.log("Initializing map...");
+    // Small delay to ensure the DOM is ready (helps with Turbo)
+    setTimeout(() => {
+      console.log("Initializing map...");
     
     // Create the map
     map = L.map('map').setView([37.0902, -95.7129], 4);
@@ -359,8 +377,9 @@
         `;
       });
     
-    // Set initialization flag at the end of initialization
-    mapInitialized = true;
-    logMapState('after complete initialization');
+      // Set initialization flag at the end of initialization
+      mapInitialized = true;
+      logMapState('after complete initialization');
+    }, 50); // Short delay to help with Turbo loading
   }
 </script>
