@@ -1,0 +1,98 @@
+class Admin::HeadshotsController < Admin::BaseController
+  def index
+    @profile_count = Profile.count
+    @profiles_with_headshots = Profile.where.not(headshot_url: nil).count
+    @profiles_with_placeholder_avatars = Profile.where("headshot_url LIKE ?", "%ui-avatars.com%").count
+    @profiles_with_local_images = Profile.where("headshot_url LIKE ?", "/uploads/headshots/%").count
+    @profiles_with_google_drive_links = Profile.where("headshot_url LIKE ?", "%drive.google.com%").count
+    
+    @profiles_needing_attention = Profile.where("headshot_url LIKE ?", "%drive.google.com%")
+                                        .or(Profile.where(headshot_url: nil))
+                                        .order(:name)
+                                        .page(params[:page]).per(20)
+  end
+  
+  def update
+    @profile = Profile.find(params[:id])
+    
+    if params[:headshot_url].present?
+      @profile.update(headshot_url: params[:headshot_url])
+      flash[:notice] = "Headshot URL updated for #{@profile.name}"
+    elsif params[:profile] && params[:profile][:headshot_image]
+      process_uploaded_image
+    else
+      flash[:alert] = "No headshot URL or file provided"
+    end
+    
+    redirect_to admin_headshots_path
+  end
+  
+  def create_placeholder
+    @profile = Profile.find(params[:id])
+    
+    name = CGI.escape(@profile.name)
+    placeholder_url = "https://ui-avatars.com/api/?name=#{name}&background=random&color=fff&size=200"
+    
+    @profile.update(headshot_url: placeholder_url)
+    flash[:notice] = "Created placeholder avatar for #{@profile.name}"
+    
+    redirect_to admin_headshots_path
+  end
+  
+  def run_import
+    # This is a non-blocking way to run the rake task
+    # It will run in the background and not block the request
+    pid = Process.fork do
+      system("cd #{Rails.root} && RAILS_ENV=#{Rails.env} bundle exec rake headshots:from_google_drive_api")
+      exit
+    end
+    
+    Process.detach(pid)
+    
+    flash[:notice] = "Google Drive headshot import has been started in the background."
+    redirect_to admin_headshots_path
+  end
+  
+  private
+  
+  def process_uploaded_image
+    uploaded_file = params[:profile][:headshot_image]
+    
+    # Ensure uploads directory exists
+    storage_dir = Rails.root.join('public', 'uploads', 'headshots')
+    FileUtils.mkdir_p(storage_dir) unless Dir.exist?(storage_dir)
+    
+    # Create a unique filename based on profile name and timestamp
+    filename = "#{@profile.name.parameterize}-#{Time.now.to_i}.jpg"
+    local_path = File.join(storage_dir, filename)
+    
+    begin
+      # Save the uploaded file
+      File.open(local_path, 'wb') do |file|
+        file.write(uploaded_file.read)
+      end
+      
+      # Verify and process the image with MiniMagick
+      image = MiniMagick::Image.open(local_path)
+      
+      # Resize if necessary
+      if image.width > 1000 || image.height > 1000
+        image.resize "1000x1000>"
+      end
+      
+      # Convert to jpg and set quality
+      image.format "jpg"
+      image.quality 85
+      image.write local_path
+      
+      # Update the profile
+      new_url = "/uploads/headshots/#{filename}"
+      @profile.update(headshot_url: new_url)
+      
+      flash[:notice] = "Headshot uploaded and processed for #{@profile.name}"
+    rescue StandardError => e
+      flash[:alert] = "Error processing image: #{e.message}"
+      File.delete(local_path) if File.exist?(local_path)
+    end
+  end
+end
