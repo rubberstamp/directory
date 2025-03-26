@@ -52,11 +52,13 @@
       list-style: none;
       padding: 0;
       margin-top: 10px;
+      min-height: 40px;
       max-height: 150px;
       overflow-y: auto;
-      border: 1px solid #eee;
+      border: 1px solid #ddd;
       border-radius: 4px;
       padding: 5px;
+      transition: min-height 0.3s ease;
     }
 
     #participant-list li {
@@ -76,13 +78,17 @@
       color: white;
       border: none;
       padding: 3px 8px;
-      border-radius: 4px;
+      border-radius: 9999px;
       cursor: pointer;
       font-size: 0.8em;
+      font-weight: 500;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
     }
     
     .remove-participant-btn:hover {
       opacity: 0.9;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     #setup-error {
@@ -203,49 +209,91 @@
     }
 
     /* Custom Buttons */
+    /* Button styling aligned with site design */
     .btn-primary { 
       background-color: theme('colors.brand-blue'); 
       color: white; 
+      border-radius: 9999px; /* rounded-full */
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
     
     .btn-primary:hover:not(:disabled) { 
       opacity: 0.9;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
 
     .btn-secondary { 
       background-color: #6c757d; 
       color: white; 
+      border-radius: 9999px; /* rounded-full */
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
     
     .btn-secondary:hover:not(:disabled) { 
-      background-color: #5a6268;
+      opacity: 0.9;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
 
     .btn-success { 
       background-color: #28a745; 
       color: white; 
+      border-radius: 9999px; /* rounded-full */
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
     
     .btn-success:hover:not(:disabled) { 
-      background-color: #218838;
+      opacity: 0.9;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
 
     .btn-danger { 
       background-color: #dc3545; 
       color: white; 
+      border-radius: 9999px; /* rounded-full */
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
     
     .btn-danger:hover:not(:disabled) { 
-      background-color: #c82333;
+      opacity: 0.9;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-brand-orange {
+      background-color: theme('colors.brand-orange');
+      color: white;
+      border-radius: 9999px; /* rounded-full */
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-brand-orange:hover:not(:disabled) {
+      opacity: 0.9;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
 
     .btn-nav { 
       background-color: theme('colors.brand-orange'); 
       color: white;
+      border-radius: 9999px; /* rounded-full */
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
     
     .btn-nav:hover:not(:disabled) { 
       opacity: 0.9;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Disabled button styling */
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #adb5bd !important; /* Use gray for all disabled buttons */
+      color: white !important;
     }
 
     /* Responsive */
@@ -295,7 +343,7 @@
         <label for="participant-name-input" class="text-lg">Participants:</label>
         <div class="participant-input-group">
           <input type="text" id="participant-name-input" placeholder="Enter participant name" class="border-gray-300 rounded shadow-inner focus:ring-2 focus:ring-brand-blue">
-          <button id="add-participant-btn" class="btn-primary px-4 py-2 rounded font-semibold shadow hover:shadow-md">Add</button>
+          <button id="add-participant-btn" class="btn-primary px-4 py-2 font-semibold">Add</button>
         </div>
         <ul id="participant-list"></ul>
         <p id="setup-error"></p>
@@ -305,7 +353,7 @@
         Scheduled End Time: <strong id="session-end-time" class="text-brand-blue">--:--</strong>
       </div>
 
-      <button id="start-session-btn" class="btn-success px-6 py-3 rounded font-semibold shadow-md hover:shadow-lg transition-all" disabled>Start Session</button>
+      <button id="start-session-btn" class="btn-success px-6 py-3 font-semibold" disabled>Start Session</button>
     </div>
 
     <div id="session-screen">
@@ -334,10 +382,10 @@
       </div>
 
       <div class="controls mt-8">
-        <button id="pause-resume-btn" class="btn-secondary px-4 py-2 rounded font-semibold shadow hover:shadow-md transition-all">Pause</button>
-        <button id="prev-phase-btn" class="btn-nav px-4 py-2 rounded font-semibold shadow hover:shadow-md transition-all">Previous Phase</button>
-        <button id="skip-phase-btn" class="btn-nav px-4 py-2 rounded font-semibold shadow hover:shadow-md transition-all">Skip Phase</button>
-        <button id="reset-btn" class="btn-danger px-4 py-2 rounded font-semibold shadow hover:shadow-md transition-all">Reset Session</button>
+        <button id="pause-resume-btn" class="btn-secondary px-4 py-2 font-semibold">Pause</button>
+        <button id="prev-phase-btn" class="btn-nav px-4 py-2 font-semibold">Previous Phase</button>
+        <button id="skip-phase-btn" class="btn-nav px-4 py-2 font-semibold">Skip Phase</button>
+        <button id="reset-btn" class="btn-danger px-4 py-2 font-semibold">Reset Session</button>
       </div>
     </div>
   </div>
@@ -444,6 +492,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (name && !participants.includes(name)) {
       participants.push(name);
       renderParticipantList();
+      updateParticipantListHeight();
       validateSetup();
       participantInput.value = ''; // Clear input
     } else if (participants.includes(name)) {
@@ -456,23 +505,37 @@ document.addEventListener('DOMContentLoaded', function() {
   function removeParticipant(indexToRemove) {
     participants = participants.filter((_, index) => index !== indexToRemove);
     renderParticipantList();
+    updateParticipantListHeight();
     validateSetup();
   }
 
   function renderParticipantList() {
     participantList.innerHTML = ''; // Clear existing list
-    participants.forEach((name, index) => {
-      const li = document.createElement('li');
-      const nameSpan = document.createElement('span');
-      nameSpan.textContent = name;
-      const removeBtn = document.createElement('button');
-      removeBtn.textContent = 'Remove';
-      removeBtn.classList.add('remove-participant-btn');
-      removeBtn.onclick = () => removeParticipant(index);
-      li.appendChild(nameSpan);
-      li.appendChild(removeBtn);
-      participantList.appendChild(li);
-    });
+    
+    if (participants.length === 0) {
+      // Add placeholder when empty
+      const emptyLi = document.createElement('li');
+      emptyLi.textContent = 'No participants added yet. Add at least 2 to start.';
+      emptyLi.className = 'text-gray-500 text-center py-2 italic text-sm';
+      participantList.appendChild(emptyLi);
+    } else {
+      // Add all participants
+      participants.forEach((name, index) => {
+        const li = document.createElement('li');
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = name;
+        nameSpan.className = 'font-medium';
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = 'Remove';
+        removeBtn.classList.add('remove-participant-btn');
+        removeBtn.onclick = () => removeParticipant(index);
+        
+        li.appendChild(nameSpan);
+        li.appendChild(removeBtn);
+        participantList.appendChild(li);
+      });
+    }
   }
 
   function calculateAndDisplayEndTime() {
@@ -676,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
       pausedTimeRemaining = Math.max(0, remainingMilliseconds / 1000); // Store remaining seconds
       pauseResumeBtn.textContent = 'Resume';
       pauseResumeBtn.classList.remove('btn-secondary');
-      pauseResumeBtn.classList.add('btn-primary');
+      pauseResumeBtn.classList.add('btn-brand-orange'); // Use brand orange instead of blue for better visibility
       sessionHeadline.textContent = "Session Paused";
     } else if (sessionState === 'paused') {
       sessionState = 'running';
@@ -684,7 +747,7 @@ document.addEventListener('DOMContentLoaded', function() {
       phaseStartTime = Date.now() - (phaseDurationSeconds - pausedTimeRemaining) * 1000;
       startTimer(pausedTimeRemaining); // Restart timer with remaining time
       pauseResumeBtn.textContent = 'Pause';
-      pauseResumeBtn.classList.remove('btn-primary');
+      pauseResumeBtn.classList.remove('btn-brand-orange');
       pauseResumeBtn.classList.add('btn-secondary');
       sessionHeadline.textContent = "Session Resumed";
       // Restore correct headline after a short delay
@@ -846,10 +909,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 60 * 1000); // Every 60 seconds
   }
 
+  function updateParticipantListHeight() {
+    const list = document.getElementById('participant-list');
+    const participantCount = participants.length;
+    
+    if (participantCount === 0) {
+      list.style.minHeight = '40px'; // Default minimum height when empty
+    } else {
+      // Adjust height based on number of participants, with a maximum
+      const newHeight = Math.min(150, Math.max(40, participantCount * 40));
+      list.style.minHeight = `${newHeight}px`;
+    }
+  }
+
   function init() {
-    // Add Default Participants
-    participants = [...DEFAULT_PARTICIPANTS];
+    // Start with empty participants list
+    participants = [];
     renderParticipantList();
+    updateParticipantListHeight();
 
     // Setup Event Listeners
     addParticipantBtn.onclick = addParticipant;
