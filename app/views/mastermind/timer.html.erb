@@ -264,7 +264,8 @@
 
     .btn-brand-orange {
       background-color: theme('colors.brand-orange');
-      color: white;
+      color: black; /* Changed to black for better contrast */
+      font-weight: 600; /* Make text bolder */
       border-radius: 9999px; /* rounded-full */
       transition: all 0.3s ease;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -277,7 +278,8 @@
 
     .btn-nav { 
       background-color: theme('colors.brand-orange'); 
-      color: white;
+      color: black; /* Changed to black for better contrast */
+      font-weight: 600; /* Make text bolder */
       border-radius: 9999px; /* rounded-full */
       transition: all 0.3s ease;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -343,7 +345,7 @@
         <label for="participant-name-input" class="text-lg">Participants:</label>
         <div class="participant-input-group">
           <input type="text" id="participant-name-input" placeholder="Enter participant name" class="border-gray-300 rounded shadow-inner focus:ring-2 focus:ring-brand-blue">
-          <button id="add-participant-btn" class="btn-primary px-4 py-2 font-semibold">Add</button>
+          <button id="add-participant-btn" class="btn-brand-orange px-4 py-2 font-semibold">Add</button>
         </div>
         <ul id="participant-list"></ul>
         <p id="setup-error"></p>
@@ -354,6 +356,29 @@
       </div>
 
       <button id="start-session-btn" class="btn-success px-6 py-3 font-semibold" disabled>Start Session</button>
+      
+      <div class="help-text mt-8 text-left p-4 bg-gray-50 rounded-lg border border-gray-200 shadow-sm">
+        <h3 class="font-bold text-brand-blue mb-2">How This Timer Works:</h3>
+        <ul class="list-disc pl-5 space-y-2 text-gray-700">
+          <li><strong>Add Participants:</strong> Enter at least 2 names to activate the timer.</li>
+          <li><strong>Session Format:</strong> Each participant gets equal time divided into 3 phases:
+            <ul class="list-disc pl-5 mt-1 space-y-1 text-sm">
+              <li><strong>Problem Outline (40%):</strong> Describe your challenge or situation</li>
+              <li><strong>Clarifying Questions (20%):</strong> Others ask questions to understand</li>
+              <li><strong>Feedback (40%):</strong> Other participants provide feedback in random order</li>
+            </ul>
+          </li>
+          <li><strong>Controls:</strong> During the session, you can pause, go back to previous phases, or reset.</li>
+          <li><strong>Time Reallocation:</strong>
+            <ul class="list-disc pl-5 mt-1 space-y-1 text-sm">
+              <li><strong>Skipping a phase:</strong> Remaining time is added to other phases for the same participant</li>
+              <li><strong>Skipping a participant:</strong> Remaining time is distributed equally among all remaining participants</li>
+            </ul>
+          </li>
+          <li><strong>Equal End Time:</strong> The session always ends at the scheduled time, with time being reallocated as needed.</li>
+          <li><strong>Auto-Advance:</strong> Timer automatically moves to the next phase or participant when time expires.</li>
+        </ul>
+      </div>
     </div>
 
     <div id="session-screen">
@@ -386,6 +411,30 @@
         <button id="prev-phase-btn" class="btn-nav px-4 py-2 font-semibold">Previous Phase</button>
         <button id="skip-phase-btn" class="btn-nav px-4 py-2 font-semibold">Skip Phase</button>
         <button id="reset-btn" class="btn-danger px-4 py-2 font-semibold">Reset Session</button>
+      </div>
+      
+      <div class="mt-6 text-center">
+        <button id="toggle-help-btn" class="text-brand-blue hover:text-blue-700 text-sm font-medium flex items-center mx-auto">
+          <span id="help-button-text">Show Help</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+      
+      <div id="session-help-text" class="help-text mt-3 text-left p-4 bg-gray-50 rounded-lg border border-gray-200 shadow-sm hidden">
+        <h3 class="font-bold text-brand-blue mb-2">How This Timer Works:</h3>
+        <ul class="list-disc pl-5 space-y-2 text-gray-700">
+          <li><strong>Controls:</strong> During the session, you can pause, go back to previous phases, or reset.</li>
+          <li><strong>Time Reallocation:</strong>
+            <ul class="list-disc pl-5 mt-1 space-y-1 text-sm">
+              <li><strong>Skipping a phase:</strong> Time goes to remaining phases for the same participant</li>
+              <li><strong>Skipping a participant:</strong> Time is distributed to all remaining participants</li>
+            </ul>
+          </li>
+          <li><strong>Equal End Time:</strong> The session always ends at the scheduled time.</li>
+          <li><strong>Auto-Advance:</strong> Timer automatically moves to the next phase or participant when time expires.</li>
+        </ul>
       </div>
     </div>
   </div>
@@ -421,6 +470,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const prevPhaseBtn = document.getElementById('prev-phase-btn');
   const skipPhaseBtn = document.getElementById('skip-phase-btn');
   const resetBtn = document.getElementById('reset-btn');
+  const toggleHelpBtn = document.getElementById('toggle-help-btn');
+  const helpButtonText = document.getElementById('help-button-text');
+  const sessionHelpText = document.getElementById('session-help-text');
 
   // --- State Variables ---
   let participants = [];
@@ -436,8 +488,10 @@ document.addEventListener('DOMContentLoaded', function() {
   let phaseStartTime = null;
   let phaseDurationSeconds = 0;
   let pausedTimeRemaining = 0; // Stores remaining time when paused
+  let skippedTimeToReallocate = 0; // Tracks time to redistribute when phases are skipped
 
   let timePerParticipant = 0;
+  let originalTimePerParticipant = 0; // Store the original time calculation for reference
   let phaseDurations = { outline: 0, questions: 0, feedbackTotal: 0, feedbackEach: 0 };
 
 
@@ -569,6 +623,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const totalDurationSeconds = Math.max(0, (sessionEndTime.getTime() - Date.now()) / 1000);
     timePerParticipant = Math.floor(totalDurationSeconds / participants.length);
+    originalTimePerParticipant = timePerParticipant; // Store original allocation for reference
+    
+    // Reset any time reallocation
+    skippedTimeToReallocate = 0;
 
     if (timePerParticipant <= 0) {
       alert("Calculated session time is too short or end time is in the past. Please adjust or wait.");
@@ -585,11 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
     phaseDurations.feedbackEach = Math.floor(phaseDurations.feedbackTotal / numFeedbackGivers);
 
     // Update Time Breakdown Display
-    bdTotalTime.textContent = formatTime(timePerParticipant);
-    bdProblemTime.textContent = formatTime(phaseDurations.outline);
-    bdQuestionsTime.textContent = formatTime(phaseDurations.questions);
-    bdFeedbackTimeTotal.textContent = formatTime(phaseDurations.feedbackTotal);
-    bdFeedbackTimeEach.textContent = formatTime(phaseDurations.feedbackEach) + (participants.length > 1 ? ` per ${numFeedbackGivers} giver(s)` : '');
+    updateTimeBreakdownDisplay();
 
     currentParticipantIndex = 0;
     currentPhaseIndex = 0;
@@ -760,10 +814,39 @@ document.addEventListener('DOMContentLoaded', function() {
   function skipPhaseAction() {
     if (sessionState !== 'running' && sessionState !== 'paused') return;
 
+    // Capture remaining time to reallocate
+    let remainingTime = 0;
+    
     if (sessionState === 'paused') {
+      // If paused, use the stored paused time
+      remainingTime = pausedTimeRemaining;
+      
       // If paused, need to resume state briefly to allow nextPhase logic
       sessionState = 'running';
+      
+      // Store current phase and participant info before skipping
+      const currentPhaseIndexBeforeSkip = currentPhaseIndex;
+      const currentParticipantIndexBeforeSkip = currentParticipantIndex;
+      const currentFeedbackGiverSubIndexBeforeSkip = currentFeedbackGiverSubIndex;
+      
+      // Skip to next phase
       nextPhase();
+      
+      // Remember if we stayed with the same participant
+      const sameParticipant = (currentParticipantIndexBeforeSkip === currentParticipantIndex);
+      
+      // Handle time reallocation
+      if (remainingTime > 0) {
+        if (sameParticipant) {
+          // If we stayed with the same participant, reallocate within their phases
+          skippedTimeToReallocate += remainingTime;
+          reallocateTime();
+        } else {
+          // If we moved to a different participant, redistribute time to all remaining participants
+          reallocateTimeToRemainingParticipants(remainingTime, currentParticipantIndexBeforeSkip);
+        }
+      }
+      
       // If it didn't complete, pause it again immediately
       if (sessionState === 'running') {
         pauseResume(); // This sets state back to 'paused'
@@ -771,7 +854,101 @@ document.addEventListener('DOMContentLoaded', function() {
         updateProgressBar(100);
       }
     } else {
+      // If running, calculate remaining time
+      if (phaseStartTime && phaseDurationSeconds > 0) {
+        const elapsedMilliseconds = Date.now() - phaseStartTime;
+        const elapsedSeconds = elapsedMilliseconds / 1000;
+        remainingTime = Math.max(0, phaseDurationSeconds - elapsedSeconds);
+      }
+      
+      // Store current phase and participant info before skipping
+      const currentPhaseIndexBeforeSkip = currentPhaseIndex;
+      const currentParticipantIndexBeforeSkip = currentParticipantIndex;
+      const currentFeedbackGiverSubIndexBeforeSkip = currentFeedbackGiverSubIndex;
+      
+      // Skip to next phase
       nextPhase();
+      
+      // Remember if we stayed with the same participant
+      const sameParticipant = (currentParticipantIndexBeforeSkip === currentParticipantIndex);
+      
+      // Handle time reallocation
+      if (remainingTime > 0) {
+        if (sameParticipant) {
+          // If we stayed with the same participant, reallocate within their phases
+          skippedTimeToReallocate += remainingTime;
+          reallocateTime();
+        } else {
+          // If we moved to a different participant, redistribute time to all remaining participants
+          reallocateTimeToRemainingParticipants(remainingTime, currentParticipantIndexBeforeSkip);
+        }
+      }
+    }
+  }
+  
+  // Function to reallocate skipped time to remaining phases for the current participant
+  function reallocateTime() {
+    if (skippedTimeToReallocate <= 0) return;
+    
+    // Count how many phases remain for this participant (including current phase)
+    let remainingPhases = 0;
+    
+    if (currentPhaseIndex === 0) {
+      // We're in the outline phase, so all 3 phases remain
+      remainingPhases = 3;
+    } else if (currentPhaseIndex === 1) {
+      // We're in questions phase, so questions + feedback phases remain
+      remainingPhases = 2;
+    } else if (currentPhaseIndex === 2) {
+      // We're in feedback phase, remaining phases is just the feedback givers left
+      remainingPhases = 1 + (feedbackOrder.length - currentFeedbackGiverSubIndex - 1);
+    }
+    
+    if (remainingPhases <= 0) {
+      // No phases left to reallocate to
+      skippedTimeToReallocate = 0;
+      return;
+    }
+    
+    // Calculate time to add to each remaining phase
+    const timePerRemainingPhase = Math.floor(skippedTimeToReallocate / remainingPhases);
+    
+    // Add time to the current phase duration
+    phaseDurationSeconds += timePerRemainingPhase;
+    
+    // Update the phase durations for future phases
+    if (currentPhaseIndex === 0) {
+      phaseDurations.outline += timePerRemainingPhase;
+      phaseDurations.questions += timePerRemainingPhase;
+      // For feedback, distribute the time across all feedback givers
+      const timeForFeedback = timePerRemainingPhase * feedbackOrder.length;
+      phaseDurations.feedbackTotal += timeForFeedback;
+      phaseDurations.feedbackEach = Math.floor(phaseDurations.feedbackTotal / feedbackOrder.length);
+    } else if (currentPhaseIndex === 1) {
+      phaseDurations.questions += timePerRemainingPhase;
+      // For feedback, distribute the time across all feedback givers
+      const timeForFeedback = timePerRemainingPhase * feedbackOrder.length;
+      phaseDurations.feedbackTotal += timeForFeedback;
+      phaseDurations.feedbackEach = Math.floor(phaseDurations.feedbackTotal / feedbackOrder.length);
+    } else if (currentPhaseIndex === 2) {
+      // Just update the feedback time
+      phaseDurations.feedbackTotal += skippedTimeToReallocate;
+      const remainingFeedbackGivers = feedbackOrder.length - currentFeedbackGiverSubIndex;
+      if (remainingFeedbackGivers > 0) {
+        phaseDurations.feedbackEach = Math.floor(phaseDurations.feedbackTotal / feedbackOrder.length);
+      }
+    }
+    
+    // Update the display
+    updateTimeBreakdownDisplay();
+    
+    // Reset the skipped time counter
+    skippedTimeToReallocate = 0;
+    
+    // Restart the timer with the new duration
+    if (sessionState === 'running') {
+      phaseStartTime = Date.now();
+      startTimer(phaseDurationSeconds);
     }
   }
 
@@ -922,6 +1099,78 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  // Function to reallocate time to remaining participants
+  function reallocateTimeToRemainingParticipants(remainingTime, skippedParticipantIndex) {
+    // Count how many participants are remaining (excluding the current one who was skipped)
+    const remainingParticipants = participants.length - (currentParticipantIndex);
+    
+    if (remainingParticipants <= 0) {
+      // No participants left to reallocate time to
+      return;
+    }
+    
+    // Calculate time to add to each remaining participant
+    const timePerRemainingParticipant = Math.floor(remainingTime / remainingParticipants);
+    
+    if (timePerRemainingParticipant <= 0) {
+      // Not enough time to reallocate
+      return;
+    }
+    
+    // Adjust the time for all remaining participants (starting with the current one)
+    timePerParticipant += timePerRemainingParticipant;
+    
+    // Recalculate phase durations based on the new time allocation
+    phaseDurations.outline = Math.floor(timePerParticipant * PHASE_PERCENTAGES.outline);
+    phaseDurations.questions = Math.floor(timePerParticipant * PHASE_PERCENTAGES.questions);
+    phaseDurations.feedbackTotal = timePerParticipant - phaseDurations.outline - phaseDurations.questions;
+    
+    const numFeedbackGivers = Math.max(1, participants.length - 1);
+    phaseDurations.feedbackEach = Math.floor(phaseDurations.feedbackTotal / numFeedbackGivers);
+    
+    // Update the current phase duration if it's just starting
+    phaseDurationSeconds = getCurrentPhaseDuration();
+    
+    // Update the display
+    updateTimeBreakdownDisplay();
+    
+    // If the timer is running, restart it with the new duration
+    if (sessionState === 'running' && phaseStartTime) {
+      phaseStartTime = Date.now();
+      startTimer(phaseDurationSeconds);
+    }
+    
+    console.log(`Reallocated ${formatTime(remainingTime)} from participant ${skippedParticipantIndex + 1} to ${remainingParticipants} remaining participants (${formatTime(timePerRemainingParticipant)} each)`);
+  }
+  
+  // Helper function to get the current phase duration
+  function getCurrentPhaseDuration() {
+    switch (currentPhaseIndex) {
+      case 0: // Problem Outline
+        return phaseDurations.outline;
+      case 1: // Clarifying Questions
+        return phaseDurations.questions;
+      case 2: // Feedback
+        if (feedbackOrder.length > 0) {
+          return phaseDurations.feedbackEach;
+        }
+        return 0;
+      default:
+        return 0;
+    }
+  }
+  
+  // Function to update the time breakdown display
+  function updateTimeBreakdownDisplay() {
+    bdTotalTime.textContent = formatTime(timePerParticipant);
+    bdProblemTime.textContent = formatTime(phaseDurations.outline);
+    bdQuestionsTime.textContent = formatTime(phaseDurations.questions);
+    bdFeedbackTimeTotal.textContent = formatTime(phaseDurations.feedbackTotal);
+    const numFeedbackGivers = Math.max(1, feedbackOrder.length);
+    bdFeedbackTimeEach.textContent = formatTime(phaseDurations.feedbackEach) + 
+      (participants.length > 1 ? ` per ${numFeedbackGivers} giver(s)` : '');
+  }
+
   function init() {
     // Start with empty participants list
     participants = [];
@@ -940,6 +1189,20 @@ document.addEventListener('DOMContentLoaded', function() {
     skipPhaseBtn.onclick = skipPhaseAction;
     prevPhaseBtn.onclick = previousPhaseAction;
     resetBtn.onclick = resetSession;
+    
+    // Help toggle
+    toggleHelpBtn.onclick = function() {
+      const isHidden = sessionHelpText.classList.contains('hidden');
+      if (isHidden) {
+        sessionHelpText.classList.remove('hidden');
+        helpButtonText.textContent = 'Hide Help';
+        toggleHelpBtn.querySelector('svg').style.transform = 'rotate(180deg)';
+      } else {
+        sessionHelpText.classList.add('hidden');
+        helpButtonText.textContent = 'Show Help';
+        toggleHelpBtn.querySelector('svg').style.transform = 'rotate(0deg)';
+      }
+    };
 
     // Initial Setup State
     setupEndTimeUpdater();
