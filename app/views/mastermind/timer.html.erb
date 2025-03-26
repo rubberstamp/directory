@@ -20,6 +20,7 @@
       width: 100%;
       max-width: 600px;
       text-align: center;
+      color: #1a202c; /* Dark gray for better contrast */
     }
     
     .participant-manager {
@@ -31,6 +32,7 @@
       display: block;
       margin-bottom: 5px;
       font-weight: bold;
+      color: #1a202c;
     }
 
     .participant-input-group {
@@ -88,11 +90,14 @@
       margin-top: 10px;
       font-size: 0.9em;
       height: 1.2em; /* Reserve space */
+      font-weight: 500;
     }
 
     .end-time-info {
       margin: 20px 0;
       font-size: 1.1em;
+      color: #1a202c;
+      font-weight: 500;
     }
 
     /* Session Screen */
@@ -103,32 +108,39 @@
     #session-headline {
       font-size: 1.8em;
       margin-bottom: 15px;
-      color: var(--primary-color);
+      color: theme('colors.brand-blue');
+      font-weight: 700;
     }
 
     .session-info {
       margin-bottom: 20px;
       font-size: 1.2em;
+      color: #1a202c;
+      font-weight: 500;
     }
     
     .session-info span {
-      font-weight: bold;
+      font-weight: 700;
+      color: #000;
     }
     
     #current-phase {
       font-style: italic;
+      font-weight: 600;
     }
     
     #feedback-giver-info {
       font-size: 1em;
-      color: #6c757d;
+      color: #4a5568;
       margin-top: 5px;
+      font-weight: 500;
     }
 
     #timer-display {
       font-size: 4em;
       font-weight: bold;
       margin-bottom: 15px;
+      color: #000;
     }
 
     #progress-bar-container {
@@ -150,18 +162,20 @@
 
     #session-progress {
       font-size: 1em;
-      color: #6c757d;
+      color: #4a5568;
       margin-bottom: 20px;
+      font-weight: 500;
     }
 
     #time-breakdown {
       text-align: left;
       margin: 20px auto;
       padding: 15px;
-      border: 1px solid #eee;
+      border: 1px solid #ddd;
       border-radius: 4px;
       background-color: #f8f9fa;
       max-width: 400px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     
     #time-breakdown h3 {
@@ -169,11 +183,15 @@
       margin-bottom: 10px;
       font-size: 1.1em;
       text-align: center;
+      font-weight: 600;
+      color: #1a202c;
     }
     
     #time-breakdown p {
       margin: 5px 0;
       font-size: 0.9em;
+      color: #1a202c;
+      font-weight: 500;
     }
 
     .controls {
@@ -274,52 +292,52 @@
       <h1 class="text-2xl font-bold mb-6 text-brand-blue">Mastermind Timer Setup</h1>
 
       <div class="participant-manager">
-        <label for="participant-name-input">Participants:</label>
+        <label for="participant-name-input" class="text-lg">Participants:</label>
         <div class="participant-input-group">
-          <input type="text" id="participant-name-input" placeholder="Enter participant name" class="border-gray-300 rounded">
-          <button id="add-participant-btn" class="btn-primary px-4 py-2 rounded">Add</button>
+          <input type="text" id="participant-name-input" placeholder="Enter participant name" class="border-gray-300 rounded shadow-inner focus:ring-2 focus:ring-brand-blue">
+          <button id="add-participant-btn" class="btn-primary px-4 py-2 rounded font-semibold shadow hover:shadow-md">Add</button>
         </div>
         <ul id="participant-list"></ul>
         <p id="setup-error"></p>
       </div>
 
-      <div class="end-time-info">
-        Scheduled End Time: <strong id="session-end-time">--:--</strong>
+      <div class="end-time-info bg-gray-50 p-3 rounded shadow-inner">
+        Scheduled End Time: <strong id="session-end-time" class="text-brand-blue">--:--</strong>
       </div>
 
-      <button id="start-session-btn" class="btn-success px-6 py-3 rounded font-medium" disabled>Start Session</button>
+      <button id="start-session-btn" class="btn-success px-6 py-3 rounded font-semibold shadow-md hover:shadow-lg transition-all" disabled>Start Session</button>
     </div>
 
     <div id="session-screen">
       <h2 id="session-headline" class="text-2xl font-bold mb-4 text-brand-blue">Session Started</h2>
 
-      <div class="session-info">
-        Current Participant: <span id="current-participant"></span><br>
-        Phase: <span id="current-phase"></span>
-        <div id="feedback-giver-info"></div>
+      <div class="session-info bg-gray-50 p-3 rounded mb-4">
+        <p class="mb-1">Current Participant: <span id="current-participant" class="text-brand-blue"></span></p>
+        <p>Phase: <span id="current-phase" class="text-brand-orange"></span></p>
+        <div id="feedback-giver-info" class="mt-2 text-gray-700"></div>
       </div>
 
-      <div id="timer-display" class="text-4xl font-bold mb-4">00:00</div>
+      <div id="timer-display" class="text-5xl font-bold mb-4 text-gray-900">00:00</div>
 
-      <div id="progress-bar-container" class="w-full bg-gray-200 rounded h-5 mb-4">
-        <div id="progress-bar" class="h-full w-full bg-green-500 rounded"></div>
+      <div id="progress-bar-container" class="w-full bg-gray-200 rounded h-6 mb-4 shadow-inner">
+        <div id="progress-bar" class="h-full w-full bg-green-500 rounded transition-all"></div>
       </div>
 
-      <div id="session-progress" class="text-gray-600 mb-5">Participant 1 / N</div>
+      <div id="session-progress" class="text-gray-700 font-medium mb-5">Participant 1 / N</div>
 
-      <div id="time-breakdown" class="bg-gray-100 border border-gray-200 rounded p-4 mx-auto max-w-md">
-        <h3 class="font-semibold text-center mb-2">Time Allocation per Participant</h3>
-        <p>Total Time: <span id="bd-total-time">--:--</span></p>
-        <p>Problem Outline (40%): <span id="bd-problem-time">--:--</span></p>
-        <p>Clarifying Questions (20%): <span id="bd-questions-time">--:--</span></p>
-        <p>Feedback (40%): <span id="bd-feedback-time-total">--:--</span> (<span id="bd-feedback-time-each">--:--</span> each)</p>
+      <div id="time-breakdown" class="bg-gray-50 border border-gray-200 rounded p-4 mx-auto max-w-md shadow">
+        <h3 class="font-semibold text-center mb-3 text-gray-800 border-b pb-2">Time Allocation per Participant</h3>
+        <p class="flex justify-between"><span class="font-medium">Total Time:</span> <span id="bd-total-time" class="font-semibold text-brand-blue">--:--</span></p>
+        <p class="flex justify-between"><span class="font-medium">Problem Outline (40%):</span> <span id="bd-problem-time" class="font-semibold">--:--</span></p>
+        <p class="flex justify-between"><span class="font-medium">Clarifying Questions (20%):</span> <span id="bd-questions-time" class="font-semibold">--:--</span></p>
+        <p class="flex justify-between"><span class="font-medium">Feedback (40%):</span> <span id="bd-feedback-time-total" class="font-semibold">--:--</span> (<span id="bd-feedback-time-each" class="font-semibold">--:--</span> each)</p>
       </div>
 
-      <div class="controls">
-        <button id="pause-resume-btn" class="btn-secondary px-4 py-2 rounded">Pause</button>
-        <button id="prev-phase-btn" class="btn-nav px-4 py-2 rounded">Previous Phase</button>
-        <button id="skip-phase-btn" class="btn-nav px-4 py-2 rounded">Skip Phase</button>
-        <button id="reset-btn" class="btn-danger px-4 py-2 rounded">Reset Session</button>
+      <div class="controls mt-8">
+        <button id="pause-resume-btn" class="btn-secondary px-4 py-2 rounded font-semibold shadow hover:shadow-md transition-all">Pause</button>
+        <button id="prev-phase-btn" class="btn-nav px-4 py-2 rounded font-semibold shadow hover:shadow-md transition-all">Previous Phase</button>
+        <button id="skip-phase-btn" class="btn-nav px-4 py-2 rounded font-semibold shadow hover:shadow-md transition-all">Skip Phase</button>
+        <button id="reset-btn" class="btn-danger px-4 py-2 rounded font-semibold shadow hover:shadow-md transition-all">Reset Session</button>
       </div>
     </div>
   </div>
