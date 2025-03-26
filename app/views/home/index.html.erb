@@ -1,20 +1,39 @@
-<main class="container mx-auto mt-20 p-6 space-y-12">
-    <section class="text-center">
-        <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-blue-700 dark:text-blue-400 mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
-            The Gross Profit Podcast
-        </h1>
-        <p class="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
-            Conversations with financial leaders about business growth, strategy, and success.
-        </p>
-        <div class="flex flex-wrap gap-4 justify-center">
-            <a href="<%= profiles_path %>" class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-3 px-8 rounded-full text-lg transition duration-300 shadow-lg hover:shadow-xl">
-                Browse Podcast Guests
-            </a>
-            <%= link_to contact_path, class: "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-700 font-semibold py-3 px-8 rounded-full text-lg transition duration-300 shadow-md hover:shadow-lg" do %>
-                Contact Us
-            <% end %>
+<main class="space-y-12">
+    <!-- Hero Section with Side-by-Side Layout -->
+    <section class="relative min-h-[600px] overflow-hidden bg-gradient-to-r from-gray-900 to-blue-900 py-12">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col lg:flex-row items-center">
+                <!-- Text Content (Left Side) -->
+                <div class="w-full lg:w-1/2 z-10 text-center lg:text-left lg:pr-12 mb-12 lg:mb-0">
+                    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
+                        The Gross Profit Podcast
+                    </h1>
+                    <div class="h-1 w-40 bg-gradient-to-r from-purple-500 to-blue-500 mx-auto lg:mx-0 mb-6"></div>
+                    <p class="text-lg sm:text-xl text-white mb-8 max-w-2xl mx-auto lg:mx-0 drop-shadow-md">
+                        Conversations with financial leaders about business growth, strategy, and success.
+                    </p>
+                    <div class="flex flex-wrap gap-4 justify-center lg:justify-start">
+                        <a href="<%= profiles_path %>" class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-3 px-8 rounded-full text-lg transition duration-300 shadow-lg hover:shadow-xl">
+                            Browse Podcast Guests
+                        </a>
+                        <%= link_to contact_path, class: "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-700 font-semibold py-3 px-8 rounded-full text-lg transition duration-300 shadow-md hover:shadow-lg" do %>
+                            Contact Us
+                        <% end %>
+                    </div>
+                </div>
+                
+                <!-- Image (Right Side) -->
+                <div class="w-full lg:w-1/2 relative">
+                    <div class="rounded-2xl overflow-hidden shadow-2xl border-4 border-gray-800">
+                        <img src="/images/podcast_james.png" alt="James Kennedy - The Gross Profit Podcast Host" class="w-full h-auto">
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
+    
+    <!-- Content Container -->
+    <div class="container mx-auto px-6">
     
     <section class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-custom p-6 md:p-10 border border-gray-100 dark:border-gray-700">
         <h2 class="text-2xl font-semibold text-blue-700 dark:text-blue-400 mb-6 text-center">Featured Podcast Guests</h2>
@@ -140,33 +159,32 @@
     </section>
 
     <section id="about" class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-custom p-6 md:p-10 border border-gray-100 dark:border-gray-700">
-        <div class="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-                <h2 class="text-3xl font-semibold text-blue-700 dark:text-blue-400 mb-4">About Us</h2>
-                <p class="text-gray-700 dark:text-gray-300 text-lg">
-                    The Gross Profit Podcast explores the financial strategies that drive business success. We interview leading CFOs, finance experts, and business leaders to uncover insights and practical advice that can help businesses of all sizes optimize their financial performance and achieve sustainable growth.
-                </p>
-                <ul class="list-disc list-inside mt-4 space-y-2 text-gray-600 dark:text-gray-400">
-                     <li>In-depth conversations with finance leaders</li>
-                     <li>Practical advice for business growth</li>
-                     <li>Insights on financial strategy and metrics</li>
-                     <li>Stories from successful entrepreneurs and CFOs</li>
-                </ul>
-                
-                <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div class="max-w-3xl mx-auto">
+            <h2 class="text-3xl font-semibold text-blue-700 dark:text-blue-400 mb-4 text-center">About The Podcast</h2>
+            <p class="text-gray-700 dark:text-gray-300 text-lg text-center mb-6">
+                The Gross Profit Podcast explores the financial strategies that drive business success. We interview leading CFOs, finance experts, and business leaders to uncover insights and practical advice that can help businesses of all sizes optimize their financial performance and achieve sustainable growth.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8 mt-8">
+                <div>
+                    <h3 class="text-xl font-semibold text-blue-700 dark:text-blue-400 mb-3">What We Cover</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-400">
+                         <li>In-depth conversations with finance leaders</li>
+                         <li>Practical advice for business growth</li>
+                         <li>Insights on financial strategy and metrics</li>
+                         <li>Stories from successful entrepreneurs and CFOs</li>
+                    </ul>
+                </div>
+                <div>
                     <h3 class="text-xl font-semibold text-blue-700 dark:text-blue-400 mb-3">Subscribe to Our Newsletter</h3>
                     <p class="text-gray-600 dark:text-gray-400 mb-4">Get notified about new episodes and podcast updates.</p>
                     
-                    <%= form_with url: subscribe_path, class: "flex flex-col sm:flex-row gap-2", local: true do |form| %>
+                    <%= form_with url: subscribe_path, class: "flex flex-col gap-2", local: true do |form| %>
                         <div class="flex-grow">
                             <%= form.email_field :email, placeholder: "Your Email", required: true, class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
                         </div>
                         <%= form.submit "Subscribe", class: "bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded text-base transition duration-300 shadow-md hover:shadow-xl cursor-pointer whitespace-nowrap" %>
                     <% end %>
                 </div>
-            </div>
-            <div class="hidden md:block">
-                <img src="/images/podcast_james.png" alt="The Gross Profit Podcast with James Kennedy" class="rounded-lg shadow-md">
             </div>
         </div>
     </section>
@@ -271,6 +289,7 @@
             <% end %>
         </div>
     </section>
+    </div>
 </main>
 
 <%= javascript_tag do %>
