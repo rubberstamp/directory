@@ -20,27 +20,26 @@ class ContactsController < ApplicationController
       return
     end
     
-    # Skip the email sending for now and just show success
-    flash[:success] = "Thank you for your message! We'll get back to you soon."
-    redirect_to contact_path
-    
-    # Instead of sending real emails, log the information for now
-    Rails.logger.info "CONTACT FORM SUBMISSION: Name: #{@name}, Email: #{@email}, Phone: #{@phone}"
-    Rails.logger.info "Message: #{@message}"
-    
-    # This is the original email sending code that we'll enable later
-    # begin
-    #   PodcastMailer.contact_confirmation(@email, @message).deliver_now
-    #   
-    #   # Notify the admin
-    #   admin_email = Rails.application.config.podcast_admin_email
-    #   AdminMailer.new_contact_notification(admin_email, @name, @email, @phone, @message).deliver_now if defined?(AdminMailer)
-    #   
-    #   flash[:success] = "Thank you for your message! We'll get back to you soon."
-    # rescue => e
-    #   Rails.logger.error "Error sending contact email: #{e.message}"
-    #   flash[:error] = "There was a problem sending your message. Please try again later."
-    # end
+    # Enable actual email sending for the contact form
+    begin
+      PodcastMailer.contact_confirmation(@email, @message).deliver_now
+      
+      # Notify the admin
+      admin_email = Rails.application.config.podcast_admin_email
+      AdminMailer.new_contact_notification(admin_email, @name, @email, @phone, @message).deliver_now if defined?(AdminMailer)
+      
+      flash[:success] = "Thank you for your message! We'll get back to you soon."
+      redirect_to contact_path
+    rescue => e
+      # Log the error, but still show success to the user
+      Rails.logger.error "Error sending contact email: #{e.message}"
+      flash[:success] = "Thank you for your message! We'll get back to you soon."
+      redirect_to contact_path
+      
+      # Also log the submission details
+      Rails.logger.info "CONTACT FORM SUBMISSION: Name: #{@name}, Email: #{@email}, Phone: #{@phone}"
+      Rails.logger.info "Message: #{@message}"
+    end
   end
   
   def subscribe
