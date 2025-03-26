@@ -63,7 +63,7 @@ Rails.application.configure do
   
   # Default mailer settings
   config.action_mailer.default_options = {
-    from: 'podcast@procurementexpress.com'
+    from: 'info@procurementexpress.com'
   }
 
   # Set host to be used by links generated in mailer templates

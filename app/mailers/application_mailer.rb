@@ -1,5 +1,5 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: "podcast@grossprofitpodcast.com"
+  default from: "info@procurementexpress.com"
   layout "mailer"
   
   # Override in child classes as needed

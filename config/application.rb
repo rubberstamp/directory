@@ -25,7 +25,7 @@ module Directory
     # config.eager_load_paths << Rails.root.join("extras")
     
     # Email configuration
-    config.podcast_email = "podcast@grossprofitpodcast.com"
+    config.podcast_email = "info@procurementexpress.com"
     config.podcast_admin_email = "james.kennedy@procurementexpress.com"
     config.podcast_contact_email = "james.kennedy@procurementexpress.com"
   end
