@@ -25,7 +25,7 @@ class ContactsController < ApplicationController
       PodcastMailer.contact_confirmation(@email, @message).deliver_now
       
       # Notify the admin
-      admin_email = "podcast@procurementexpress.com"
+      admin_email = Rails.application.config.podcast_admin_email
       AdminMailer.new_contact_notification(admin_email, @name, @email, @phone, @message).deliver_now if defined?(AdminMailer)
       
       flash[:success] = "Thank you for your message! We'll get back to you soon."
@@ -53,7 +53,7 @@ class ContactsController < ApplicationController
       PodcastMailer.welcome_email(@email, @name).deliver_now
       
       # Notify the admin about new subscriber
-      admin_email = "podcast@procurementexpress.com"
+      admin_email = Rails.application.config.podcast_admin_email
       AdminMailer.new_subscriber_notification(admin_email, @name, @email).deliver_now if defined?(AdminMailer)
       
       flash[:success] = "Thank you for subscribing to our podcast newsletter!"

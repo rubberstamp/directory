@@ -5,7 +5,10 @@ Rails.application.routes.draw do
   root "home#index"
   get "home/index"
   
-  resources :profiles, only: [:index, :show]
+  resources :profiles, only: [:index, :show] do
+    resources :guest_messages, only: [:create]
+  end
+  resources :guest_messages, only: [:create]
   resources :episodes, only: [:index, :show]
   resources :testimonials, only: [:index]
   resources :contacts, only: [:index, :create]
@@ -24,6 +27,13 @@ Rails.application.routes.draw do
       member do
         post :attach_profile
         delete :detach_profile
+      end
+    end
+    
+    # Guest messages management
+    resources :guest_messages do
+      member do
+        post :forward
       end
     end
     

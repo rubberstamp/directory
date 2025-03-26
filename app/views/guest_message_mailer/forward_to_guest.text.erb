@@ -1,0 +1,28 @@
+THE GROSS PROFIT PODCAST - NEW MESSAGE FROM WEBSITE VISITOR
+========================================================
+
+Dear <%= @profile.name %>,
+
+You've received a message through The Gross Profit Podcast website. Someone is interested in connecting with you!
+
+FROM: <%= @guest_message.sender_name %> (<%= @guest_message.sender_email %>)
+DATE: <%= @guest_message.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+<% if @guest_message.subject.present? %>
+SUBJECT: <%= @guest_message.subject %>
+<% end %>
+
+MESSAGE:
+-------
+<%= @guest_message.message %>
+-------
+
+You can reply directly to this email to respond to <%= @guest_message.sender_name %>.
+
+Best regards,
+The Gross Profit Podcast Team
+
+----------------------------------------
+This message was sent to you because you are a guest on The Gross Profit Podcast.
+If you would like to opt out of receiving future messages from podcast visitors, please contact us.
+
+© <%= Date.today.year %> The Gross Profit Podcast. All rights reserved.

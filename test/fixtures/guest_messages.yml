@@ -1,0 +1,59 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+new_message:
+  sender_name: New Sender
+  sender_email: new@example.com
+  subject: New Message
+  message: This is a new message
+  status: <%= GuestMessage::STATUSES[:new] %>
+  profile: one
+
+read_message:
+  sender_name: Read Sender
+  sender_email: read@example.com
+  subject: Read Message
+  message: This is a read message
+  status: <%= GuestMessage::STATUSES[:read] %>
+  profile: one
+
+forwarded_message:
+  sender_name: Forwarded Sender
+  sender_email: forwarded@example.com
+  subject: Forwarded Message
+  message: This is a forwarded message
+  status: <%= GuestMessage::STATUSES[:forwarded] %>
+  profile: two
+  forwarded_at: <%= 1.day.ago %>
+
+replied_message:
+  sender_name: Replied Sender
+  sender_email: replied@example.com
+  subject: Replied Message
+  message: This is a replied message
+  status: <%= GuestMessage::STATUSES[:replied] %>
+  profile: two
+
+archived_message:
+  sender_name: Archived Sender
+  sender_email: archived@example.com
+  subject: Archived Message
+  message: This is an archived message
+  status: <%= GuestMessage::STATUSES[:archived] %>
+  profile: one
+
+general_inquiry:
+  sender_name: General Inquirer
+  sender_email: general@example.com
+  subject: General Inquiry
+  message: This is a general inquiry with no specific guest
+  status: <%= GuestMessage::STATUSES[:new] %>
+  profile: null
+
+message_with_notes:
+  sender_name: Notes Sender
+  sender_email: notes@example.com
+  subject: Message With Notes
+  message: This is a message with admin notes
+  status: <%= GuestMessage::STATUSES[:read] %>
+  admin_notes: These are some admin notes about this message
+  profile: one

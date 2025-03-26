@@ -1,0 +1,28 @@
+THE GROSS PROFIT PODCAST - MESSAGE CONFIRMATION
+========================================================
+
+Dear <%= @guest_message.sender_name.presence || "there" %>,
+
+Thank you for your message<%= " to #{@profile.name}" if @profile %>!
+
+We've received your message through The Gross Profit Podcast website. Our team will review it promptly.
+
+<% if @profile %>Your message will be forwarded to <%= @profile.name %>, and they'll be able to respond directly to you.<% end %>
+
+<% if @guest_message.subject.present? %>
+SUBJECT: <%= @guest_message.subject %>
+<% else %>
+YOUR MESSAGE:
+<% end %>
+-------
+<%= @guest_message.message %>
+-------
+
+If you have any other questions or need further assistance, please don't hesitate to contact us.
+
+Best regards,
+The Gross Profit Podcast Team
+
+----------------------------------------
+This is an automated message. Please do not reply to this email.
+© <%= Date.today.year %> The Gross Profit Podcast. All rights reserved.

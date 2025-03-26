@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_25_081540) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_26_085502) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -51,6 +51,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_25_081540) do
     t.datetime "updated_at", null: false
     t.index ["number"], name: "index_episodes_on_number", unique: true
     t.index ["video_id"], name: "index_episodes_on_video_id", unique: true
+  end
+
+  create_table "guest_messages", force: :cascade do |t|
+    t.string "sender_name"
+    t.string "sender_email"
+    t.text "message"
+    t.integer "profile_id"
+    t.string "status", default: "new"
+    t.text "admin_notes"
+    t.datetime "forwarded_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "subject"
+    t.index ["profile_id"], name: "index_guest_messages_on_profile_id"
   end
 
   create_table "profile_episodes", force: :cascade do |t|
@@ -112,6 +126,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_25_081540) do
     t.string "cached_formatted_location"
     t.string "cached_city"
     t.string "cached_country"
+    t.boolean "allow_messages", default: true
+    t.string "message_forwarding_email"
+    t.boolean "auto_forward_messages", default: false
   end
 
   create_table "specializations", force: :cascade do |t|
@@ -134,8 +151,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_25_081540) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
-  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "guest_messages", "profiles"
   add_foreign_key "profile_episodes", "episodes"
   add_foreign_key "profile_episodes", "profiles"
   add_foreign_key "profile_specializations", "profiles"

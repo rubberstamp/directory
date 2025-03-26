@@ -1,25 +1,38 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  name: MyString
-  headline: MyString
-  bio: MyText
-  location: MyString
-  specializations: MyString
-  linkedin_url: MyString
-  youtube_url: MyString
-  email: MyString
-  phone: MyString
-  image_url: MyString
+  name: John Doe
+  headline: Test Profile One
+  bio: This is a test profile bio
+  location: New York, USA
+  linkedin_url: https://linkedin.com/in/johndoe
+  email: john@example.com
+  phone: 555-123-4567
+  image_url: https://example.com/image1.jpg
+  allow_messages: true
+  message_forwarding_email: john@example.com
+  auto_forward_messages: false
 
 two:
-  name: MyString
-  headline: MyString
-  bio: MyText
-  location: MyString
-  specializations: MyString
-  linkedin_url: MyString
-  youtube_url: MyString
-  email: MyString
-  phone: MyString
-  image_url: MyString
+  name: Jane Smith
+  headline: Test Profile Two
+  bio: This is another test profile bio
+  location: London, UK
+  linkedin_url: https://linkedin.com/in/janesmith
+  email: jane@example.com
+  phone: 555-987-6543
+  image_url: https://example.com/image2.jpg
+  allow_messages: true
+  message_forwarding_email: jane@example.com
+  auto_forward_messages: true
+
+three:
+  name: Bob Johnson
+  headline: Test Profile Three
+  bio: This is a third test profile bio
+  location: Toronto, Canada
+  linkedin_url: https://linkedin.com/in/bobjohnson
+  email: bob@example.com
+  phone: 555-456-7890
+  allow_messages: false
+  auto_forward_messages: false

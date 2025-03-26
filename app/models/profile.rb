@@ -5,6 +5,8 @@ class Profile < ApplicationRecord
   has_many :profile_episodes, dependent: :destroy
   has_many :episodes, through: :profile_episodes
   
+  has_many :guest_messages, dependent: :nullify
+  
   has_one_attached :headshot
   
   validates :name, presence: true
@@ -157,6 +159,15 @@ class Profile < ApplicationRecord
     
     # Otherwise return the legacy URL
     headshot_url
+  end
+  
+  # Returns the email to use for message forwarding
+  def effective_forwarding_email
+    # Use the dedicated forwarding email if present
+    return message_forwarding_email if message_forwarding_email.present?
+    
+    # Fall back to the primary email address
+    email
   end
   
   # Calculate the formatted location (city and country)

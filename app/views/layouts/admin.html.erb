@@ -45,6 +45,13 @@
           <a href="<%= admin_episodes_path %>" class="block p-3 rounded hover:bg-blue-700 <%= controller_name == 'episodes' ? 'bg-blue-700' : '' %>">
             Episodes
           </a>
+          <a href="<%= admin_guest_messages_path %>" class="block p-3 rounded hover:bg-blue-700 <%= controller_name == 'guest_messages' ? 'bg-blue-700' : '' %>">
+            Messages
+            <% new_message_count = GuestMessage.where(status: GuestMessage::STATUSES[:new]).count %>
+            <% if new_message_count > 0 %>
+              <span class="ml-2 inline-flex items-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-medium text-white"><%= new_message_count %></span>
+            <% end %>
+          </a>
           <a href="<%= root_path %>" class="block p-3 rounded hover:bg-blue-700">
             View Public Site
           </a>
@@ -89,6 +96,13 @@
             </a>
             <a href="<%= admin_episodes_path %>" class="block p-3 rounded hover:bg-blue-700">
               Episodes
+            </a>
+            <a href="<%= admin_guest_messages_path %>" class="block p-3 rounded hover:bg-blue-700">
+              Messages
+              <% new_message_count = GuestMessage.where(status: GuestMessage::STATUSES[:new]).count %>
+              <% if new_message_count > 0 %>
+                <span class="ml-2 inline-flex items-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-medium text-white"><%= new_message_count %></span>
+              <% end %>
             </a>
             <a href="<%= root_path %>" class="block p-3 rounded hover:bg-blue-700">
               View Public Site

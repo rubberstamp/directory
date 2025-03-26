@@ -1,0 +1,32 @@
+THE GROSS PROFIT PODCAST - NEW GUEST MESSAGE
+========================================================
+
+Date: <%= @guest_message.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+
+SENDER DETAILS:
+---------------
+Name: <%= @guest_message.sender_name %>
+Email: <%= @guest_message.sender_email %>
+
+RECIPIENT:
+---------
+<%= @profile ? @profile.name : "General Inquiry" %>
+<% if @guest_message.subject.present? %>Subject: <%= @guest_message.subject %><% end %>
+<% if @profile %>Guest Email: <%= @profile.email %><% end %>
+
+MESSAGE:
+-------
+<%= @guest_message.message %>
+
+-------
+<% if @profile && @profile.auto_forward_messages %>
+This message has been automatically forwarded to the guest.
+<% elsif @profile %>
+This message is pending manual forwarding to the guest.
+<% else %>
+This is a general inquiry that requires a response from the podcast team.
+<% end %>
+
+View in Admin Panel: <%= Rails.application.routes.url_helpers.admin_dashboard_url(host: 'directory.fly.dev') %>
+
+This is an automated notification from your podcast website.

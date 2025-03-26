@@ -166,6 +166,56 @@
         </div>
       <% end %>
 
+      <!-- Message Preferences -->
+      <div class="mt-6">
+        <h3 class="text-lg font-semibold mb-4">Message Preferences</h3>
+        <dl class="space-y-3">
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Allow Messages</dt>
+            <dd class="mt-1">
+              <% if @profile.allow_messages? %>
+                <span class="px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200">Enabled</span>
+              <% else %>
+                <span class="px-2 py-1 text-xs rounded-full bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200">Disabled</span>
+              <% end %>
+            </dd>
+          </div>
+          
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Auto-Forward Messages</dt>
+            <dd class="mt-1">
+              <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200">Feature Disabled</span>
+              <p class="mt-1 text-xs text-yellow-600 dark:text-yellow-400 italic">
+                Auto-forwarding is currently disabled globally.
+              </p>
+            </dd>
+          </div>
+          
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Forwarding Email</dt>
+            <dd class="mt-1">
+              <% if @profile.message_forwarding_email.present? %>
+                <%= @profile.message_forwarding_email %>
+              <% else %>
+                <span class="text-gray-500 dark:text-gray-400">Using primary email: <%= @profile.email %></span>
+              <% end %>
+            </dd>
+          </div>
+          
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Messages Received</dt>
+            <dd class="mt-1">
+              <% message_count = @profile.guest_messages.count %>
+              <% if message_count > 0 %>
+                <%= link_to "#{message_count} message#{message_count != 1 ? 's' : ''}", admin_guest_messages_path(profile_id: @profile.id), class: "text-blue-600 hover:underline" %>
+              <% else %>
+                0 messages
+              <% end %>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
       <!-- Testimonial -->
       <% if @profile.testimonial.present? %>
         <div class="mt-6">

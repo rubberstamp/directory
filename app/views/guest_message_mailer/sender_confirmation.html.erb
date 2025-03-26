@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { margin-bottom: 20px; }
+    .logo { color: #4F46E5; font-size: 24px; font-weight: bold; }
+    .message-box { background: #f7f9fc; border: 1px solid #e3e8ef; border-radius: 5px; padding: 20px; margin: 20px 0; }
+    .footer { margin-top: 30px; font-size: 12px; color: #6B7280; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">The Gross Profit Podcast</div>
+      <p>Thank you for your message!</p>
+    </div>
+    
+    <p>Dear <%= @guest_message.sender_name.presence || "there" %>,</p>
+    
+    <p>We've received your message <%= "to #{@profile.name}" if @profile %> through The Gross Profit Podcast website. Our team will review it promptly.</p>
+    
+    <% if @profile %>
+      <p>Your message will be forwarded to <%= @profile.name %>, and they'll be able to respond directly to you.</p>
+    <% end %>
+    
+    <div class="message-box">
+      <% if @guest_message.subject.present? %>
+        <h3><%= @guest_message.subject %></h3>
+      <% else %>
+        <h3>Your Message:</h3>
+      <% end %>
+      <p><%= simple_format @guest_message.message %></p>
+    </div>
+    
+    <p>If you have any other questions or need further assistance, please don't hesitate to contact us.</p>
+    
+    <p>Best regards,<br>
+    The Gross Profit Podcast Team</p>
+    
+    <div class="footer">
+      <p>This is an automated message. Please do not reply to this email.</p>
+      <p>&copy; <%= Date.today.year %> The Gross Profit Podcast. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

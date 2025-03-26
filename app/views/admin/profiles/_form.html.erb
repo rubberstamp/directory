@@ -226,6 +226,34 @@
     </div>
 
     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <h2 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">Message Preferences</h2>
+      
+      <div class="mb-6">
+        <div class="flex items-center mb-4">
+          <%= form.check_box :allow_messages, class: "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+          <%= form.label :allow_messages, "Allow messages from website visitors", class: "ml-2 block text-sm text-gray-700 dark:text-gray-300" %>
+        </div>
+        
+        <div class="flex items-center mb-4 ml-6">
+          <%= form.check_box :auto_forward_messages, class: "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500", disabled: true %>
+          <%= form.label :auto_forward_messages, "Automatically forward messages (without admin review)", class: "ml-2 block text-sm text-gray-700 dark:text-gray-300" %>
+          <span class="ml-2 px-2 py-1 text-xs rounded-full bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200">Disabled</span>
+        </div>
+        <p class="ml-6 text-xs text-yellow-600 dark:text-yellow-400 italic mb-4">
+          Auto-forwarding is currently disabled. Messages will remain in the admin panel for manual handling.
+        </p>
+        
+        <div class="mt-4">
+          <%= form.label :message_forwarding_email, "Message Forwarding Email", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= form.email_field :message_forwarding_email, class: "block w-full sm:w-2/3 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "If blank, will use primary email address" %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            If left blank, the primary email address will be used for forwarding messages.
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
       <h2 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">Biography</h2>
       <div>
         <%= form.label :bio, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
