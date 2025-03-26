@@ -27,32 +27,32 @@
   <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
     <div class="flex h-screen">
       <!-- Sidebar -->
-      <div class="w-64 bg-blue-600 dark:bg-blue-900 text-white p-4 hidden md:block">
+      <div class="w-64 bg-brand-blue dark:bg-brand-blue text-white p-4 hidden md:block">
         <div class="text-2xl font-bold mb-6 pb-4 border-b border-blue-500 dark:border-blue-700">Admin Dashboard</div>
         <nav class="space-y-2">
-          <a href="<%= admin_dashboard_path %>" class="block p-3 rounded hover:bg-blue-700 <%= current_page?(admin_dashboard_path) ? 'bg-blue-700' : '' %>">
+          <a href="<%= admin_dashboard_path %>" class="block p-3 rounded hover:bg-opacity-90 <%= current_page?(admin_dashboard_path) ? 'bg-brand-orange' : '' %>">
             Dashboard
           </a>
-          <a href="<%= admin_profiles_path %>" class="block p-3 rounded hover:bg-blue-700 <%= controller_name == 'profiles' ? 'bg-blue-700' : '' %>">
+          <a href="<%= admin_profiles_path %>" class="block p-3 rounded hover:bg-opacity-90 <%= controller_name == 'profiles' ? 'bg-brand-orange' : '' %>">
             Guests
           </a>
-          <a href="<%= admin_specializations_path %>" class="block p-3 rounded hover:bg-blue-700 <%= controller_name == 'specializations' ? 'bg-blue-700' : '' %>">
+          <a href="<%= admin_specializations_path %>" class="block p-3 rounded hover:bg-opacity-90 <%= controller_name == 'specializations' ? 'bg-brand-orange' : '' %>">
             Specializations
           </a>
-          <a href="<%= admin_headshots_path %>" class="block p-3 rounded hover:bg-blue-700 <%= controller_name == 'headshots' ? 'bg-blue-700' : '' %>">
+          <a href="<%= admin_headshots_path %>" class="block p-3 rounded hover:bg-opacity-90 <%= controller_name == 'headshots' ? 'bg-brand-orange' : '' %>">
             Headshots
           </a>
-          <a href="<%= admin_episodes_path %>" class="block p-3 rounded hover:bg-blue-700 <%= controller_name == 'episodes' ? 'bg-blue-700' : '' %>">
+          <a href="<%= admin_episodes_path %>" class="block p-3 rounded hover:bg-opacity-90 <%= controller_name == 'episodes' ? 'bg-brand-orange' : '' %>">
             Episodes
           </a>
-          <a href="<%= admin_guest_messages_path %>" class="block p-3 rounded hover:bg-blue-700 <%= controller_name == 'guest_messages' ? 'bg-blue-700' : '' %>">
+          <a href="<%= admin_guest_messages_path %>" class="block p-3 rounded hover:bg-opacity-90 <%= controller_name == 'guest_messages' ? 'bg-brand-orange' : '' %>">
             Messages
             <% new_message_count = GuestMessage.where(status: GuestMessage::STATUSES[:new]).count %>
             <% if new_message_count > 0 %>
-              <span class="ml-2 inline-flex items-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-medium text-white"><%= new_message_count %></span>
+              <span class="ml-2 inline-flex items-center rounded-full bg-brand-orange px-2 py-0.5 text-xs font-medium text-white"><%= new_message_count %></span>
             <% end %>
           </a>
-          <a href="<%= root_path %>" class="block p-3 rounded hover:bg-blue-700">
+          <a href="<%= root_path %>" class="block p-3 rounded hover:bg-brand-orange hover:bg-opacity-90">
             View Public Site
           </a>
         </nav>
@@ -80,31 +80,31 @@
         </header>
 
         <!-- Mobile menu -->
-        <div id="mobile-menu" class="md:hidden bg-blue-600 dark:bg-blue-900 text-white p-4 hidden">
+        <div id="mobile-menu" class="md:hidden bg-brand-blue dark:bg-brand-blue text-white p-4 hidden">
           <nav class="space-y-2">
-            <a href="<%= admin_dashboard_path %>" class="block p-3 rounded hover:bg-blue-700">
+            <a href="<%= admin_dashboard_path %>" class="block p-3 rounded hover:bg-brand-orange hover:bg-opacity-90">
               Dashboard
             </a>
-            <a href="<%= admin_profiles_path %>" class="block p-3 rounded hover:bg-blue-700">
+            <a href="<%= admin_profiles_path %>" class="block p-3 rounded hover:bg-brand-orange hover:bg-opacity-90">
               Guests
             </a>
-            <a href="<%= admin_specializations_path %>" class="block p-3 rounded hover:bg-blue-700">
+            <a href="<%= admin_specializations_path %>" class="block p-3 rounded hover:bg-brand-orange hover:bg-opacity-90">
               Specializations
             </a>
-            <a href="<%= admin_headshots_path %>" class="block p-3 rounded hover:bg-blue-700">
+            <a href="<%= admin_headshots_path %>" class="block p-3 rounded hover:bg-brand-orange hover:bg-opacity-90">
               Headshots
             </a>
-            <a href="<%= admin_episodes_path %>" class="block p-3 rounded hover:bg-blue-700">
+            <a href="<%= admin_episodes_path %>" class="block p-3 rounded hover:bg-brand-orange hover:bg-opacity-90">
               Episodes
             </a>
-            <a href="<%= admin_guest_messages_path %>" class="block p-3 rounded hover:bg-blue-700">
+            <a href="<%= admin_guest_messages_path %>" class="block p-3 rounded hover:bg-brand-orange hover:bg-opacity-90">
               Messages
               <% new_message_count = GuestMessage.where(status: GuestMessage::STATUSES[:new]).count %>
               <% if new_message_count > 0 %>
-                <span class="ml-2 inline-flex items-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-medium text-white"><%= new_message_count %></span>
+                <span class="ml-2 inline-flex items-center rounded-full bg-brand-orange px-2 py-0.5 text-xs font-medium text-white"><%= new_message_count %></span>
               <% end %>
             </a>
-            <a href="<%= root_path %>" class="block p-3 rounded hover:bg-blue-700">
+            <a href="<%= root_path %>" class="block p-3 rounded hover:bg-brand-orange hover:bg-opacity-90">
               View Public Site
             </a>
           </nav>

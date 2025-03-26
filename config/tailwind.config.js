@@ -8,6 +8,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        'brand-orange': '#f15a24',
+        'brand-blue': '#00658c',
+      },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
       },
