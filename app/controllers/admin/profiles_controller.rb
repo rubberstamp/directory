@@ -16,9 +16,9 @@ class Admin::ProfilesController < Admin::BaseController
     when 'submission_date_asc'
       @profiles = Profile.order(submission_date: :asc)
     when 'episode_date_desc'
-      @profiles = Profile.order(episode_date: :desc)
+      @profiles = Profile.order(deprecated_episode_date: :desc)
     when 'episode_date_asc'
-      @profiles = Profile.order(episode_date: :asc)
+      @profiles = Profile.order(deprecated_episode_date: :asc)
     else
       @profiles = Profile.order(created_at: :desc)
     end
@@ -27,7 +27,7 @@ class Admin::ProfilesController < Admin::BaseController
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
       @profiles = @profiles.where(
-        "LOWER(name) LIKE ? OR LOWER(email) LIKE ? OR LOWER(company) LIKE ? OR LOWER(episode_title) LIKE ?", 
+        "LOWER(name) LIKE ? OR LOWER(email) LIKE ? OR LOWER(company) LIKE ? OR LOWER(deprecated_episode_title) LIKE ?", 
         search_term, search_term, search_term, search_term
       )
     end
@@ -38,9 +38,9 @@ class Admin::ProfilesController < Admin::BaseController
       when 'guest'
         @profiles = @profiles.where.not(submission_date: nil)
       when 'episode'
-        @profiles = @profiles.where.not(episode_url: nil)
+        @profiles = @profiles.where.not(deprecated_episode_url: nil)
       when 'missing_episode'
-        @profiles = @profiles.where.not(submission_date: nil).where(episode_url: nil)
+        @profiles = @profiles.where.not(submission_date: nil).where(deprecated_episode_url: nil)
       when 'interested'
         @profiles = @profiles.where(interested_in_procurement: true)
       end
