@@ -134,16 +134,20 @@ class Profile < ApplicationRecord
   
   # Class method to get profiles with images (headshots or image_url)
   def self.with_images
-    # Find profiles with either:
-    # 1. A non-null headshot_url
-    # 2. A non-null image_url
-    # 3. An attached ActiveStorage headshot
-    where("headshot_url IS NOT NULL OR image_url IS NOT NULL")
-      .or(
-        joins("INNER JOIN active_storage_attachments ON active_storage_attachments.record_id = profiles.id 
-              AND active_storage_attachments.record_type = 'Profile' 
-              AND active_storage_attachments.name = 'headshot'")
-      )
+    # When using OR with ActiveRecord, both sides need to have the same structure
+    # Including the same joins and where conditions
+    
+    # Profiles with headshot_url or image_url
+    with_url_images = where("headshot_url IS NOT NULL OR image_url IS NOT NULL")
+    
+    # Profiles with ActiveStorage attachments
+    with_attached_images = 
+      joins("INNER JOIN active_storage_attachments ON active_storage_attachments.record_id = profiles.id 
+            AND active_storage_attachments.record_type = 'Profile' 
+            AND active_storage_attachments.name = 'headshot'")
+    
+    # Return the union of both queries
+    with_url_images.or(with_attached_images)
   end
   
   # Get headshot URL (supports both legacy headshot_url and ActiveStorage)

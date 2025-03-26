@@ -18,7 +18,15 @@
     
     <section class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-custom p-6 md:p-10 border border-gray-100 dark:border-gray-700">
         <h2 class="text-2xl font-semibold text-blue-700 dark:text-blue-400 mb-6 text-center">Featured Podcast Guests</h2>
-        <% featured_profiles = Profile.with_images.order(created_at: :desc).limit(3) %>
+        <% 
+            # Try to get profiles with images, fall back to regular profiles if there's an error
+            begin
+              featured_profiles = Profile.with_images.order(created_at: :desc).limit(3)
+            rescue => e
+              Rails.logger.error "Error fetching profiles with images: #{e.message}"
+              featured_profiles = Profile.order(created_at: :desc).limit(3)
+            end
+        %>
         
         <% if featured_profiles.any? %>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -44,6 +52,10 @@
                                         <% end %>
                                     <% elsif profile.image_url.present? %>
                                         <img src="<%= profile.image_url %>" alt="<%= profile.name %>" class="w-full h-full object-cover">
+                                    <% else %>
+                                        <div class="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xl font-bold">
+                                            <%= profile.name.split(" ").map { |n| n[0].upcase }.join("") %>
+                                        </div>
                                     <% end %>
                                 </div>
                                 <div>
