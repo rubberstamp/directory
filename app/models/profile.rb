@@ -5,6 +5,8 @@ class Profile < ApplicationRecord
   has_many :profile_episodes, dependent: :destroy
   has_many :episodes, through: :profile_episodes
   
+  has_one_attached :headshot
+  
   validates :name, presence: true
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   
@@ -128,6 +130,29 @@ class Profile < ApplicationRecord
     
     # If no cached values, calculate it and store in memory
     @formatted_location ||= calculate_formatted_location
+  end
+  
+  # Class method to get profiles with images (headshots or image_url)
+  def self.with_images
+    # Find profiles with either:
+    # 1. A non-null headshot_url
+    # 2. A non-null image_url
+    # 3. An attached ActiveStorage headshot
+    where("headshot_url IS NOT NULL OR image_url IS NOT NULL")
+      .or(
+        joins("INNER JOIN active_storage_attachments ON active_storage_attachments.record_id = profiles.id 
+              AND active_storage_attachments.record_type = 'Profile' 
+              AND active_storage_attachments.name = 'headshot'")
+      )
+  end
+  
+  # Get headshot URL (supports both legacy headshot_url and ActiveStorage)
+  def headshot_url_or_attached
+    # Return attached headshot if it exists
+    return Rails.application.routes.url_helpers.rails_blob_path(headshot, only_path: true) if headshot.attached?
+    
+    # Otherwise return the legacy URL
+    headshot_url
   end
   
   # Calculate the formatted location (city and country)
