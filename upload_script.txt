@@ -1,0 +1,5 @@
+mkdir /data/csv
+put /Users/jameskennedy/workspace/directory/data/guest_list.csv /data/csv/
+put /Users/jameskennedy/workspace/directory/data/guest_list_fixed.csv /data/csv/
+put /Users/jameskennedy/workspace/directory/data/production_sheet.csv /data/csv/
+bye
