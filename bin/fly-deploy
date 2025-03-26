@@ -1,0 +1,25 @@
+#!/bin/bash
+set -e
+
+# Check if Fly CLI is installed
+if ! command -v fly &> /dev/null; then
+  echo "Fly CLI not found. Installing..."
+  curl -L https://fly.io/install.sh | sh
+fi
+
+# Check if volume exists, create if not
+if ! fly volumes list | grep -q "sqlite_data"; then
+  echo "Creating SQLite data volume..."
+  fly volumes create sqlite_data --size 1 --region iad
+fi
+
+# Update dependencies
+echo "Updating dependencies..."
+bundle install
+
+# Deploy the app
+echo "Deploying to Fly.io..."
+fly deploy
+
+echo "Deployment completed successfully!"
+echo "Your app will be available at: https://$(fly info --json | jq -r '.Hostname').fly.dev"

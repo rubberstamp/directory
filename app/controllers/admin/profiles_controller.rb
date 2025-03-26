@@ -96,7 +96,9 @@ class Admin::ProfilesController < Admin::BaseController
       :company, :website, :mailing_address, :facebook_url,
       :twitter_url, :instagram_url, :tiktok_url, :testimonial,
       :headshot_url, :interested_in_procurement, :submission_date,
-      :episode_number, :episode_title, :episode_url, :episode_date,
+      :deprecated_episode_number, :deprecated_episode_title, 
+      :deprecated_episode_url, :deprecated_episode_date,
+      :headshot, # ActiveStorage attachment
       specialization_ids: []
     )
   end

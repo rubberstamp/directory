@@ -6,9 +6,58 @@ if [ -z "${LD_PRELOAD+x}" ]; then
     export LD_PRELOAD
 fi
 
+# On Fly.io, ensure data directory has correct permissions
+if [ -d "/data" ]; then
+  echo "Found /data directory, ensuring permissions..."
+  if [ "$(id -u)" != "0" ]; then
+    echo "Not running as root, can't change permissions directly"
+    # On Fly.io we run with root privileges for initialization
+    if command -v sudo &> /dev/null; then
+      echo "Attempting to use sudo to fix permissions..."
+      sudo chown -R "$(id -u):$(id -g)" /data || echo "Failed to set permissions on /data directory"
+    fi
+  else
+    echo "Running as root, fixing permissions..."
+    mkdir -p /data
+    chown -R rails:rails /data
+    echo "Permissions set on /data directory"
+  fi
+fi
+
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
-  ./bin/rails db:prepare
+  # Ensure storage directory exists and has proper permissions
+  mkdir -p /rails/storage
+  chown -R rails:rails /rails/storage
+  
+  # Ensure DB directory exists
+  if [ -d "/data" ]; then
+    echo "Preparing database in /data directory..."
+    set +e
+    # Try each database preparation step separately
+    echo "Creating database if not exists..."
+    ./bin/rails db:create
+    echo "Migrating database..."
+    ./bin/rails db:migrate
+    echo "Loading schema if needed..."
+    # Check if any tables exist (this will fail with exit code 1 if no tables)
+    if ! ./bin/rails runner "exit(ActiveRecord::Base.connection.tables.empty? ? 1 : 0)" 2>/dev/null; then
+      echo "No tables found, loading schema..."
+      ./bin/rails db:schema:load
+    fi
+    echo "Database preparation completed."
+    set -e
+  else
+    echo "Using default database location (storage/)..."
+    set +e
+    ./bin/rails db:create
+    ./bin/rails db:migrate
+    if ! ./bin/rails runner "exit(ActiveRecord::Base.connection.tables.empty? ? 1 : 0)" 2>/dev/null; then
+      echo "No tables found, loading schema..."
+      ./bin/rails db:schema:load
+    fi
+    set -e
+  fi
 fi
 
 exec "${@}"

@@ -39,3 +39,7 @@
 # Ignore data directory
 /data/*
 !/data/.keep
+
+# Ignore test credential files
+test_credentials.rb
+test_s3_connection.rb

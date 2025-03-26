@@ -11,7 +11,7 @@
 </div>
 
 <!-- Stats Cards -->
-<div class="grid gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
+<div class="grid gap-6 mb-8 md:grid-cols-2 lg:grid-cols-5">
   <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
     <div class="flex items-center">
       <div class="p-3 mr-4 bg-blue-500 text-white rounded-full">
@@ -34,8 +34,22 @@
         </svg>
       </div>
       <div>
-        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">With Headshots</p>
-        <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"><%= @profiles_with_headshots %></p>
+        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">With Headshots (Total)</p>
+        <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"><%= @total_profiles_with_headshots %></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+    <div class="flex items-center">
+      <div class="p-3 mr-4 bg-purple-500 text-white rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      </div>
+      <div>
+        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">ActiveStorage</p>
+        <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"><%= @profiles_with_activestorage %></p>
       </div>
     </div>
   </div>
@@ -62,7 +76,7 @@
         </svg>
       </div>
       <div>
-        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">Local Images</p>
+        <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">Legacy Local Images</p>
         <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"><%= @profiles_with_local_images %></p>
       </div>
     </div>
@@ -82,11 +96,12 @@
       <div class="mt-2 text-sm text-blue-600 dark:text-blue-400">
         <p>There are three ways to add headshots:
           <ol class="list-decimal pl-5 mt-1 space-y-1">
-            <li>Paste a Google Drive URL (recommended, no processing needed)</li>
-            <li>Upload an image file (requires ImageMagick for optimal results)</li>
+            <li>Upload an image file (uses ActiveStorage, recommended)</li>
+            <li>Paste a Google Drive URL (legacy method)</li>
             <li>Generate a placeholder avatar based on the profile name</li>
           </ol>
         </p>
+        <p class="mt-2 italic">Note: The app is transitioning from URL-based headshots to ActiveStorage for better file management.</p>
       </div>
     </div>
   </div>
@@ -99,6 +114,13 @@
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
     </svg>
     Run Google Drive Import
+  <% end %>
+  
+  <%= button_to migrate_to_active_storage_admin_headshots_path, method: :post, form: { data: { turbo_confirm: "This will migrate existing headshots to ActiveStorage. Continue?" } }, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500" do %>
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+    </svg>
+    Migrate to ActiveStorage
   <% end %>
 </div>
 
@@ -148,7 +170,9 @@
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <% if profile.headshot_url.present? %>
+                <% if profile.headshot.attached? %>
+                  <%= image_tag profile.headshot, alt: profile.name, class: "h-16 w-16 rounded-full object-cover" %>
+                <% elsif profile.headshot_url.present? %>
                   <% if profile.headshot_url.include?('drive.google.com') %>
                     <div class="flex flex-col items-center">
                       <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
@@ -174,7 +198,13 @@
                   <% end %>
                 </td>
                 <td class="px-6 py-4">
-                  <% if profile.headshot_url.present? %>
+                  <% if profile.headshot.attached? %>
+                    <div class="max-w-xs truncate text-sm text-gray-500 dark:text-gray-400">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200">
+                        ActiveStorage
+                      </span>
+                    </div>
+                  <% elsif profile.headshot_url.present? %>
                     <div class="max-w-xs truncate text-sm text-gray-500 dark:text-gray-400">
                       <%= profile.headshot_url %>
                     </div>

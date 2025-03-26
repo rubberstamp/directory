@@ -11,7 +11,11 @@
     <!-- Profile Header -->
     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
       <div class="flex flex-col md:flex-row items-start md:items-center">
-        <% if @profile.headshot_url.present? %>
+        <% if @profile.headshot.attached? %>
+          <div class="flex-shrink-0 mr-6 mb-4 md:mb-0">
+            <%= image_tag @profile.headshot, class: "h-24 w-24 rounded-full object-cover", alt: @profile.name %>
+          </div>
+        <% elsif @profile.headshot_url.present? %>
           <div class="flex-shrink-0 mr-6 mb-4 md:mb-0">
             <img class="h-24 w-24 rounded-full object-cover" src="<%= @profile.headshot_url %>" alt="<%= @profile.name %>">
           </div>

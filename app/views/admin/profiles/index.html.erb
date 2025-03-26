@@ -86,12 +86,16 @@
           <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
-                <% if profile.headshot_url.present? %>
+                <% if profile.headshot.attached? %>
                   <div class="flex-shrink-0 h-10 w-10">
-                    <img class="h-10 w-10 rounded-full" src="<%= profile.headshot_url %>" alt="<%= profile.name %>">
+                    <%= image_tag profile.headshot, class: "h-10 w-10 rounded-full object-cover", alt: profile.name %>
+                  </div>
+                <% elsif profile.headshot_url.present? %>
+                  <div class="flex-shrink-0 h-10 w-10">
+                    <img class="h-10 w-10 rounded-full object-cover" src="<%= profile.headshot_url %>" alt="<%= profile.name %>">
                   </div>
                 <% end %>
-                <div class="<%= profile.headshot_url.present? ? 'ml-4' : '' %>">
+                <div class="<%= (profile.headshot.attached? || profile.headshot_url.present?) ? 'ml-4' : '' %>">
                   <div class="text-sm font-medium"><%= profile.name %></div>
                   <% if profile.headline.present? %>
                     <div class="text-sm text-gray-500 dark:text-gray-400"><%= profile.headline %></div>

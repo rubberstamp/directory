@@ -1,4 +1,4 @@
-<% content_for :title, "Find CFOs on the Map" %>
+<% content_for :title, "The Gross Profit Podcast - Guest Map" %>
 
 <% content_for :head do %>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -95,9 +95,9 @@
 
 <div class="container mx-auto px-4 py-8 mt-16">
   <header class="mb-8 text-center">
-    <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Find CFOs Near You</h1>
+    <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Guest Map</h1>
     <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-      Explore our network of Fractional CFOs and find professionals in your area
+      Explore the global reach of The Gross Profit Podcast and find guests in your area
     </p>
   </header>
   
@@ -143,7 +143,7 @@
   <!-- Results Stats -->
   <div class="flex justify-between items-center mb-6">
     <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-      <%= @profiles.count %> CFOs found on the map
+      <%= @profiles.count %> Guests found on the map
       <% if params[:specialization_id].present? || params[:guest_filter].present? %>
         <span class="text-sm font-normal text-gray-500 dark:text-gray-400">with applied filters</span>
       <% end %>

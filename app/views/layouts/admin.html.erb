@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title><%= content_for(:title) || "Admin - Fractional CFO Finder" %></title>
+    <title><%= content_for(:title) || "Admin - The Gross Profit Podcast" %></title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -34,7 +34,7 @@
             Dashboard
           </a>
           <a href="<%= admin_profiles_path %>" class="block p-3 rounded hover:bg-blue-700 <%= controller_name == 'profiles' ? 'bg-blue-700' : '' %>">
-            Profiles
+            Guests
           </a>
           <a href="<%= admin_specializations_path %>" class="block p-3 rounded hover:bg-blue-700 <%= controller_name == 'specializations' ? 'bg-blue-700' : '' %>">
             Specializations
@@ -79,7 +79,7 @@
               Dashboard
             </a>
             <a href="<%= admin_profiles_path %>" class="block p-3 rounded hover:bg-blue-700">
-              Profiles
+              Guests
             </a>
             <a href="<%= admin_specializations_path %>" class="block p-3 rounded hover:bg-blue-700">
               Specializations

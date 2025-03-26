@@ -1,0 +1,24 @@
+New Episode of The Gross Profit Podcast Released!
+==============================================
+
+Hello <%= @name %>,
+
+We're excited to share that a new episode of The Gross Profit Podcast has just been released!
+
+EPISODE #<%= @episode.number %>: <%= @episode.title %>
+Released: <%= @episode.air_date.strftime("%B %d, %Y") %>
+
+<% if @episode.description.present? %>
+<%= @episode.description %>
+<% end %>
+
+Listen now to gain valuable insights on financial strategies that drive business success:
+<%= @episode_url %>
+
+Thank you for being a valued listener of The Gross Profit Podcast!
+
+Best regards,
+The Gross Profit Podcast Team
+
+© <%= Date.today.year %> The Gross Profit Podcast. All rights reserved.
+If you'd like to unsubscribe from these notifications, please email podcast@procurementexpress.com with subject "Unsubscribe".

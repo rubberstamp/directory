@@ -8,6 +8,9 @@ Rails.application.routes.draw do
   resources :profiles, only: [:index, :show]
   resources :episodes, only: [:index, :show]
   resources :testimonials, only: [:index]
+  resources :contacts, only: [:index, :create]
+  post '/subscribe', to: 'contacts#subscribe', as: :subscribe
+  get '/contact', to: 'contacts#index', as: :contact
   get '/map', to: 'map#index', as: :map
   get '/about', to: 'about#index', as: :about
   

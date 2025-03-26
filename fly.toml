@@ -1,0 +1,41 @@
+# fly.toml app configuration file generated for directory
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+
+app = "directory"
+primary_region = "iad" # Change to your preferred region
+console_command = "/rails/bin/rails console"
+
+[build]
+  [build.args]
+    BUNDLER_VERSION = "2.3.7"
+    NODE_VERSION = "16.15.1"
+    RUBY_VERSION = "3.2.0"
+
+[deploy]
+  release_command = "bin/rails fly:release"
+
+[env]
+  PORT = "3000"
+  SERVER_COMMAND = "bin/rails server"
+  SQLITE_DATABASE = "/data/production.sqlite3"
+  SQLITE_CACHE_DATABASE = "/data/production_cache.sqlite3"
+  SQLITE_QUEUE_DATABASE = "/data/production_queue.sqlite3"
+  SQLITE_CABLE_DATABASE = "/data/production_cable.sqlite3"
+  RAILS_LOG_TO_STDOUT = "true"
+  RAILS_SERVE_STATIC_FILES = "true"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[statics]]
+  guest_path = "/rails/public"
+  url_prefix = "/"
+
+[mounts]
+  source = "sqlite_data"
+  destination = "/data"

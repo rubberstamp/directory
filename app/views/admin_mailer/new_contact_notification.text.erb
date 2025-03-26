@@ -1,0 +1,18 @@
+THE GROSS PROFIT PODCAST - NEW CONTACT FORM SUBMISSION
+========================================================
+
+Date: <%= @date.strftime("%B %d, %Y at %I:%M %p") %>
+
+CONTACT DETAILS:
+---------------
+Name: <%= @name.present? ? @name : "Not provided" %>
+Email: <%= @email %>
+Phone: <%= @phone.present? ? @phone : "Not provided" %>
+
+MESSAGE:
+-------
+<%= @message %>
+
+-------
+This is an automated notification from your podcast website.
+To reply to this message, email the sender directly at: <%= @email %>

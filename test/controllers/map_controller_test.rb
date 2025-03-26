@@ -4,7 +4,7 @@ class MapControllerTest < ActionDispatch::IntegrationTest
   test "should get index html" do
     get map_url
     assert_response :success
-    assert_select "h1", "Find CFOs Near You"
+    assert_select "h1", "Guest Map"
     assert_select "#map", 1
   end
   
