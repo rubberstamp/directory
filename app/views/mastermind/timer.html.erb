@@ -1,0 +1,857 @@
+<% content_for :title, "Mastermind Timer - The Gross Profit Podcast" %>
+
+<% content_for :head do %>
+  <style>
+    .timer-container {
+      margin-top: 80px; /* Add space for fixed header */
+      min-height: calc(100vh - 80px - 76px); /* Subtract header and footer height */
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    
+    .timer-card {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+    
+    .participant-manager {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .participant-manager label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .participant-input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .participant-input-group input {
+      flex-grow: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    #participant-list {
+      list-style: none;
+      padding: 0;
+      margin-top: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      padding: 5px;
+    }
+
+    #participant-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    #participant-list li:last-child {
+      border-bottom: none;
+    }
+
+    .remove-participant-btn {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8em;
+    }
+    
+    .remove-participant-btn:hover {
+      opacity: 0.9;
+    }
+
+    #setup-error {
+      color: #dc3545;
+      margin-top: 10px;
+      font-size: 0.9em;
+      height: 1.2em; /* Reserve space */
+    }
+
+    .end-time-info {
+      margin: 20px 0;
+      font-size: 1.1em;
+    }
+
+    /* Session Screen */
+    #session-screen {
+      display: none; /* Initially hidden */
+    }
+
+    #session-headline {
+      font-size: 1.8em;
+      margin-bottom: 15px;
+      color: var(--primary-color);
+    }
+
+    .session-info {
+      margin-bottom: 20px;
+      font-size: 1.2em;
+    }
+    
+    .session-info span {
+      font-weight: bold;
+    }
+    
+    #current-phase {
+      font-style: italic;
+    }
+    
+    #feedback-giver-info {
+      font-size: 1em;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+
+    #timer-display {
+      font-size: 4em;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    #progress-bar-container {
+      width: 100%;
+      background-color: #e9ecef;
+      border-radius: 5px;
+      height: 20px;
+      margin-bottom: 15px;
+      overflow: hidden; /* Important for border-radius */
+    }
+
+    #progress-bar {
+      height: 100%;
+      width: 100%;
+      background-color: #28a745;
+      border-radius: 5px;
+      transition: width 0.2s linear, background-color 0.5s ease;
+    }
+
+    #session-progress {
+      font-size: 1em;
+      color: #6c757d;
+      margin-bottom: 20px;
+    }
+
+    #time-breakdown {
+      text-align: left;
+      margin: 20px auto;
+      padding: 15px;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      background-color: #f8f9fa;
+      max-width: 400px;
+    }
+    
+    #time-breakdown h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+      text-align: center;
+    }
+    
+    #time-breakdown p {
+      margin: 5px 0;
+      font-size: 0.9em;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    /* Custom Buttons */
+    .btn-primary { 
+      background-color: theme('colors.brand-blue'); 
+      color: white; 
+    }
+    
+    .btn-primary:hover:not(:disabled) { 
+      opacity: 0.9;
+    }
+
+    .btn-secondary { 
+      background-color: #6c757d; 
+      color: white; 
+    }
+    
+    .btn-secondary:hover:not(:disabled) { 
+      background-color: #5a6268;
+    }
+
+    .btn-success { 
+      background-color: #28a745; 
+      color: white; 
+    }
+    
+    .btn-success:hover:not(:disabled) { 
+      background-color: #218838;
+    }
+
+    .btn-danger { 
+      background-color: #dc3545; 
+      color: white; 
+    }
+    
+    .btn-danger:hover:not(:disabled) { 
+      background-color: #c82333;
+    }
+
+    .btn-nav { 
+      background-color: theme('colors.brand-orange'); 
+      color: white;
+    }
+    
+    .btn-nav:hover:not(:disabled) { 
+      opacity: 0.9;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .timer-container {
+        padding: 10px;
+      }
+      
+      .timer-card {
+        padding: 15px;
+      }
+      
+      #timer-display {
+        font-size: 3em;
+      }
+      
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      button {
+        width: 100%;
+      }
+      
+      .participant-input-group {
+        flex-direction: column;
+      }
+      
+      .participant-input-group button {
+        width: auto;
+      }
+      
+      #time-breakdown {
+        max-width: none;
+      }
+    }
+  </style>
+<% end %>
+
+<div class="timer-container">
+  <div class="timer-card">
+    <div id="setup-screen">
+      <h1 class="text-2xl font-bold mb-6 text-brand-blue">Mastermind Timer Setup</h1>
+
+      <div class="participant-manager">
+        <label for="participant-name-input">Participants:</label>
+        <div class="participant-input-group">
+          <input type="text" id="participant-name-input" placeholder="Enter participant name" class="border-gray-300 rounded">
+          <button id="add-participant-btn" class="btn-primary px-4 py-2 rounded">Add</button>
+        </div>
+        <ul id="participant-list"></ul>
+        <p id="setup-error"></p>
+      </div>
+
+      <div class="end-time-info">
+        Scheduled End Time: <strong id="session-end-time">--:--</strong>
+      </div>
+
+      <button id="start-session-btn" class="btn-success px-6 py-3 rounded font-medium" disabled>Start Session</button>
+    </div>
+
+    <div id="session-screen">
+      <h2 id="session-headline" class="text-2xl font-bold mb-4 text-brand-blue">Session Started</h2>
+
+      <div class="session-info">
+        Current Participant: <span id="current-participant"></span><br>
+        Phase: <span id="current-phase"></span>
+        <div id="feedback-giver-info"></div>
+      </div>
+
+      <div id="timer-display" class="text-4xl font-bold mb-4">00:00</div>
+
+      <div id="progress-bar-container" class="w-full bg-gray-200 rounded h-5 mb-4">
+        <div id="progress-bar" class="h-full w-full bg-green-500 rounded"></div>
+      </div>
+
+      <div id="session-progress" class="text-gray-600 mb-5">Participant 1 / N</div>
+
+      <div id="time-breakdown" class="bg-gray-100 border border-gray-200 rounded p-4 mx-auto max-w-md">
+        <h3 class="font-semibold text-center mb-2">Time Allocation per Participant</h3>
+        <p>Total Time: <span id="bd-total-time">--:--</span></p>
+        <p>Problem Outline (40%): <span id="bd-problem-time">--:--</span></p>
+        <p>Clarifying Questions (20%): <span id="bd-questions-time">--:--</span></p>
+        <p>Feedback (40%): <span id="bd-feedback-time-total">--:--</span> (<span id="bd-feedback-time-each">--:--</span> each)</p>
+      </div>
+
+      <div class="controls">
+        <button id="pause-resume-btn" class="btn-secondary px-4 py-2 rounded">Pause</button>
+        <button id="prev-phase-btn" class="btn-nav px-4 py-2 rounded">Previous Phase</button>
+        <button id="skip-phase-btn" class="btn-nav px-4 py-2 rounded">Skip Phase</button>
+        <button id="reset-btn" class="btn-danger px-4 py-2 rounded">Reset Session</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- DOM Elements ---
+document.addEventListener('DOMContentLoaded', function() {
+  const setupScreen = document.getElementById('setup-screen');
+  const sessionScreen = document.getElementById('session-screen');
+  const participantInput = document.getElementById('participant-name-input');
+  const addParticipantBtn = document.getElementById('add-participant-btn');
+  const participantList = document.getElementById('participant-list');
+  const setupError = document.getElementById('setup-error');
+  const sessionEndTimeDisplay = document.getElementById('session-end-time');
+  const startSessionBtn = document.getElementById('start-session-btn');
+
+  const sessionHeadline = document.getElementById('session-headline');
+  const currentParticipantDisplay = document.getElementById('current-participant');
+  const currentPhaseDisplay = document.getElementById('current-phase');
+  const feedbackGiverInfo = document.getElementById('feedback-giver-info');
+  const timerDisplay = document.getElementById('timer-display');
+  const progressBar = document.getElementById('progress-bar');
+  const sessionProgressDisplay = document.getElementById('session-progress');
+
+  const bdTotalTime = document.getElementById('bd-total-time');
+  const bdProblemTime = document.getElementById('bd-problem-time');
+  const bdQuestionsTime = document.getElementById('bd-questions-time');
+  const bdFeedbackTimeTotal = document.getElementById('bd-feedback-time-total');
+  const bdFeedbackTimeEach = document.getElementById('bd-feedback-time-each');
+
+  const pauseResumeBtn = document.getElementById('pause-resume-btn');
+  const prevPhaseBtn = document.getElementById('prev-phase-btn');
+  const skipPhaseBtn = document.getElementById('skip-phase-btn');
+  const resetBtn = document.getElementById('reset-btn');
+
+  // --- State Variables ---
+  let participants = [];
+  let sessionEndTime = null;
+  let endTimeInterval = null; // Interval to update end time display during setup
+  let sessionState = 'setup'; // 'setup', 'running', 'paused', 'complete'
+  let currentParticipantIndex = 0;
+  let currentPhaseIndex = 0; // 0: Outline, 1: Questions, 2: Feedback
+  let currentFeedbackGiverSubIndex = 0; // Index within the feedbackOrder array
+  let feedbackOrder = []; // Stores shuffled indices of feedback givers for the current turn
+
+  let timerInterval = null;
+  let phaseStartTime = null;
+  let phaseDurationSeconds = 0;
+  let pausedTimeRemaining = 0; // Stores remaining time when paused
+
+  let timePerParticipant = 0;
+  let phaseDurations = { outline: 0, questions: 0, feedbackTotal: 0, feedbackEach: 0 };
+
+
+  // --- Constants ---
+  const MIN_PARTICIPANTS = 2;
+  const DEFAULT_PARTICIPANTS = ["Alice", "Bob", "Charlie", "David"];
+  const PHASE_PERCENTAGES = { outline: 0.40, questions: 0.20, feedback: 0.40 };
+  const PHASE_NAMES = ["Problem Outline", "Clarifying Questions", "Feedback"];
+
+  // --- Utility Functions ---
+  function formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) seconds = 0;
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
+
+  function formatDateTime(date) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Fisher-Yates (Knuth) Shuffle
+  function shuffleArray(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex !== 0) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+      [array[currentIndex], array[randomIndex]] = [
+        array[randomIndex], array[currentIndex]];
+    }
+    return array;
+  }
+
+  function updateProgressBar(percentRemaining) {
+    // Clamp between 0 and 100
+    const clampedPercent = Math.max(0, Math.min(100, percentRemaining));
+    progressBar.style.width = `${clampedPercent}%`;
+
+    // Color coding: Green -> Yellow (at 50%) -> Red (at 20%)
+    if (clampedPercent <= 20) {
+      progressBar.style.backgroundColor = '#dc3545'; // Danger red
+    } else if (clampedPercent <= 50) {
+      progressBar.style.backgroundColor = '#ffc107'; // Warning yellow
+    } else {
+      progressBar.style.backgroundColor = '#28a745'; // Success green
+    }
+  }
+
+  // --- Setup Functions ---
+  function addParticipant() {
+    const name = participantInput.value.trim();
+    if (name && !participants.includes(name)) {
+      participants.push(name);
+      renderParticipantList();
+      validateSetup();
+      participantInput.value = ''; // Clear input
+    } else if (participants.includes(name)) {
+      setupError.textContent = 'Participant name already exists.';
+      setTimeout(() => { setupError.textContent = ''; }, 3000);
+    }
+    participantInput.focus();
+  }
+
+  function removeParticipant(indexToRemove) {
+    participants = participants.filter((_, index) => index !== indexToRemove);
+    renderParticipantList();
+    validateSetup();
+  }
+
+  function renderParticipantList() {
+    participantList.innerHTML = ''; // Clear existing list
+    participants.forEach((name, index) => {
+      const li = document.createElement('li');
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = name;
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = 'Remove';
+      removeBtn.classList.add('remove-participant-btn');
+      removeBtn.onclick = () => removeParticipant(index);
+      li.appendChild(nameSpan);
+      li.appendChild(removeBtn);
+      participantList.appendChild(li);
+    });
+  }
+
+  function calculateAndDisplayEndTime() {
+    const now = new Date();
+    const nextHour = new Date(now);
+    nextHour.setHours(now.getHours() + 1, 0, 0, 0); // Start of the next hour
+
+    sessionEndTime = new Date(nextHour.getTime() + 25 * 60 * 1000); // Add 25 minutes
+    sessionEndTimeDisplay.textContent = formatDateTime(sessionEndTime);
+  }
+
+  function validateSetup() {
+    if (participants.length < MIN_PARTICIPANTS) {
+      setupError.textContent = `Minimum ${MIN_PARTICIPANTS} participants required.`;
+      startSessionBtn.disabled = true;
+    } else {
+      setupError.textContent = '';
+      startSessionBtn.disabled = false;
+    }
+  }
+
+  // --- Session Logic Functions ---
+  function startSession() {
+    if (participants.length < MIN_PARTICIPANTS) return;
+
+    sessionState = 'running';
+    if (endTimeInterval) clearInterval(endTimeInterval); // Stop setup time refresh
+
+    // Recalculate end time based on current time
+    calculateAndDisplayEndTime();
+
+    const totalDurationSeconds = Math.max(0, (sessionEndTime.getTime() - Date.now()) / 1000);
+    timePerParticipant = Math.floor(totalDurationSeconds / participants.length);
+
+    if (timePerParticipant <= 0) {
+      alert("Calculated session time is too short or end time is in the past. Please adjust or wait.");
+      sessionState = 'setup';
+      setupEndTimeUpdater(); // Restart setup timer if session fails to start
+      return;
+    }
+
+    // Calculate phase durations based on equal time split
+    phaseDurations.outline = Math.floor(timePerParticipant * PHASE_PERCENTAGES.outline);
+    phaseDurations.questions = Math.floor(timePerParticipant * PHASE_PERCENTAGES.questions);
+    phaseDurations.feedbackTotal = timePerParticipant - phaseDurations.outline - phaseDurations.questions;
+    const numFeedbackGivers = Math.max(1, participants.length - 1);
+    phaseDurations.feedbackEach = Math.floor(phaseDurations.feedbackTotal / numFeedbackGivers);
+
+    // Update Time Breakdown Display
+    bdTotalTime.textContent = formatTime(timePerParticipant);
+    bdProblemTime.textContent = formatTime(phaseDurations.outline);
+    bdQuestionsTime.textContent = formatTime(phaseDurations.questions);
+    bdFeedbackTimeTotal.textContent = formatTime(phaseDurations.feedbackTotal);
+    bdFeedbackTimeEach.textContent = formatTime(phaseDurations.feedbackEach) + (participants.length > 1 ? ` per ${numFeedbackGivers} giver(s)` : '');
+
+    currentParticipantIndex = 0;
+    currentPhaseIndex = 0;
+
+    setupScreen.style.display = 'none';
+    sessionScreen.style.display = 'block';
+    sessionHeadline.textContent = "Session Started";
+    prevPhaseBtn.disabled = true; // Cannot go back from first phase
+
+    startTurn();
+  }
+
+  function startTurn() {
+    if (currentParticipantIndex >= participants.length) {
+      endSession();
+      return;
+    }
+
+    // Generate randomized feedback order for this participant's turn
+    const potentialGivers = participants
+      .map((_, index) => index)
+      .filter(index => index !== currentParticipantIndex);
+    feedbackOrder = shuffleArray(potentialGivers);
+
+    currentPhaseIndex = 0;
+    currentFeedbackGiverSubIndex = 0; // Reset for the new turn
+
+    sessionProgressDisplay.textContent = `Participant ${currentParticipantIndex + 1} / ${participants.length}`;
+    currentParticipantDisplay.textContent = participants[currentParticipantIndex];
+
+    startPhase();
+  }
+
+  function startPhase() {
+    feedbackGiverInfo.textContent = ''; // Clear feedback giver info by default
+    feedbackGiverInfo.style.display = 'none';
+    pauseResumeBtn.textContent = 'Pause';
+    pauseResumeBtn.disabled = false;
+    skipPhaseBtn.disabled = false;
+
+    let currentPhaseName = PHASE_NAMES[currentPhaseIndex];
+    phaseDurationSeconds = 0;
+
+    switch (currentPhaseIndex) {
+      case 0: // Problem Outline
+        phaseDurationSeconds = phaseDurations.outline;
+        break;
+      case 1: // Clarifying Questions
+        phaseDurationSeconds = phaseDurations.questions;
+        break;
+      case 2: // Feedback
+        if (feedbackOrder.length > 0 && currentFeedbackGiverSubIndex < feedbackOrder.length) {
+          const feedbackGiverIndex = feedbackOrder[currentFeedbackGiverSubIndex];
+          currentPhaseName = `Feedback (${participants[feedbackGiverIndex]})`;
+          phaseDurationSeconds = phaseDurations.feedbackEach;
+
+          // Display who is giving feedback
+          feedbackGiverInfo.textContent = `Feedback from: ${participants[feedbackGiverIndex]}`;
+          feedbackGiverInfo.style.display = 'block';
+        } else {
+          // No feedback givers or finished feedback
+          phaseDurationSeconds = 0; // Skip phase effectively
+        }
+        break;
+    }
+
+    currentPhaseDisplay.textContent = currentPhaseName;
+
+    // Handle extremely short phases
+    if (phaseDurationSeconds <= 0) {
+      console.warn(`Phase "${currentPhaseName}" has zero duration. Skipping.`);
+      setTimeout(nextPhase, 50);
+      timerDisplay.textContent = formatTime(0);
+      updateProgressBar(0);
+      return;
+    }
+
+    phaseStartTime = Date.now();
+    startTimer(phaseDurationSeconds);
+  }
+
+  function startTimer(durationSeconds) {
+    if (timerInterval) clearInterval(timerInterval); // Clear any existing timer
+
+    let endTime = Date.now() + durationSeconds * 1000;
+
+    timerInterval = setInterval(() => {
+      if (sessionState !== 'running') return; // Don't run if paused or complete
+
+      const now = Date.now();
+      const remainingMilliseconds = endTime - now;
+      const remainingSeconds = remainingMilliseconds / 1000;
+
+      if (remainingSeconds <= 0) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerDisplay.textContent = formatTime(0);
+        updateProgressBar(0);
+        nextPhase(); // Move to the next phase/participant
+      } else {
+        timerDisplay.textContent = formatTime(remainingSeconds);
+        const percentRemaining = (remainingSeconds / durationSeconds) * 100;
+        updateProgressBar(percentRemaining);
+      }
+    }, 200); // Update interval (5 times per second)
+
+    // Initial display
+    timerDisplay.textContent = formatTime(durationSeconds);
+    updateProgressBar(100);
+  }
+
+  function nextPhase() {
+    if (sessionState === 'complete') return;
+
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+    prevPhaseBtn.disabled = false; // Allow going back once we've advanced
+
+    // Logic to advance phase or participant
+    if (currentPhaseIndex === 2) { // Currently in Feedback
+      currentFeedbackGiverSubIndex++;
+      if (currentFeedbackGiverSubIndex < feedbackOrder.length) {
+        // More feedback givers for this participant
+        startPhase(); // Start next feedback giver's turn
+      } else {
+        // Feedback finished for this participant, move to next participant
+        currentParticipantIndex++;
+        if (currentParticipantIndex < participants.length) {
+          startTurn(); // Start next participant's turn (resets phase to 0)
+        } else {
+          endSession(); // All participants finished
+        }
+      }
+    } else { // Currently in Outline or Questions
+      currentPhaseIndex++;
+      startPhase(); // Start the next phase (Questions or Feedback)
+    }
+  }
+
+  // --- Controls Functions ---
+  function pauseResume() {
+    if (sessionState === 'running') {
+      sessionState = 'paused';
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = null;
+      const remainingMilliseconds = (phaseStartTime + phaseDurationSeconds * 1000) - Date.now();
+      pausedTimeRemaining = Math.max(0, remainingMilliseconds / 1000); // Store remaining seconds
+      pauseResumeBtn.textContent = 'Resume';
+      pauseResumeBtn.classList.remove('btn-secondary');
+      pauseResumeBtn.classList.add('btn-primary');
+      sessionHeadline.textContent = "Session Paused";
+    } else if (sessionState === 'paused') {
+      sessionState = 'running';
+      // Recalculate phase start time based on pause
+      phaseStartTime = Date.now() - (phaseDurationSeconds - pausedTimeRemaining) * 1000;
+      startTimer(pausedTimeRemaining); // Restart timer with remaining time
+      pauseResumeBtn.textContent = 'Pause';
+      pauseResumeBtn.classList.remove('btn-primary');
+      pauseResumeBtn.classList.add('btn-secondary');
+      sessionHeadline.textContent = "Session Resumed";
+      // Restore correct headline after a short delay
+      setTimeout(() => {
+        if (sessionState === 'running') sessionHeadline.textContent = "Session Started";
+      }, 1500);
+    }
+  }
+
+  function skipPhaseAction() {
+    if (sessionState !== 'running' && sessionState !== 'paused') return;
+
+    if (sessionState === 'paused') {
+      // If paused, need to resume state briefly to allow nextPhase logic
+      sessionState = 'running';
+      nextPhase();
+      // If it didn't complete, pause it again immediately
+      if (sessionState === 'running') {
+        pauseResume(); // This sets state back to 'paused'
+        timerDisplay.textContent = formatTime(phaseDurationSeconds); // Show full time for the new (paused) phase
+        updateProgressBar(100);
+      }
+    } else {
+      nextPhase();
+    }
+  }
+
+  function previousPhaseAction() {
+    if (sessionState !== 'running' && sessionState !== 'paused') return;
+
+    let wasPaused = (sessionState === 'paused');
+    if (wasPaused) sessionState = 'running'; // Temporarily set to running for logic
+
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+
+    // --- Logic to go back ---
+    let movedBack = false;
+    if (currentPhaseIndex === 2 && currentFeedbackGiverSubIndex > 0) {
+      // If in feedback and not the first giver, go back one feedback giver
+      currentFeedbackGiverSubIndex--;
+      movedBack = true;
+    } else if (currentPhaseIndex > 0) {
+      // If in Questions or the first feedback giver, go back to the previous phase index
+      currentPhaseIndex--;
+      // If we moved back into feedback phase, set to the last feedback giver
+      if (currentPhaseIndex === 2) {
+        currentFeedbackGiverSubIndex = Math.max(0, feedbackOrder.length - 1);
+      }
+      movedBack = true;
+    } else if (currentParticipantIndex > 0) {
+      // If in first phase (Outline) of not the first participant, go to previous participant's last phase
+      currentParticipantIndex--;
+      currentPhaseIndex = 2; // Go to Feedback phase
+
+      // Regenerate feedback order for the previous participant
+      const potentialGivers = participants
+        .map((_, index) => index)
+        .filter(index => index !== currentParticipantIndex);
+      feedbackOrder = shuffleArray(potentialGivers);
+      currentFeedbackGiverSubIndex = Math.max(0, feedbackOrder.length - 1); // Start at the last feedback giver
+
+      // Update participant display immediately
+      sessionProgressDisplay.textContent = `Participant ${currentParticipantIndex + 1} / ${participants.length}`;
+      currentParticipantDisplay.textContent = participants[currentParticipantIndex];
+      movedBack = true;
+    }
+    // --- End Logic ---
+
+    if (movedBack) {
+      // Start the phase we moved back to (restarts its timer fully)
+      startPhase();
+
+      // Re-pause if it was paused before clicking Previous
+      if (wasPaused) {
+        pauseResume(); // This sets state back to 'paused'
+        timerDisplay.textContent = formatTime(phaseDurationSeconds); // Show full time for the new (paused) phase
+        updateProgressBar(100);
+      }
+    } else {
+      prevPhaseBtn.disabled = true; // We are at the absolute start
+      // If it was paused, ensure it stays paused
+      if (wasPaused) {
+        sessionState = 'paused';
+      } else {
+        // If it was running and couldn't move back, restart the current phase timer
+        startPhase();
+      }
+    }
+  }
+
+  function resetSession() {
+    if (timerInterval) clearInterval(timerInterval);
+    if (endTimeInterval) clearInterval(endTimeInterval);
+
+    timerInterval = null;
+    endTimeInterval = null;
+    sessionState = 'setup';
+
+    // Reset session variables (keep participants)
+    currentParticipantIndex = 0;
+    currentPhaseIndex = 0;
+    currentFeedbackGiverSubIndex = 0;
+    feedbackOrder = [];
+    sessionEndTime = null;
+    pausedTimeRemaining = 0;
+    timePerParticipant = 0;
+    phaseDurations = { outline: 0, questions: 0, feedbackTotal: 0, feedbackEach: 0 };
+
+    // Reset UI
+    sessionScreen.style.display = 'none';
+    setupScreen.style.display = 'block';
+    sessionHeadline.textContent = "Session Started"; // Reset default
+    timerDisplay.textContent = "00:00";
+    updateProgressBar(100); // Reset progress bar visually
+    progressBar.style.backgroundColor = '#28a745'; // Green
+    feedbackGiverInfo.textContent = '';
+    feedbackGiverInfo.style.display = 'none';
+
+    // Re-initialize setup screen state
+    renderParticipantList();
+    setupEndTimeUpdater(); // Restart end time calculation/display
+    validateSetup(); // Re-validate based on existing participants
+    participantInput.value = ''; // Clear input just in case
+  }
+
+  function endSession() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+    sessionState = 'complete';
+
+    sessionHeadline.textContent = "Session Complete!";
+    currentParticipantDisplay.textContent = "-";
+    currentPhaseDisplay.textContent = "Finished";
+    timerDisplay.textContent = "00:00";
+    updateProgressBar(0);
+    feedbackGiverInfo.textContent = '';
+    feedbackGiverInfo.style.display = 'none';
+
+    // Disable controls except Reset
+    pauseResumeBtn.disabled = true;
+    prevPhaseBtn.disabled = true;
+    skipPhaseBtn.disabled = true;
+    resetBtn.disabled = false; // Ensure Reset is enabled
+  }
+
+  // --- Initialization ---
+  function setupEndTimeUpdater() {
+    calculateAndDisplayEndTime(); // Initial calculation
+    // Update the displayed end time every minute during setup
+    if (endTimeInterval) clearInterval(endTimeInterval); // Clear previous if exists
+    endTimeInterval = setInterval(() => {
+      // Only recalculate if still in setup phase
+      if (sessionState === 'setup') {
+        calculateAndDisplayEndTime();
+      } else {
+        clearInterval(endTimeInterval); // Stop if session started/reset elsewhere
+      }
+    }, 60 * 1000); // Every 60 seconds
+  }
+
+  function init() {
+    // Add Default Participants
+    participants = [...DEFAULT_PARTICIPANTS];
+    renderParticipantList();
+
+    // Setup Event Listeners
+    addParticipantBtn.onclick = addParticipant;
+    participantInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        addParticipant();
+      }
+    });
+    startSessionBtn.onclick = startSession;
+    pauseResumeBtn.onclick = pauseResume;
+    skipPhaseBtn.onclick = skipPhaseAction;
+    prevPhaseBtn.onclick = previousPhaseAction;
+    resetBtn.onclick = resetSession;
+
+    // Initial Setup State
+    setupEndTimeUpdater();
+    validateSetup(); // Validate initial default participants
+  }
+
+  // Run Initialization
+  init();
+});
+</script>

@@ -17,6 +17,9 @@ Rails.application.routes.draw do
   get '/map', to: 'map#index', as: :map
   get '/about', to: 'about#index', as: :about
   
+  # Mastermind timer
+  get '/mastermind/timer', to: 'mastermind#timer', as: :mastermind_timer
+  
   # Admin routes
   namespace :admin do
     get "dashboard/index"
