@@ -21,10 +21,15 @@ class Profile < ApplicationRecord
   
   # Geocoding for map functionality
   geocoded_by :full_address
-  after_validation :geocode, if: ->(obj) { obj.location_changed? || obj.mailing_address_changed? }
+  
+  # Skip geocoding flag for use by the background job
+  attr_accessor :skip_geocoding
+  
+  # Queue background job for geocoding instead of doing it synchronously
+  after_validation :queue_geocoding, if: ->(obj) { !obj.skip_geocoding && (obj.location_changed? || obj.mailing_address_changed?) }
   
   # Store city and country in database to avoid geocoding on read
-  before_save :store_city_and_country, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? }
+  before_save :store_city_and_country, if: ->(obj) { !obj.skip_geocoding && (obj.latitude_changed? || obj.longitude_changed?) }
   
   def store_city_and_country
     # Only perform geocoding if we have coordinates but no cached city/country
@@ -239,6 +244,32 @@ class Profile < ApplicationRecord
       rescue URI::InvalidURIError
         errors.add(:website, "must be a valid URL")
       end
+    end
+  end
+  
+  # Queue geocoding as a background job
+  def queue_geocoding
+    # Skip if we already have coordinates and they haven't changed
+    return if latitude.present? && longitude.present? && 
+              !latitude_changed? && !longitude_changed? &&
+              !location_changed? && !mailing_address_changed?
+    
+    # Only queue if we have an ID (not a new record being created)
+    if persisted?
+      GeocodeProfileJob.perform_later(id)
+    else
+      # For new records, we'll queue after they're saved
+      @queue_geocoding_after_create = true
+    end
+  end
+  
+  # Queue geocoding after create
+  after_create :queue_geocoding_on_create
+  
+  def queue_geocoding_on_create
+    if @queue_geocoding_after_create && full_address.present?
+      GeocodeProfileJob.perform_later(id)
+      @queue_geocoding_after_create = false
     end
   end
 end

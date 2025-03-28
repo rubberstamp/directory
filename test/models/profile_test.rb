@@ -1,6 +1,7 @@
 require "test_helper"
 
 class ProfileTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
   test "should not save profile without name" do
     profile = Profile.new(email: "test@example.com")
     assert_not profile.save, "Saved the profile without a name"
@@ -188,5 +189,36 @@ class ProfileTest < ActiveSupport::TestCase
     # (In a real test this would involve mocking the calculate_formatted_location method)
     # This is a simplified test that just verifies the field is accessible
     assert_equal "Anytown, USA", profile.location
+  end
+  
+  test "should queue geocoding job when location changes" do
+    profile = Profile.create!(name: "Geocode Test", email: "geo-test1@example.com")
+    
+    assert_enqueued_with(job: GeocodeProfileJob) do
+      profile.location = "New York, NY"
+      profile.save
+    end
+  end
+  
+  test "should not queue geocoding job when location doesn't change" do
+    profile = Profile.create!(name: "Geocode Test", email: "geo-test2@example.com")
+    
+    # Clear the queue from the creation
+    clear_enqueued_jobs
+    
+    assert_no_enqueued_jobs(only: GeocodeProfileJob) do
+      profile.name = "Updated Name" # Change that doesn't affect geocoding
+      profile.save
+    end
+  end
+  
+  test "should queue geocoding job for new profiles after creation" do
+    assert_enqueued_with(job: GeocodeProfileJob) do
+      Profile.create!(
+        name: "New Test Profile", 
+        email: "geocode-test@example.com",
+        location: "London, UK"
+      )
+    end
   end
 end
