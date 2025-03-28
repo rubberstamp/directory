@@ -1,8 +1,70 @@
 <div class="container mx-auto">
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold">Profiles</h1>
-    <%= link_to "Add New Profile", new_admin_profile_path, class: "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" %>
+    <div class="flex space-x-2">
+      <button id="openImportModalBtn" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+        Import CSV
+      </button>
+      <%= link_to "Export CSV", export_admin_profiles_path(
+        search: params[:search], 
+        status: params[:status], 
+        sort: params[:sort]
+      ), class: "px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700" %>
+      <%= link_to "Add New Profile", new_admin_profile_path, class: "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" %>
+    </div>
   </div>
+  
+  <!-- Import Modal -->
+  <div id="importModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg max-w-md w-full">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">Import Profiles</h2>
+        <button id="closeImportModalBtn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <%= form_tag import_admin_profiles_path, multipart: true, class: "space-y-4" do %>
+        <div>
+          <label class="block text-sm font-medium mb-1">Select CSV File</label>
+          <%= file_field_tag :file, class: "w-full border border-gray-300 rounded p-2 dark:bg-gray-700 dark:border-gray-600", accept: ".csv" %>
+        </div>
+        
+        <div class="text-sm text-gray-600 dark:text-gray-400 mt-4 mb-4">
+          <p class="mb-2">The CSV should include the following columns:</p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li><strong>ID</strong> - Use ID to update existing profiles</li>
+            <li><strong>Name, Email</strong> - Required for new profiles</li>
+            <li>Other fields will be updated if present</li>
+          </ul>
+          <p class="mt-2">Export a CSV file first to see the correct format.</p>
+        </div>
+        
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+          <%= submit_tag "Import Profiles", class: "w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Show import errors if present -->
+  <% if @import_errors.present? %>
+    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow mb-6">
+      <div class="flex justify-between items-center mb-2">
+        <h3 class="text-lg font-medium text-red-600 dark:text-red-400">Import Issues</h3>
+        <%= link_to "Clear", admin_profiles_path, class: "text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" %>
+      </div>
+      <div class="text-sm text-gray-600 dark:text-gray-400 max-h-40 overflow-y-auto">
+        <ul class="list-disc pl-5">
+          <% @import_errors.each do |error| %>
+            <li><%= error %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
 
   <!-- Search and Filters -->
   <div class="bg-white dark:bg-gray-800 p-4 rounded shadow mb-6">
@@ -255,3 +317,36 @@
     </div>
   </div>
 </div>
+
+<script>
+  // Modal functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const openImportModalBtn = document.getElementById('openImportModalBtn');
+    const closeImportModalBtn = document.getElementById('closeImportModalBtn');
+    const importModal = document.getElementById('importModal');
+    
+    // Open modal
+    openImportModalBtn.addEventListener('click', function() {
+      importModal.classList.remove('hidden');
+    });
+    
+    // Close modal
+    closeImportModalBtn.addEventListener('click', function() {
+      importModal.classList.add('hidden');
+    });
+    
+    // Close modal when clicking outside
+    importModal.addEventListener('click', function(event) {
+      if (event.target === importModal) {
+        importModal.classList.add('hidden');
+      }
+    });
+    
+    // Close modal when pressing Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape' && !importModal.classList.contains('hidden')) {
+        importModal.classList.add('hidden');
+      }
+    });
+  });
+</script>

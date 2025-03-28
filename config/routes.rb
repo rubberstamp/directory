@@ -24,12 +24,23 @@ Rails.application.routes.draw do
   namespace :admin do
     get "dashboard/index"
     get '/', to: 'dashboard#index', as: :dashboard
-    resources :profiles
+    resources :profiles do
+      collection do
+        get :export
+        post :import
+      end
+    end
     resources :specializations
     resources :episodes do
       member do
         post :attach_profile
         delete :detach_profile
+      end
+      collection do
+        post :import
+        get :template
+        get :export
+        post :sync_youtube
       end
     end
     

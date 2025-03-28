@@ -214,32 +214,64 @@
   // Global variables to track map state
   let map = null;
   let markers = [];
+  let isMapInitialized = false;
   
-  // Initialize map on page load and after form submission
-  document.addEventListener('DOMContentLoaded', initializeMap);
-  document.addEventListener('turbo:load', initializeMap);
-  document.addEventListener('turbo:render', initializeMap);
+  // List of all events that might trigger map initialization
+  const mapInitEvents = [
+    'DOMContentLoaded',
+    'turbo:load',
+    'turbo:render',
+    'turbo:frame-render',
+    'turbo:before-stream-render'
+  ];
+  
+  // Add event listeners for all initialization events
+  mapInitEvents.forEach(eventName => {
+    document.addEventListener(eventName, () => {
+      if (window.location.pathname.includes('/map')) {
+        console.log(`Event ${eventName} triggered, initializing map`);
+        setTimeout(initializeMap, 100); // Add a small delay to ensure DOM is ready
+      }
+    });
+  });
   
   // Clean up resources before navigation
   document.addEventListener('turbo:before-visit', cleanupMap);
   document.addEventListener('turbo:before-cache', cleanupMap);
   
+  // Direct initialization when script loads and pathname matches (fallback)
+  if (window.location.pathname.includes('/map') && document.getElementById('map')) {
+    console.log('Direct map initialization on script load');
+    setTimeout(initializeMap, 300); // Longer delay for initial load
+  }
+  
   function cleanupMap() {
     console.log('Cleaning up map resources');
     if (map) {
-      // Remove all markers
-      markers.forEach(marker => {
-        if (marker) map.removeLayer(marker);
-      });
-      markers = [];
-      
-      // Remove map
-      map.remove();
-      map = null;
+      try {
+        // Remove all markers
+        markers.forEach(marker => {
+          if (marker) map.removeLayer(marker);
+        });
+        markers = [];
+        
+        // Remove map
+        map.remove();
+        map = null;
+        isMapInitialized = false;
+      } catch (e) {
+        console.error('Error cleaning up map:', e);
+      }
     }
   }
   
   function initializeMap() {
+    // Prevent multiple initializations of the same map
+    if (isMapInitialized) {
+      console.log('Map already initialized, skipping');
+      return;
+    }
+    
     console.log('Initializing map');
     
     // Get map container element
@@ -249,45 +281,86 @@
       return;
     }
     
+    // Check if map is visible (sometimes Turbo keeps hidden elements in the DOM)
+    if (mapContainer.offsetParent === null) {
+      console.log('Map container is not visible, skipping initialization');
+      return;
+    }
+    
     // Clean up any existing map
     cleanupMap();
     
     // Clear map container
     mapContainer.innerHTML = '';
     
-    // Create a new map
-    map = L.map('map').setView([37.0902, -95.7129], 3);
-    
-    // Add OpenStreetMap tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19
-    }).addTo(map);
-    
-    // Load markers
-    loadMarkers();
-    
-    // Add handler for form submission
-    document.addEventListener('turbo:frame-load', function(event) {
-      if (window.location.pathname.includes('/map')) {
-        console.log('Page loaded or frame updated, reloading markers');
-        loadMarkers();
-      }
-    });
-    
-    // Also setup a direct form handler
-    const filterForm = document.getElementById('map-filters');
-    if (filterForm) {
-      console.log('Setting up form submission listener');
-      filterForm.addEventListener('submit', function(event) {
-        console.log('Form submitted directly');
-        // We'll let Turbo handle the form submission
-        // and then the turbo:frame-load event will trigger loadMarkers
-      });
+    try {
+      // Create a new map
+      map = L.map('map').setView([37.0902, -95.7129], 3);
+      
+      // Add OpenStreetMap tile layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(map);
+      
+      // Mark as initialized
+      isMapInitialized = true;
+      
+      // Load markers
+      loadMarkers();
+      
+      // Force a resize to ensure map renders correctly
+      setTimeout(() => {
+        if (map) map.invalidateSize();
+      }, 100);
+      
+      // Setup form handling for filter changes
+      setupFormHandlers();
+    } catch (e) {
+      console.error('Error initializing map:', e);
+      isMapInitialized = false;
     }
   }
   
+  function setupFormHandlers() {
+    // Listen for form submission
+    const filterForm = document.getElementById('map-filters');
+    if (filterForm) {
+      console.log('Setting up form submission listener');
+      
+      // Remove any existing listeners to prevent duplicates
+      const newFilterForm = filterForm.cloneNode(true);
+      filterForm.parentNode.replaceChild(newFilterForm, filterForm);
+      
+      // Add event listener to the new form
+      newFilterForm.addEventListener('submit', function(event) {
+        console.log('Form submitted directly');
+        // We'll let Turbo handle the submission, but also force a reload after
+        setTimeout(() => {
+          if (map && window.location.pathname.includes('/map')) {
+            console.log('Reloading markers after form submission');
+            loadMarkers();
+          }
+        }, 500);
+      });
+    }
+    
+    // Listen for select changes to auto-submit the form
+    const selects = document.querySelectorAll('#map-filters select');
+    selects.forEach(select => {
+      select.addEventListener('change', function() {
+        console.log('Select changed, auto-submitting form');
+        document.getElementById('map-filters').requestSubmit();
+      });
+    });
+  }
+  
   function loadMarkers() {
+    if (!map) {
+      console.error('Cannot load markers: map not initialized');
+      return;
+    }
+    
     console.log('Loading markers');
     
     // Generate current URL with params
@@ -301,6 +374,11 @@
         return response.json();
       })
       .then(profiles => {
+        if (!map) {
+          console.error('Map was destroyed during fetch, aborting marker loading');
+          return;
+        }
+        
         console.log('Received', profiles.length, 'profile markers');
         
         // Clear any existing markers
@@ -319,6 +397,12 @@
         
         // Add new markers
         profiles.forEach(profile => {
+          // Skip if missing coordinates
+          if (!profile.latitude || !profile.longitude) {
+            console.log('Skipping profile without coordinates:', profile.name);
+            return;
+          }
+          
           // Create custom icon based on podcast guest status
           const icon = L.divIcon({
             className: profile.has_podcast ? 'custom-marker-podcast' : 'custom-marker-regular',
@@ -326,8 +410,6 @@
             iconAnchor: [6, 6],
             popupAnchor: [0, -8]
           });
-          
-          console.log('Adding marker for', profile.name, 'at', profile.latitude, profile.longitude);
           
           // Create marker and add to map
           const marker = L.marker([profile.latitude, profile.longitude], { icon: icon }).addTo(map);
@@ -388,6 +470,7 @@
       })
       .catch(error => {
         console.error('Error loading markers:', error);
+        const mapContainer = document.getElementById('map');
         if (mapContainer) {
           mapContainer.innerHTML = `
             <div class="flex items-center justify-center h-70vh bg-red-50 dark:bg-red-900/20 rounded-lg">

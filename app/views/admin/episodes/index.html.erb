@@ -8,10 +8,225 @@
 
 <div class="mb-6 flex justify-between items-center">
   <h1 class="text-2xl font-bold">Podcast Episodes</h1>
-  <div>
+  <div class="flex space-x-3">
+    <button id="show-sync-form" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
+      Sync YouTube
+    </button>
+    <button id="show-import-form" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+      Import CSV
+    </button>
+    <%= link_to "Export CSV", export_admin_episodes_path(search: params[:search]), class: "px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700" %>
     <%= link_to "New Episode", new_admin_episode_path, class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
   </div>
 </div>
+
+<!-- YouTube Sync Modal -->
+<div id="sync-modal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <!-- Background overlay -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" id="sync-modal-backdrop"></div>
+
+    <!-- Modal panel -->
+    <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="sm:flex sm:items-start">
+          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900 sm:mx-0 sm:h-10 sm:w-10">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600 dark:text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+              Sync YouTube Channel
+            </h3>
+            <div class="mt-4">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Sync episodes from the ProcurementExpress YouTube channel. This will:
+              </p>
+              <ul class="list-disc text-sm text-gray-500 dark:text-gray-400 ml-5 mb-4">
+                <li>Fetch recent videos from the YouTube channel (up to the max specified)</li>
+                <li>Create new episodes for videos not in the database</li>
+                <li>Update information for existing episodes</li>
+              </ul>
+              <div class="bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-md mb-4">
+                <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                  <strong>Note:</strong> Due to YouTube API quota limitations, a single sync operation can fetch a maximum of 50 videos. To sync all 200+ videos from the channel, run the following Rake task:
+                </p>
+                <pre class="mt-2 text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-x-auto">
+bundle exec rake youtube:sync_all
+                </pre>
+                <p class="mt-2 text-xs text-yellow-700 dark:text-yellow-300">
+                  This task will process the entire channel in batches to work around API limitations.
+                </p>
+              </div>
+              
+              <%= form_with url: sync_youtube_admin_episodes_path, method: :post, local: true, class: "space-y-4" do |f| %>
+                <div>
+                  <%= f.label :channel_id, "YouTube Channel ID", class: "block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+                  <div class="mt-1">
+                    <%= f.text_field :channel_id, 
+                                    value: "UCFfHVZhyEiN1QXX4s3Z_How", 
+                                    class: "shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-md" %>
+                  </div>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Default: ProcurementExpress channel</p>
+                </div>
+                
+                <div>
+                  <%= f.label :max_videos, "Maximum Videos to Sync", class: "block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+                  <div class="mt-1">
+                    <%= f.number_field :max_videos, 
+                                      value: 25, 
+                                      min: 1, 
+                                      max: 50, 
+                                      class: "shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-md" %>
+                  </div>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Limit the number of videos to fetch (1-50)</p>
+                </div>
+                
+                <div class="flex items-center">
+                  <%= f.check_box :update_existing, { checked: true, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" } %>
+                  <label for="update_existing" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    Update existing episodes
+                  </label>
+                </div>
+                
+                <div class="flex items-center">
+                  <%= f.check_box :run_now, { checked: true, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" } %>
+                  <label for="run_now" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    Run synchronously (wait for completion)
+                  </label>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-6">
+                  If unchecked, sync will run in the background job
+                </p>
+                
+                <div class="flex justify-end space-x-3">
+                  <button type="button" id="close-sync-modal" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600">
+                    Cancel
+                  </button>
+                  <%= f.submit "Sync Now", class: "px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700" %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CSV Import Modal -->
+<div id="import-modal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <!-- Background overlay -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+    <!-- Modal panel -->
+    <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="sm:flex sm:items-start">
+          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900 sm:mx-0 sm:h-10 sm:w-10">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600 dark:text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+            </svg>
+          </div>
+          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="import-modal-title">
+              Import Episodes from CSV
+            </h3>
+            <div class="mt-4">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Upload a CSV file to import multiple episodes at once. 
+                <a href="<%= template_admin_episodes_path %>" class="text-blue-600 hover:underline">Download template</a> 
+                to see the expected format.
+              </p>
+              
+              <%= form_with url: import_admin_episodes_path, method: :post, local: true, class: "space-y-4", multipart: true do |f| %>
+                <div>
+                  <%= f.label :file, "CSV File", class: "block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+                  <div class="mt-1">
+                    <%= f.file_field :file, accept: "text/csv", required: true, class: "block w-full text-sm text-gray-500 dark:text-gray-400
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-md file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-blue-50 file:text-blue-700
+                      dark:file:bg-blue-900 dark:file:text-blue-200
+                      hover:file:bg-blue-100 dark:hover:file:bg-blue-800" %>
+                  </div>
+                </div>
+                
+                <div class="flex items-center">
+                  <%= f.check_box :update_existing, { checked: true, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" } %>
+                  <label for="update_existing" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    Update existing episodes (matches by Episode Number or YouTube ID)
+                  </label>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-6">
+                  Episodes will be matched by YouTube ID first, then by Episode Number if no match is found by ID.
+                </p>
+                
+                <div class="flex justify-end space-x-3">
+                  <button type="button" id="close-modal" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600">
+                    Cancel
+                  </button>
+                  <%= f.submit "Import", class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Import Errors Modal -->
+<% if session[:import_errors].present? %>
+<div id="errors-modal" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <!-- Background overlay -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+    <!-- Modal panel -->
+    <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="sm:flex sm:items-start">
+          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600 dark:text-red-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+              Import Errors
+            </h3>
+            <div class="mt-4">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                The following errors occurred during import:
+              </p>
+              
+              <div class="max-h-60 overflow-y-auto">
+                <ul class="list-disc pl-5 text-sm text-red-600 dark:text-red-400 space-y-1">
+                  <% session[:import_errors].each do |error| %>
+                    <li><%= error %></li>
+                  <% end %>
+                </ul>
+              </div>
+              
+              <div class="mt-4 flex justify-end">
+                <button type="button" id="close-errors-modal" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<% session.delete(:import_errors) %>
+<% end %>
 
 <!-- Search and Filters -->
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
@@ -109,3 +324,81 @@
     <%= paginate @episodes %>
   </div>
 <% end %>
+
+<script>
+  document.addEventListener('turbo:load', function() {
+    // Import Modal
+    const importModal = document.getElementById('import-modal');
+    const showImportFormButton = document.getElementById('show-import-form');
+    const closeModalButton = document.getElementById('close-modal');
+    const modalBackdrop = document.getElementById('modal-backdrop');
+    
+    // Sync Modal
+    const syncModal = document.getElementById('sync-modal');
+    const showSyncFormButton = document.getElementById('show-sync-form');
+    const closeSyncModalButton = document.getElementById('close-sync-modal');
+    const syncModalBackdrop = document.getElementById('sync-modal-backdrop');
+    
+    // Error Modal
+    const errorsModal = document.getElementById('errors-modal');
+    const closeErrorsModalButton = document.getElementById('close-errors-modal');
+    
+    // Show import modal
+    if (showImportFormButton) {
+      showImportFormButton.addEventListener('click', function() {
+        if (importModal) importModal.classList.remove('hidden');
+      });
+    }
+    
+    // Close import modal
+    if (closeModalButton) {
+      closeModalButton.addEventListener('click', function() {
+        if (importModal) importModal.classList.add('hidden');
+      });
+    }
+    
+    // Close import by clicking on backdrop
+    if (modalBackdrop) {
+      modalBackdrop.addEventListener('click', function() {
+        if (importModal) importModal.classList.add('hidden');
+      });
+    }
+    
+    // Show sync modal
+    if (showSyncFormButton) {
+      showSyncFormButton.addEventListener('click', function() {
+        if (syncModal) syncModal.classList.remove('hidden');
+      });
+    }
+    
+    // Close sync modal
+    if (closeSyncModalButton) {
+      closeSyncModalButton.addEventListener('click', function() {
+        if (syncModal) syncModal.classList.add('hidden');
+      });
+    }
+    
+    // Close sync by clicking on backdrop
+    if (syncModalBackdrop) {
+      syncModalBackdrop.addEventListener('click', function() {
+        if (syncModal) syncModal.classList.add('hidden');
+      });
+    }
+    
+    // Close errors modal
+    if (closeErrorsModalButton && errorsModal) {
+      closeErrorsModalButton.addEventListener('click', function() {
+        errorsModal.remove();
+      });
+    }
+    
+    // Close on escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        if (importModal) importModal.classList.add('hidden');
+        if (syncModal) syncModal.classList.add('hidden');
+        if (errorsModal) errorsModal.remove();
+      }
+    });
+  });
+</script>
