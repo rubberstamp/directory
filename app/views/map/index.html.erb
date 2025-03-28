@@ -103,7 +103,7 @@
   
   <!-- Filters Section -->
   <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-8">
-    <%= form_with url: map_path, method: :get, class: "space-y-4" do |f| %>
+    <%= form_with url: map_path, method: :get, class: "space-y-4", id: "map-filters", data: { turbo: true, turbo_frame: "_self" } do |f| %>
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <!-- Specialization filter -->
         <div>
@@ -113,6 +113,17 @@
           <%= select_tag :specialization_id, 
               options_for_select([["All Specializations", ""]] + @specializations.map { |s| [s.name, s.id] }, params[:specialization_id]), 
               class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3" %>
+        </div>
+
+        <!-- Location filter -->
+        <div>
+          <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Location
+          </label>
+          <%= text_field_tag :location, params[:location], 
+              class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3",
+              placeholder: "City, Country, or Region...",
+              title: "Search by city, country, or region. Results include exact matches and nearby locations." %>
         </div>
         
         <!-- Guest filter -->
@@ -132,7 +143,7 @@
         <!-- Filter button -->
         <div class="flex items-end">
           <%= f.submit "Apply Filters", class: "w-full md:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
-          <% if params[:specialization_id].present? || params[:guest_filter].present? %>
+          <% if params[:specialization_id].present? || params[:location].present? || params[:guest_filter].present? %>
             <%= link_to "Clear Filters", map_path, class: "ml-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600" %>
           <% end %>
         </div>
@@ -144,21 +155,21 @@
   <div class="flex justify-between items-center mb-6">
     <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
       <%= @profiles.count %> Guests found on the map
-      <% if params[:specialization_id].present? || params[:guest_filter].present? %>
+      <% if params[:specialization_id].present? || params[:location].present? || params[:guest_filter].present? %>
         <span class="text-sm font-normal text-gray-500 dark:text-gray-400">with applied filters</span>
       <% end %>
     </h2>
     
     <!-- View option links -->
     <div class="text-gray-600 dark:text-gray-400">
-      <%= link_to profiles_path(params.permit(:specialization_id, :guest_filter)), class: "inline-flex items-center mr-4" do %>
+      <%= link_to profiles_path(params.permit(:specialization_id, :location, :guest_filter)), class: "inline-flex items-center mr-4" do %>
         <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
         </svg>
         List View
       <% end %>
       
-      <%= link_to map_path(params.permit(:specialization_id, :guest_filter)), class: "inline-flex items-center text-blue-600 dark:text-blue-400 font-medium" do %>
+      <%= link_to map_path(params.permit(:specialization_id, :location, :guest_filter)), class: "inline-flex items-center text-blue-600 dark:text-blue-400 font-medium" do %>
         <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
         </svg>
@@ -193,106 +204,120 @@
       </p>
       <div class="mt-6">
         <%= link_to "Clear filters", map_path, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-3" %>
-        <%= link_to "View list instead", profiles_path, class: "inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" %>
+        <%= link_to "View list instead", profiles_path(params.permit(:specialization_id, :location, :guest_filter)), class: "inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" %>
       </div>
     </div>
   <% end %>
 </div>
 
 <script>
-  // Initialize and manage map with OpenStreetMap and Leaflet
-  // Listen for multiple Turbo events to ensure map loads correctly
-  document.addEventListener('DOMContentLoaded', initMap);
-  document.addEventListener('turbo:load', initMap);
-  document.addEventListener('turbo:render', initMap);
-  
   // Global variables to track map state
-  let map;
+  let map = null;
   let markers = [];
-  let mapInitialized = false;
   
-  // Debug function to log map state
-  function logMapState(message) {
-    console.log(`MAP STATE (${message}): initialized=${mapInitialized}, map=${map ? 'exists' : 'null'}, markers=${markers.length}`);
+  // Initialize map on page load and after form submission
+  document.addEventListener('DOMContentLoaded', initializeMap);
+  document.addEventListener('turbo:load', initializeMap);
+  document.addEventListener('turbo:render', initializeMap);
+  
+  // Clean up resources before navigation
+  document.addEventListener('turbo:before-visit', cleanupMap);
+  document.addEventListener('turbo:before-cache', cleanupMap);
+  
+  function cleanupMap() {
+    console.log('Cleaning up map resources');
+    if (map) {
+      // Remove all markers
+      markers.forEach(marker => {
+        if (marker) map.removeLayer(marker);
+      });
+      markers = [];
+      
+      // Remove map
+      map.remove();
+      map = null;
+    }
   }
   
-  // Clean up map resources on navigation
-  document.addEventListener('turbo:before-cache', function() {
-    logMapState('before cleanup');
-    if (map) {
-      console.log('Removing map...');
-      map.remove();
-      map = null;
-      markers = [];
-      mapInitialized = false;
-    }
-    logMapState('after cleanup');
-  });
-  
-  document.addEventListener('turbo:before-render', function() {
-    if (map) {
-      console.log('Removing map before render...');
-      map.remove();
-      map = null;
-      markers = [];
-      mapInitialized = false;
-    }
-  });
-  
-  function initMap() {
-    console.log('initMap called');
-    // Only initialize if the map container exists
+  function initializeMap() {
+    console.log('Initializing map');
+    
+    // Get map container element
     const mapContainer = document.getElementById('map');
     if (!mapContainer) {
-      console.log('Map container not found, skipping initialization');
+      console.log('Map container not found');
       return;
     }
     
-    // Always clean up previous map instances to avoid duplicates
-    if (map) {
-      console.log('Cleaning up existing map instance before initialization');
-      map.remove();
-      map = null;
-      markers = [];
-    }
+    // Clean up any existing map
+    cleanupMap();
     
-    // Reset initialization state
-    mapInitialized = false;
-    
-    // Clear any existing content
+    // Clear map container
     mapContainer.innerHTML = '';
     
-    // Small delay to ensure the DOM is ready (helps with Turbo)
-    setTimeout(() => {
-      console.log("Initializing map...");
+    // Create a new map
+    map = L.map('map').setView([37.0902, -95.7129], 3);
     
-    // Create the map
-    map = L.map('map').setView([37.0902, -95.7129], 4);
-    
-    // Add the OpenStreetMap tiles
+    // Add OpenStreetMap tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19
     }).addTo(map);
     
-    console.log("Map created, fetching profile data...");
+    // Load markers
+    loadMarkers();
     
-    // Fetch profile data for markers
-    fetch('<%= map_path(params.permit(:specialization_id, :guest_filter)) %>.json')
+    // Add handler for form submission
+    document.addEventListener('turbo:frame-load', function(event) {
+      if (window.location.pathname.includes('/map')) {
+        console.log('Page loaded or frame updated, reloading markers');
+        loadMarkers();
+      }
+    });
+    
+    // Also setup a direct form handler
+    const filterForm = document.getElementById('map-filters');
+    if (filterForm) {
+      console.log('Setting up form submission listener');
+      filterForm.addEventListener('submit', function(event) {
+        console.log('Form submitted directly');
+        // We'll let Turbo handle the form submission
+        // and then the turbo:frame-load event will trigger loadMarkers
+      });
+    }
+  }
+  
+  function loadMarkers() {
+    console.log('Loading markers');
+    
+    // Generate current URL with params
+    const currentUrl = new URL(window.location.href);
+    const jsonUrl = `${currentUrl.pathname}.json${currentUrl.search}`;
+    
+    // Fetch marker data
+    fetch(jsonUrl)
       .then(response => {
-        console.log("Response received:", response.status);
+        console.log('Markers API response:', response.status);
         return response.json();
       })
       .then(profiles => {
-        console.log("Profiles data received:", profiles.length, "profiles");
+        console.log('Received', profiles.length, 'profile markers');
+        
+        // Clear any existing markers
+        markers.forEach(marker => {
+          if (marker && map) map.removeLayer(marker);
+        });
+        markers = [];
+        
         if (profiles.length === 0) {
-          // No profiles found with geocoding data
+          console.log('No markers to display');
           return;
         }
         
-        // Add markers for each profile
+        // Create a feature group for bounds calculation
         const markerGroup = L.featureGroup();
         
+        // Add new markers
         profiles.forEach(profile => {
           // Create custom icon based on podcast guest status
           const icon = L.divIcon({
@@ -302,13 +327,12 @@
             popupAnchor: [0, -8]
           });
           
-          console.log("Creating marker for:", profile.name, "at", profile.latitude, profile.longitude);
+          console.log('Adding marker for', profile.name, 'at', profile.latitude, profile.longitude);
           
-          // Create the marker with the custom icon
-          const marker = L.marker([profile.latitude, profile.longitude], { icon: icon })
-            .addTo(map);
+          // Create marker and add to map
+          const marker = L.marker([profile.latitude, profile.longitude], { icon: icon }).addTo(map);
           
-          // Prepare pop-up content
+          // Prepare popup content
           const popupContent = `
             <div class="popup-content">
               <h3>${profile.name}</h3>
@@ -325,7 +349,7 @@
                 </div>
               ` : ''}
               
-              ${profile.specializations.length > 0 ? `
+              ${profile.specializations && profile.specializations.length > 0 ? `
                 <div class="tags">
                   ${profile.specializations.map(spec => 
                     `<span class="tag">${spec}</span>`
@@ -344,17 +368,17 @@
             </div>
           `;
           
-          // Add popup to marker
+          // Add popup
           marker.bindPopup(popupContent);
           
-          // Add to the marker group for bounds calculation
+          // Add to feature group for bounds calculation
           markerGroup.addLayer(marker);
           
-          // Store in markers array for later reference
+          // Store marker reference
           markers.push(marker);
         });
         
-        // Fit map to show all markers
+        // Fit map to show all markers if there are any
         if (markers.length > 0) {
           map.fitBounds(markerGroup.getBounds(), {
             padding: [50, 50],
@@ -363,23 +387,20 @@
         }
       })
       .catch(error => {
-        console.error('Error fetching profile data:', error);
-        mapContainer.innerHTML = `
-          <div class="flex items-center justify-center h-70vh bg-red-50 dark:bg-red-900/20 rounded-lg">
-            <div class="text-center p-8 max-w-md">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Error Loading Map Data</h3>
-              <p class="text-gray-600 dark:text-gray-400">We had trouble retrieving the map data. Please try refreshing the page.</p>
+        console.error('Error loading markers:', error);
+        if (mapContainer) {
+          mapContainer.innerHTML = `
+            <div class="flex items-center justify-center h-70vh bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div class="text-center p-8 max-w-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Error Loading Map Data</h3>
+                <p class="text-gray-600 dark:text-gray-400">We had trouble retrieving the map data. Please try refreshing the page.</p>
+              </div>
             </div>
-          </div>
-        `;
+          `;
+        }
       });
-    
-      // Set initialization flag at the end of initialization
-      mapInitialized = true;
-      logMapState('after complete initialization');
-    }, 50); // Short delay to help with Turbo loading
   }
 </script>
