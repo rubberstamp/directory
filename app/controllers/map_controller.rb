@@ -11,6 +11,63 @@ class MapController < ApplicationController
       Rails.logger.debug "After specialization filter: #{@profiles.count} profiles"
     end
     
+    # Filter by location - enhanced with geocoding
+    if params[:location].present?
+      # Try exact location field match first
+      text_query = @profiles.where("location LIKE ?", "%#{params[:location]}%")
+      
+      # Also search in cached city and country
+      text_query = text_query.or(@profiles.where("cached_city LIKE ?", "%#{params[:location]}%"))
+      text_query = text_query.or(@profiles.where("cached_country LIKE ?", "%#{params[:location]}%"))
+      
+      # Set this as our base result set
+      @profiles = text_query
+      Rails.logger.debug "After text location filter: #{@profiles.count} profiles"
+      
+      # If very few or no results found, try geocoding the input location and search within a radius
+      if @profiles.count < 3
+        begin
+          # Geocode the search input
+          results = Geocoder.search(params[:location])
+          
+          if results.present? && results.first&.coordinates.present?
+            # Get the lat/lon coordinates
+            lat, lon = results.first.coordinates
+            
+            # Safety checks for valid coordinates
+            if lat.present? && lon.present? && lat.to_f.between?(-90, 90) && lon.to_f.between?(-180, 180)
+              # Search within ~50 miles/80km
+              nearby_profiles = Profile.where.not(latitude: nil, longitude: nil)
+                                       .near([lat, lon], 80, units: :km)
+                                       
+              # Apply the other filters to maintain consistency
+              if params[:specialization_id].present?
+                nearby_profiles = nearby_profiles.joins(:specializations)
+                                              .where(specializations: { id: params[:specialization_id] })
+              end
+              
+              if params[:guest_filter].present?
+                case params[:guest_filter]
+                when 'podcast_guests'
+                  nearby_profiles = nearby_profiles.where.not(submission_date: nil)
+                when 'procurement'
+                  nearby_profiles = nearby_profiles.where(interested_in_procurement: true)
+                end
+              end
+              
+              # Combine results (keep original text matches and add any new nearby profiles)
+              if nearby_profiles.any?
+                @profiles = @profiles.or(nearby_profiles)
+                Rails.logger.debug "After geocoded location filter: #{@profiles.count} profiles"
+              end
+            end
+          end
+        rescue => e
+          Rails.logger.error "Error geocoding search input '#{params[:location]}': #{e.message}"
+        end
+      end
+    end
+    
     # Allow filtering by guest status
     if params[:guest_filter].present?
       case params[:guest_filter]
@@ -43,6 +100,16 @@ class MapController < ApplicationController
     # Get formatted location with cached city/country to avoid geocoding
     location_display = profile.formatted_location
     
+    # Get headshot URL if available
+    headshot_url = nil
+    if profile.headshot.attached?
+      headshot_url = url_for(profile.headshot)
+    elsif profile.headshot_url.present? && !profile.headshot_url.include?('drive.google.com')
+      headshot_url = profile.headshot_url
+    elsif profile.image_url.present?
+      headshot_url = profile.image_url
+    end
+    
     # Debug log for development
     Rails.logger.debug "Profile #{profile.id} (#{profile.name}): lat=#{profile.latitude}, lng=#{profile.longitude}, loc=#{location_display}"
     
@@ -56,7 +123,8 @@ class MapController < ApplicationController
       location: location_display,
       profile_path: profile_path(profile),
       has_podcast: profile.has_podcast_episode?,
-      specializations: profile.specializations.pluck(:name)
+      specializations: profile.specializations.pluck(:name),
+      headshot_url: headshot_url
     }
   end
 end
