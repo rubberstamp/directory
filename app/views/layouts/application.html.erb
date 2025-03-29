@@ -50,7 +50,11 @@
                     <li><%= link_to "Events", events_path, class: "hover:text-brand-orange dark:hover:text-brand-orange transition duration-300 text-gray-700 dark:text-gray-300" %></li>
                 </ul>
             </nav>
-            <button onclick="window.location.href='<%= contact_path %>'" class="bg-brand-orange hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded-full transition duration-300 shadow-md hover:shadow-lg">Contact Us</button>
+            <% if user_signed_in? %>
+              <a href="<%= admin_dashboard_path %>" class="bg-brand-orange hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded-full transition duration-300 shadow-md hover:shadow-lg">Admin</a>
+            <% else %>
+              <a href="<%= contact_path %>" class="bg-brand-orange hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded-full transition duration-300 shadow-md hover:shadow-lg">Contact Us</a>
+            <% end %>
         </div>
     </header>
 
