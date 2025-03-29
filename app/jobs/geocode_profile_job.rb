@@ -1,6 +1,13 @@
 class GeocodeProfileJob < ApplicationJob
   queue_as :default
 
+  # Retry on common geocoding errors with exponential backoff
+  # Waits 3s, 18s, 81s, 256s, 625s between retries
+  retry_on Geocoder::Error, wait: :exponentially_longer, attempts: 5
+  retry_on Timeout::Error, wait: :exponentially_longer, attempts: 5
+  # Add other network-related errors if needed, e.g.:
+  # retry_on SocketError, wait: :exponentially_longer, attempts: 5
+
   def perform(profile_id)
     profile = Profile.find_by(id: profile_id)
     return unless profile
