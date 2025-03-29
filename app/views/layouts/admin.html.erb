@@ -110,7 +110,7 @@
           </nav>
         </div>
 
-        <main class="flex-1 overflow-y-auto p-4">
+        <main class="flex-1 overflow-y-auto p-4 relative">
           <% if notice %>
             <div class="bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-200 p-4 mb-4 rounded">
               <%= notice %>
@@ -124,8 +124,14 @@
 
           <%= yield %>
         </main>
+        
+        <!-- Empty div to create spacing at the bottom of scrollable content -->
+        <div class="h-16"></div>
       </div>
     </div>
+    
+    <!-- Fixed footer spacer to ensure pagination is clickable -->
+    <div class="fixed bottom-0 left-0 right-0 h-12 bg-transparent"></div>
 
     <%= javascript_tag do %>
       document.addEventListener('turbo:load', function() {

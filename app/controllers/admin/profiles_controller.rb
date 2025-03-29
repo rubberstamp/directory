@@ -54,8 +54,8 @@ class Admin::ProfilesController < Admin::BaseController
       Rails.cache.delete("profile_import_errors_#{params[:import_errors]}") if @import_errors
     end
     
-    # Pagination (would use Kaminari or will_paginate in a real app)
-    @profiles = @profiles.all
+    # Pagination using Kaminari
+    @profiles = @profiles.page(params[:page]).per(20)
   end
 
   def show
