@@ -44,6 +44,8 @@ class Admin::ProfilesController < Admin::BaseController
         @profiles = @profiles.where.not(submission_date: nil).where(deprecated_episode_url: nil)
       when 'interested'
         @profiles = @profiles.where(interested_in_procurement: true)
+      when 'missing_location'
+        @profiles = @profiles.where(latitude: nil).or(@profiles.where(longitude: nil))
       end
     end
     

@@ -80,11 +80,12 @@
           <%= select_tag :status, 
               options_for_select([
                 ["All Profiles", ""], 
-                ["Podcast Guests", "guest"], 
+                ["Podcast Guests", "guest"],
                 ["With Episodes", "episode"],
                 ["Missing Episodes", "missing_episode"],
-                ["Interested in Procurement", "interested"]
-              ], params[:status]), 
+                ["Interested in Procurement", "interested"],
+                ["Missing Location", "missing_location"]
+              ], params[:status]),
               class: "w-full rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900" %>
         </div>
         <div>
