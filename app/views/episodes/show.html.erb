@@ -54,6 +54,15 @@
           ></iframe>
         </div>
         
+        <% if @episode.summary.present? %>
+          <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Episode Summary</h2>
+            <div class="prose dark:prose-invert max-w-none">
+              <%= simple_format(@episode.summary) %>
+            </div>
+          </div>
+        <% end %>
+        
         <% if @episode.notes.present? %>
           <div class="p-6 border-t border-gray-200 dark:border-gray-700">
             <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Episode Notes</h2>

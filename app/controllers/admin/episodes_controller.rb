@@ -397,15 +397,88 @@ class Admin::EpisodesController < Admin::BaseController
 
   def summarize
     @episode = Episode.find(params[:id])
-    if @episode.youtube_url.present?
-      @episode.summarize_later
-      redirect_to admin_episode_path(@episode), notice: "Summarization job queued for Episode ##{@episode.number}."
-    else
-      redirect_to admin_episode_path(@episode), alert: "Cannot summarize: Episode ##{@episode.number} has no valid YouTube URL."
+    
+    # Check if video_id is present
+    if @episode.video_id.blank?
+      redirect_to admin_episode_path(@episode), alert: "Cannot summarize: Episode ##{@episode.number} has no video ID."
+      return
     end
+    
+    # Check if it's a placeholder
+    if @episode.video_id.start_with?("EP")
+      redirect_to admin_episode_path(@episode), alert: "Cannot summarize: Episode ##{@episode.number} has a placeholder video ID (#{@episode.video_id})."
+      return
+    end
+    
+    # Extract and validate the video ID
+    video_id = extract_video_id(@episode.video_id)
+    if video_id.nil? || video_id.length != 11
+      redirect_to admin_episode_path(@episode), alert: "Cannot summarize: Episode ##{@episode.number} has an invalid YouTube video ID format (#{@episode.video_id})."
+      return
+    end
+    
+    # Queue the summarization job
+    @episode.summarize_later
+    redirect_to admin_episode_path(@episode), notice: "Summarization job queued for Episode ##{@episode.number} with video ID #{video_id}."
   end
-
+  
   private
+    # Extract the video ID from various YouTube URL formats
+    def extract_video_id(input)
+      return nil if input.blank?
+      
+      # Clean up the input
+      input = input.strip
+      
+      # If it's already a clean video ID (11 characters) with no URL components
+      if input.length == 11 && !input.include?('/') && !input.include?(':') && !input.include?('.')
+        return input
+      end
+      
+      # Try various methods to extract the ID
+      
+      # Method 1: Standard watch URLs
+      if input.include?('youtube.com/watch?v=')
+        match = input.match(/youtube\.com\/watch\?v=([^&]{11})/)
+        if match && match[1]
+          return match[1]
+        end
+      end
+      
+      # Method 2: Shortened youtu.be URLs
+      if input.include?('youtu.be/')
+        match = input.match(/youtu\.be\/([^?&\/]{11})/)
+        if match && match[1]
+          return match[1]
+        end
+      end
+      
+      # Method 3: Embed URLs
+      if input.include?('youtube.com/embed/')
+        match = input.match(/youtube\.com\/embed\/([^?&\/]{11})/)
+        if match && match[1]
+          return match[1]
+        end
+      end
+      
+      # Method 4: General regex for any URL format (fallback)
+      if input.match?(/\A(https?:\/\/)/)
+        regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+        match = input.match(regex)
+        if match && match[1]
+          return match[1]
+        end
+      end
+      
+      # If all extraction methods fail but input is 11 characters, it might be an ID
+      if input.length == 11
+        return input
+      end
+      
+      # Return nil to indicate failure
+      nil
+    end
+    
     def set_episode
       @episode = Episode.find(params[:id])
     end

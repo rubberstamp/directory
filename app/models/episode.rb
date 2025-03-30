@@ -16,14 +16,24 @@ class Episode < ApplicationRecord
   def youtube_url
     return nil if video_id.blank?
     
+    Rails.logger.debug "Episode ##{number}: Getting youtube_url from video_id: #{video_id.inspect}"
+    
     # If it's a placeholder ID (starting with EP), return nil
-    return nil if video_id.start_with?("EP")
+    if video_id.start_with?("EP")
+      Rails.logger.debug "Episode ##{number}: Placeholder ID detected, returning nil"
+      return nil
+    end
     
     # If it's already a full URL, return it
-    return video_id if video_id.match?(/\A(https?:\/\/)/)
+    if video_id.match?(/\A(https?:\/\/)/)
+      Rails.logger.debug "Episode ##{number}: Full URL detected, returning as-is: #{video_id}"
+      return video_id
+    end
     
     # Otherwise, assume it's a video ID and build the URL
-    "https://www.youtube.com/watch?v=#{video_id}"
+    url = "https://www.youtube.com/watch?v=#{video_id}"
+    Rails.logger.debug "Episode ##{number}: Built YouTube URL: #{url}"
+    url
   end
   
   # Generate YouTube embed URL
