@@ -17,11 +17,11 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
     # Mock the Vertex AI client and model chain
     @mock_model = Minitest::Mock.new
     @mock_client = Minitest::Mock.new
-    @mock_client.expect :generative_model, @mock_model, [{ model_name: YoutubeSummarizerService::MODEL_NAME }]
+    # Stub the method chain: Google::Cloud::AIPlatform.generative_model returns our mock model
+    Google::Cloud::AIPlatform.stubs(:generative_model)
+                             .with(model_name: YoutubeSummarizerService::MODEL_NAME)
+                             .returns(@mock_model)
 
-    # Stub the client initialization within the service
-    Google::Cloud::AIPlatform.stubs(:vertex_ai).returns(@mock_client)
-    
     # Stub credentials for most tests (override for specific credential tests)
     Rails.application.credentials.stubs(:google_cloud).returns({ project_id: "test-project", location: "us-central1" })
   end
@@ -29,9 +29,7 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
   teardown do
     # Ensure mocks are verified and episode is destroyed
     @episode.destroy if @episode&.persisted?
-    # Restore stubs
-    Rails.application.credentials.unstub(:google_cloud)
-    Google::Cloud::AIPlatform.unstub(:vertex_ai)
+    # Mocha unstubs automatically
   end
 
   test "should return summary on successful API call" do
@@ -48,7 +46,7 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
     summary = service.call
 
     assert_equal expected_summary, summary
-    @mock_client.verify
+    # @mock_client.verify # No longer needed as we stub the class method directly
     @mock_model.verify
   end
 
@@ -74,8 +72,8 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
       service.call
     end
     assert_match(/API Error: #{api_error.message}/, exception.message)
-    
-    @mock_client.verify
+
+    # @mock_client.verify # No longer needed
     @mock_model.verify
   end
 
@@ -94,14 +92,12 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
     end
     assert_match "No summary content received from API.", exception.message
 
-    @mock_client.verify
+    # @mock_client.verify # No longer needed
     @mock_model.verify
   end
-  
   test "should raise SummarizationError if Google Cloud Project ID is missing" do
-    # Unstub and set credentials to be missing the project_id
-    Rails.application.credentials.unstub(:google_cloud)
-    Rails.application.credentials.stubs(:google_cloud).returns({ location: "us-central1" }) # Missing project_id
+    # Re-stub credentials for this specific test to be missing the project_id
+    Rails.application.credentials.stubs(:google_cloud).returns({ location: "us-central1" })
 
     exception = assert_raises YoutubeSummarizerService::SummarizationError do
       YoutubeSummarizerService.new(@episode) # Error should happen during initialization
