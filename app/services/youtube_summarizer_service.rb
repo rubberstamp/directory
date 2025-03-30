@@ -13,10 +13,22 @@ class YoutubeSummarizerService
   class SummarizationError < StandardError; end
 
   def initialize(episode)
+    raise ArgumentError, "Episode cannot be nil" unless episode
+
     @episode = episode
     validate_configuration!
-    # Directly initialize the generative model client
-    @model = Google::Cloud::AIPlatform.generative_model model_name: MODEL_NAME
+
+    begin
+      # Directly initialize the generative model client
+      @model = Google::Cloud::AIPlatform.generative_model model_name: MODEL_NAME
+    rescue Google::Cloud::Error => e
+      # Catch potential auth/config errors during initialization
+      Rails.logger.error "Failed to initialize Vertex AI client: #{e.message}"
+      raise SummarizationError, "Failed to initialize Vertex AI client. Ensure credentials (e.g., GOOGLE_APPLICATION_CREDENTIALS) and project ID/location are correctly configured. Original error: #{e.message}"
+    rescue => e
+      Rails.logger.error "Unexpected error during Vertex AI client initialization: #{e.message}"
+      raise SummarizationError, "Unexpected error during Vertex AI client initialization: #{e.message}"
+    end
   end
 
   def call
@@ -61,8 +73,10 @@ class YoutubeSummarizerService
 
   def validate_configuration!
     unless PROJECT_ID
-      raise SummarizationError, "Google Cloud Project ID is not configured in credentials."
+      raise SummarizationError, "Google Cloud Project ID (google_cloud.project_id) is not configured in Rails credentials."
     end
-    # Add checks for authentication setup if needed (e.g., GOOGLE_APPLICATION_CREDENTIALS env var)
+    # Authentication itself is typically handled by Application Default Credentials (ADC)
+    # which relies on the environment (e.g., GOOGLE_APPLICATION_CREDENTIALS variable or GCE metadata service).
+    # The client initialization will fail if ADC is not set up correctly.
   end
 end
