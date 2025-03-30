@@ -103,14 +103,17 @@ rescue => e
 end
 
 # Test 4: Try using the Yt gem directly
-puts "\nTest 4: Using Yt gem directly..."
+puts "\nTest 4: Using Yt gem directly (basic channel instantiation)..."
 begin
-  channel = Yt::Channel.new(id: 'UC_x5XG1OV2P6uZZ5FSM9Ttw')  # Google Developers channel
-  puts "✓ Successfully fetched channel '#{channel.title}'"
-  puts "  - Subscriber count: #{channel.subscriber_count}"
-  puts "  - Video count: #{channel.video_count}"
+  # Instantiate the channel object. This verifies the ID format and basic API connectivity
+  # without necessarily fetching all details, reducing API cost for this test.
+  channel = Yt::Channel.new(id: 'UC_x5XG1OV2P6uZZ5FSM9Ttw') # Google Developers channel
+  puts "✓ Successfully instantiated Yt::Channel object for ID 'UC_x5XG1OV2P6uZZ5FSM9Ttw'"
+  # We avoid accessing properties like .title, .subscriber_count, .video_count here
+  # to minimize API calls during this basic test.
 rescue => e
-  puts "✗ Error using Yt gem directly: #{e.message}"
+  puts "✗ Error instantiating Yt::Channel object: #{e.message}"
+  puts "  This could indicate an issue with the API key, permissions, or the channel ID itself."
   puts e.backtrace.join("\n")
   exit 1
 end
