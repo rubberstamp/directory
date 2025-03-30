@@ -95,6 +95,17 @@
           </svg>
           View Public Page
         </a>
+
+        <!-- Summarize Button -->
+        <% unless @episode.summary.present? %>
+          <%= button_to summarize_admin_episode_path(@episode), method: :post, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500", form: { data: { turbo_confirm: "Queue summarization job? This may take several minutes and incur costs." } } do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /> <!-- Simple lightning bolt icon -->
+            </svg>
+            Generate Summary
+          <% end %>
+        <% end %>
+
       </div>
     </div>
   </div>
@@ -148,6 +159,19 @@
             <%= @episode.updated_at.strftime("%B %d, %Y at %I:%M %p") %>
           </dd>
         </div>
+
+        <!-- Display Summary -->
+        <% if @episode.summary.present? %>
+          <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              AI Summary
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-300 sm:mt-0 sm:col-span-2 whitespace-pre-line">
+              <%= @episode.summary %>
+            </dd>
+          </div>
+        <% end %>
+
       </dl>
     </div>
   </div>

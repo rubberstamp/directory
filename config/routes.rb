@@ -37,6 +37,7 @@ Rails.application.routes.draw do
       member do
         post :attach_profile
         delete :detach_profile
+        post :summarize # Add route for summarization
       end
       collection do
         post :import

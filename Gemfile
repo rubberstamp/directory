@@ -60,6 +60,9 @@ gem "yt", "~> 0.32.0"
 # Use Postmark for email delivery
 gem "postmark-rails", "~> 0.22.1"
 
+# Use Google Cloud Vertex AI for Gemini API access
+gem "google-cloud-ai_platform", "~> 0.10"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

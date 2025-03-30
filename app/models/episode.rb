@@ -4,7 +4,10 @@ class Episode < ApplicationRecord
   
   validates :number, presence: true, uniqueness: true
   validates :title, presence: true
-  validates :video_id, presence: true, uniqueness: true
+  validates :video_id, presence: true # Uniqueness validation might need adjustment if placeholder IDs are used
+
+  # Add summary attribute
+  attribute :summary, :text
   
   # YouTube channel URL
   YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@procurementexpress9417/videos"
@@ -91,7 +94,12 @@ class Episode < ApplicationRecord
       "https://img.youtube.com/vi/#{clean_video_id}/maxresdefault.jpg"
     end
   end
-  
+
+  # Enqueue background job to summarize this episode
+  def summarize_later
+    SummarizeYoutubeVideoJob.perform_later(self.id)
+  end
+
   private
   
   def clean_video_id

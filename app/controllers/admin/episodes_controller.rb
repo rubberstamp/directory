@@ -395,6 +395,16 @@ class Admin::EpisodesController < Admin::BaseController
     redirect_to admin_episodes_path
   end
 
+  def summarize
+    @episode = Episode.find(params[:id])
+    if @episode.youtube_url.present?
+      @episode.summarize_later
+      redirect_to admin_episode_path(@episode), notice: "Summarization job queued for Episode ##{@episode.number}."
+    else
+      redirect_to admin_episode_path(@episode), alert: "Cannot summarize: Episode ##{@episode.number} has no valid YouTube URL."
+    end
+  end
+
   private
     def set_episode
       @episode = Episode.find(params[:id])
@@ -408,7 +418,8 @@ class Admin::EpisodesController < Admin::BaseController
         :air_date, 
         :duration_seconds, 
         :notes,
-        :thumbnail_url
+        :thumbnail_url,
+        :summary # Allow summary to be updated via form if needed
       )
     end
     
