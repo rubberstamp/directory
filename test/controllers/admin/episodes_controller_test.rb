@@ -334,8 +334,7 @@ class Admin::EpisodesControllerTest < ActionDispatch::IntegrationTest
 
     mock_summary = "This is a mocked summary of the video."
 
-    # Stub the 'call' method on any instance of the service using Mocha
-    YoutubeSummarizerService.any_instance.stubs(:call).returns(mock_summary)
+    mock_summary = "This is a mocked summary of the video."
 
     # Assert job is enqueued when action is posted
     assert_enqueued_with(job: SummarizeYoutubeVideoJob, args: [episode.id]) do
@@ -346,8 +345,10 @@ class Admin::EpisodesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_episode_url(episode)
     assert_equal "Summarization job queued for Episode ##{episode.number}.", flash[:notice]
 
-    # Perform the job inline (the stub on any_instance will be active)
-    perform_enqueued_jobs
+    # Perform the job inline, stubbing the service *during* the job execution
+    perform_enqueued_jobs do
+      YoutubeSummarizerService.any_instance.stubs(:call).returns(mock_summary)
+    end
 
     # Reload the episode and check if the summary was updated
     episode.reload

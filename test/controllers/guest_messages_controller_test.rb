@@ -32,6 +32,7 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to contact_url # Assert redirect back to the referer
     assert_equal "Your message has been sent successfully.", flash[:success]
+
     # Check that the message was created with correct attributes
     message = GuestMessage.last
     assert_equal "Test Sender", message.sender_name
