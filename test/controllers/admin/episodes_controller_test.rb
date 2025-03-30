@@ -85,8 +85,10 @@ class Admin::EpisodesControllerTest < ActionDispatch::IntegrationTest
     assert_match "Episode Number", @response.body
     assert_match @episode.title, @response.body
   end
-  
+
   test "should export filtered episodes" do
+    sign_in_as_admin # Ensure admin is signed in for this test
+
     # Create a unique episode for this test
     unique_episode = Episode.create!(
       number: 999,
