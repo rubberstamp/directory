@@ -84,6 +84,8 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
   gem "rails-controller-testing"
+  # Add Mocha for stubbing/mocking
+  gem "mocha", require: false
 end
 
 gem "devise", "~> 4.9"

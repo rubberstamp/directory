@@ -1,6 +1,7 @@
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
+require "mocha/minitest" # Add this line to integrate Mocha
 
 module ActiveSupport
   class TestCase
