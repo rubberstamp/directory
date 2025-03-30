@@ -58,35 +58,14 @@ rescue => e
 end
 
 # Test 3: Search for videos
-puts "\nTest 3: Searching for videos..."
+puts "\nTest 3: Searching for videos using YoutubeVideo model..."
 begin
   search_term = "procurement podcast"
-  
-  # Try direct YT gem search first
-  puts "Direct YT gem search:"
-  begin
-    yt_results = Yt::Collections::Videos.new.where(
-      q: search_term,
-      order: 'relevance', 
-      max_results: 3
-    )
-    
-    # Test if we can iterate the results
-    first_result = yt_results.first
-    if first_result
-      puts "  ✓ Direct search successful"
-      puts "    First result: #{first_result.title} (#{first_result.id})"
-    else
-      puts "  ✗ No direct search results"
-    end
-  rescue => e
-    puts "  ✗ Direct YT gem search error: #{e.class.name}: #{e.message}"
-  end
-  
-  # Now try the wrapper model
-  puts "\nUsing YoutubeVideo model search:"
+
+  # Test the application's wrapper model directly
+  puts "Using YoutubeVideo.search:"
   results = YoutubeVideo.search(search_term, max_results: 3)
-  
+
   if results.any?
     puts "✓ Successfully searched for '#{search_term}':"
     results.each_with_index do |result, index|
