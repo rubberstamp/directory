@@ -297,4 +297,72 @@ class Admin::EpisodesControllerTest < ActionDispatch::IntegrationTest
     file.close
     file.unlink
   end
+
+  # Test for YouTube Summarization
+  test "should enqueue summarization job and update summary" do
+    sign_in_as_admin # Assumes this helper method exists from test_helper.rb
+
+    # Use ActiveJob test adapter for inline execution
+    ActiveJob::Base.queue_adapter = :test
+
+    # Create an episode with a valid video_id
+    episode = Episode.create!(
+      number: 101,
+      title: "Test Summarization Episode",
+      video_id: "dQw4w9WgXcQ", # Valid ID for youtube_url generation
+      air_date: Date.today
+    )
+
+    # Mock the summarization service
+    mock_summary = "This is a mocked summary of the video."
+    mock_service = Minitest::Mock.new
+    mock_service.expect :call, mock_summary # Expect 'call' to be called and return the mock summary
+
+    # Ensure the job uses the mocked service instance
+    YoutubeSummarizerService.stub :new, mock_service do
+      # Assert job is enqueued when action is posted
+      assert_enqueued_with(job: SummarizeYoutubeVideoJob, args: [episode.id]) do
+        post summarize_admin_episode_url(episode)
+      end
+    end
+
+    # Assert redirection and flash notice after enqueuing
+    assert_redirected_to admin_episode_url(episode)
+    assert_equal "Summarization job queued for Episode ##{episode.number}.", flash[:notice]
+
+    # Perform the job inline
+    perform_enqueued_jobs
+
+    # Verify the service mock was called as expected
+    mock_service.verify
+
+    # Reload the episode and check if the summary was updated
+    episode.reload
+    assert_equal mock_summary, episode.summary
+  end
+
+  test "should show alert if episode has no youtube_url for summarization" do
+    sign_in_as_admin
+
+    # Create an episode likely to have no youtube_url (e.g., placeholder ID)
+    episode = Episode.create!(
+      number: 102,
+      title: "Episode without valid video",
+      video_id: "EPISODE_PLACEHOLDER",
+      air_date: Date.today
+    )
+
+    # Ensure no job is enqueued
+    assert_no_enqueued_jobs do
+      post summarize_admin_episode_url(episode)
+    end
+
+    # Assert redirection and flash alert
+    assert_redirected_to admin_episode_url(episode)
+    assert_equal "Cannot summarize: Episode ##{episode.number} has no valid YouTube URL.", flash[:alert]
+
+    # Ensure summary remains nil/blank
+    episode.reload
+    assert_nil episode.summary
+  end
 end

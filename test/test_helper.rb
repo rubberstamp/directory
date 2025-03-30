@@ -27,7 +27,8 @@ end
 
 class ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
-  
+  include ActiveJob::TestHelper # Include ActiveJob test helpers
+
   def sign_in_as_admin
     @admin = User.create!(
       email: "admin-#{rand(1000)}@example.com", 
