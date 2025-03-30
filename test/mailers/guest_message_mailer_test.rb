@@ -28,11 +28,12 @@ class GuestMessageMailerTest < ActionMailer::TestCase
   
   test "sender_confirmation" do
     mail = GuestMessageMailer.sender_confirmation(@guest_message)
-    
+    expected_from = Rails.application.config.podcast_email || "info@procurementexpress.com" # Use configured or default
+
     assert_equal "We've received your message - The Gross Profit Podcast", mail.subject
     assert_equal [@guest_message.sender_email], mail.to
-    assert_equal [Rails.application.config.podcast_email], mail.from
-    
+    assert_equal [expected_from], mail.from
+
     # Check email content
     assert_match "Dear #{@guest_message.sender_name}", mail.html_part.body.to_s
     assert_match "Thank you for your message", mail.html_part.body.to_s
@@ -45,11 +46,12 @@ class GuestMessageMailerTest < ActionMailer::TestCase
 
   test "admin_notification" do
     mail = GuestMessageMailer.admin_notification(@guest_message)
-    
+    expected_from = Rails.application.config.podcast_email || "info@procurementexpress.com" # Use configured or default
+
     assert_equal "New Guest Message: #{@guest_message.subject}", mail.subject
     assert_equal [@admin_email], mail.to
-    assert_equal [Rails.application.config.podcast_email], mail.from
-    
+    assert_equal [expected_from], mail.from
+
     # Check email content
     assert_match "From:", mail.html_part.body.to_s
     assert_match "Jane Smith", mail.html_part.body.to_s
@@ -69,13 +71,14 @@ class GuestMessageMailerTest < ActionMailer::TestCase
 
   test "forward_to_guest" do
     mail = GuestMessageMailer.forward_to_guest(@guest_message)
-    
+    expected_from = Rails.application.config.podcast_email || "info@procurementexpress.com" # Use configured or default
+
     expected_subject = "Test Message - from Jane Smith via The Gross Profit Podcast"
     assert_equal expected_subject, mail.subject
     assert_equal [@profile.message_forwarding_email], mail.to
-    assert_equal [Rails.application.config.podcast_email], mail.from
+    assert_equal [expected_from], mail.from
     assert_equal [@guest_message.sender_email], mail.reply_to
-    
+
     # Check email content
     assert_match "Dear John Doe", mail.html_part.body.to_s
     assert_match "Jane Smith", mail.html_part.body.to_s
@@ -118,10 +121,28 @@ class GuestMessageMailerTest < ActionMailer::TestCase
       profile: nil,
       status: GuestMessage::STATUSES[:new]
     )
-    
+
     mail = GuestMessageMailer.forward_to_guest(general_message)
     # Testing what actually happens rather than what should happen
     # The implementation returns a NullMail object, which is fine as long as it doesn't send
     assert_not mail.deliver_now
+  end
+  
+  # Adjust redirect assertion for general inquiry
+  test "should redirect general inquiry back to root path" do
+    assert_difference('GuestMessage.count') do
+      post guest_messages_url, params: { 
+        guest_message: { 
+          sender_name: "Test Sender",
+          sender_email: "test@example.com",
+          subject: "Test Subject",
+          message: "This is a test message"
+        } 
+      }
+    end
+    
+    # Check redirect (fallback is root_path)
+    assert_redirected_to root_path 
+    assert_equal "Your message has been sent successfully.", flash[:success]
   end
 end

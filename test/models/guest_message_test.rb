@@ -1,10 +1,21 @@
 require "test_helper"
 
 class GuestMessageTest < ActiveSupport::TestCase
+  # Helper to create a profile for tests
+  def create_test_profile(options = {})
+    Profile.create!(
+      name: options[:name] || "Test Profile",
+      email: options[:email] || "test-profile-#{rand(1000)}@example.com",
+      allow_messages: options.fetch(:allow_messages, true),
+      message_forwarding_email: options[:message_forwarding_email]
+    )
+  end
+
   test "should create a valid guest message" do
-    profile = Profile.create!(
-      name: "Guest Message Test", 
-      email: "guest_message_test@example.com"
+    profile = create_test_profile(name: "Guest Message Test", email: "guest_message_test@example.com")
+
+    message = GuestMessage.new(
+      sender_name: "Test Sender",
     )
     
     message = GuestMessage.new(
@@ -58,7 +69,7 @@ class GuestMessageTest < ActiveSupport::TestCase
   end
 
   test "should return correct guest name" do
-    profile = profiles(:one)
+    profile = create_test_profile(name: "John Doe Profile")
     message_with_profile = GuestMessage.new(
       sender_name: "Test Sender",
       sender_email: "test@example.com",
@@ -99,9 +110,8 @@ class GuestMessageTest < ActiveSupport::TestCase
   end
 
   test "can_be_forwarded? returns true when profile allows messages and has forwarding email" do
-    profile = profiles(:one)
-    profile.update(allow_messages: true, message_forwarding_email: "guest@example.com")
-    
+    profile = create_test_profile(message_forwarding_email: "guest@example.com")
+
     message = GuestMessage.new(
       sender_name: "Test Sender",
       sender_email: "test@example.com",
@@ -113,9 +123,8 @@ class GuestMessageTest < ActiveSupport::TestCase
   end
 
   test "can_be_forwarded? returns false when profile disallows messages" do
-    profile = profiles(:one)
-    profile.update(allow_messages: false, message_forwarding_email: "guest@example.com")
-    
+    profile = create_test_profile(allow_messages: false, message_forwarding_email: "guest@example.com")
+
     message = GuestMessage.new(
       sender_name: "Test Sender",
       sender_email: "test@example.com",
@@ -127,9 +136,8 @@ class GuestMessageTest < ActiveSupport::TestCase
   end
 
   test "can_be_forwarded? returns false when profile has no forwarding email" do
-    profile = profiles(:one)
-    profile.update(allow_messages: true, message_forwarding_email: nil)
-    
+    profile = create_test_profile(message_forwarding_email: nil)
+
     message = GuestMessage.new(
       sender_name: "Test Sender",
       sender_email: "test@example.com",
@@ -151,9 +159,8 @@ class GuestMessageTest < ActiveSupport::TestCase
   end
 
   test "forward_manually returns true when message can be forwarded" do
-    profile = profiles(:one)
-    profile.update(allow_messages: true, message_forwarding_email: "guest@example.com")
-    
+    profile = create_test_profile(message_forwarding_email: "guest@example.com")
+
     message = GuestMessage.new(
       sender_name: "Test Sender",
       sender_email: "test@example.com",
@@ -165,9 +172,8 @@ class GuestMessageTest < ActiveSupport::TestCase
   end
 
   test "forward_manually returns false when message cannot be forwarded" do
-    profile = profiles(:one)
-    profile.update(allow_messages: false)
-    
+    profile = create_test_profile(allow_messages: false)
+
     message = GuestMessage.new(
       sender_name: "Test Sender",
       sender_email: "test@example.com",
@@ -180,9 +186,10 @@ class GuestMessageTest < ActiveSupport::TestCase
 
   test "scopes filter messages correctly" do
     GuestMessage.delete_all
-    
-    profile = profiles(:one)
-    
+    Profile.delete_all # Clear profiles too
+
+    profile = create_test_profile
+
     new_message = GuestMessage.create!(
       sender_name: "New Sender",
       sender_email: "new@example.com",

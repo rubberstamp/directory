@@ -25,15 +25,16 @@ class GeocodeProfileJobTest < ActiveJob::TestCase
     
     # Mock Geocoder to return predictable results
     result = Minitest::Mock.new
-    result.expect :latitude, 40.7128
-    result.expect :longitude, -74.0060
-    result.expect :address, {"city" => "New York", "country" => "USA"}
-    
-    # Mock the search method
-    search_results = Minitest::Mock.new
-    search_results.expect :first, result
-    
-    Geocoder.stub :search, search_results do
+    # Mock the result object returned by Geocoder.search().first
+    mock_result = Minitest::Mock.new
+    mock_result.expect :latitude, 40.7128
+    mock_result.expect :longitude, -74.0060
+    # Mock the [] method for address components
+    mock_result.expect :[], "New York", ["city"] 
+    mock_result.expect :[], "USA", ["country"] 
+
+    # Mock Geocoder.search to return an array containing the mock result
+    Geocoder.stub :search, [mock_result] do
       # Perform the job
       GeocodeProfileJob.perform_now(profile.id)
     end
@@ -42,12 +43,15 @@ class GeocodeProfileJobTest < ActiveJob::TestCase
     profile.reload
     
     # Verify the coordinates and cached location data were updated
-    assert_equal 40.7128, profile.latitude
-    assert_equal -74.0060, profile.longitude
+    assert_in_delta 40.7128, profile.latitude # Use assert_in_delta for floats
+    assert_in_delta -74.0060, profile.longitude
     assert_equal "New York", profile.cached_city
     assert_equal "USA", profile.cached_country
+    
+    # Verify the mock expectations were met
+    mock_result.verify 
   end
-  
+
   test "should handle nil search results" do
     profile = @profile
     profile.location = "NonExistentPlace"

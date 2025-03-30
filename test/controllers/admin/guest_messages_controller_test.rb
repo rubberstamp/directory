@@ -2,15 +2,21 @@ require "test_helper"
 
 class Admin::GuestMessagesControllerTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
-  
+
   setup do
-    @admin = users(:admin)
-    sign_in @admin
-    
-    @profile = profiles(:one)
+    # Use helper to sign in admin
+    sign_in_as_admin # This sets @admin
+
+    # Create necessary records manually
+    @profile = Profile.create!(
+      name: "Test Profile for Admin Messages",
+      email: "admin-msg-profile@example.com",
+      allow_messages: true,
+      message_forwarding_email: "guest-fwd@example.com"
+    )
     @guest_message = GuestMessage.create!(
-      sender_name: "Test Sender",
-      sender_email: "test@example.com",
+      sender_name: "Admin Test Sender",
+      sender_email: "admin-test@example.com",
       subject: "Test Subject",
       message: "This is a test message",
       profile: @profile,
