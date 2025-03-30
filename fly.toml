@@ -34,7 +34,7 @@ console_command = "/rails/bin/rails console"
 
 [processes]
   app = "bin/rails server -p 3000"
-  worker = "bin/rails solid_queue:start"
+  worker = "bin/jobs"
 
 [[statics]]
   guest_path = "/rails/public"
