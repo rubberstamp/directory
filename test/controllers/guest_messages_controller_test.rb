@@ -160,9 +160,9 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
         } 
       }
     end
-    
-    # Check redirect (should redirect back to referer, which is root_path by default if not set)
-    assert_redirected_to root_path 
+
+    # Check redirect (should redirect back to contact_path as per controller logic)
+    assert_redirected_to contact_path 
     assert_equal "Your message has been sent successfully.", flash[:success]
   end
 end
