@@ -15,7 +15,8 @@ class YoutubeSummarizerService
   def initialize(episode)
     @episode = episode
     validate_configuration!
-    @client = Google::Cloud::AIPlatform.vertex_ai
+    # Directly initialize the generative model client
+    @model = Google::Cloud::AIPlatform.generative_model model_name: MODEL_NAME
   end
 
   def call
@@ -31,8 +32,8 @@ class YoutubeSummarizerService
       video_part = { file_data: { mime_type: "video/youtube", file_uri: @episode.youtube_url } }
       prompt_part = { text: "Provide a concise summary of this YouTube video suitable for show notes. Focus on the key topics discussed and main takeaways. Aim for 2-3 paragraphs." }
 
-      # Make the API call
-      response = @client.generative_model(model_name: MODEL_NAME).generate_content(
+      # Make the API call using the initialized model
+      response = @model.generate_content(
         [video_part, prompt_part]
       )
 
