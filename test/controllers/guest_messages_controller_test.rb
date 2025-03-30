@@ -21,18 +21,17 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
   test "should create general inquiry guest message" do
     assert_difference('GuestMessage.count') do
       post guest_messages_url, params: {
-        guest_message: { 
+        guest_message: {
           sender_name: "Test Sender",
           sender_email: "test@example.com",
           subject: "Test Subject",
           message: "This is a test message"
-        } 
-      }
+        }
+      }, headers: { "HTTP_REFERER" => contact_url } # Set referer
     end
-    
+
     assert_redirected_to contact_path
-    assert_equal "Your message has been sent. Thank you for contacting us!", flash[:notice]
-    
+    assert_equal "Your message has been sent successfully.", flash[:success] # Check correct flash key
     # Check that the message was created with correct attributes
     message = GuestMessage.last
     assert_equal "Test Sender", message.sender_name
@@ -88,7 +87,8 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to previous_url
     assert_not_nil flash[:error]
     # Check the specific error message format from the controller
-    assert flash[:error].include?("Email can't be blank"), "Flash error message mismatch. Got: #{flash[:error]}"
+    assert_match /Email can't be blank/, flash[:error], "Flash error message mismatch. Got: #{flash[:error]}"
+    assert_match /Email is invalid/, flash[:error], "Flash error message mismatch. Got: #{flash[:error]}"
   end
   test "should auto-forward message when profile has auto-forward enabled" do
     # Auto-forwarding is currently disabled in the controller, so this test needs adjustment
@@ -119,8 +119,9 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
     assert_nil message.forwarded_at
 
     # Verify emails were sent (confirmation + admin notification)
-    # Should be 2 emails: sender confirmation and admin notification
-    assert_equal 2, ActionMailer::Base.deliveries.size, "Expected 2 emails to be sent" 
+    # Perform jobs first, then check deliveries
+    perform_enqueued_jobs # Perform mailer jobs
+    assert_equal 2, ActionMailer::Base.deliveries.size, "Expected 2 emails to be sent"
   end
 
   test "should not auto-forward when profile has disabled messages" do
@@ -162,7 +163,7 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
     end
 
     # Check redirect (should redirect back to contact_path as per controller logic)
-    assert_redirected_to contact_path 
+    assert_redirected_to contact_path
     assert_equal "Your message has been sent successfully.", flash[:success]
   end
 end

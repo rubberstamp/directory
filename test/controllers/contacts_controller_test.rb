@@ -1,6 +1,10 @@
 require "test_helper"
 
 class ContactsControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    ActionMailer::Base.deliveries.clear
+  end
+
   test "should get index" do
     get contact_path
     assert_response :success
@@ -56,18 +60,7 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Thank you for subscribing to our podcast newsletter!", flash[:success]
 
     # NOTE: Email sending is currently disabled in the controller action.
-    # Uncomment these assertions when email sending is re-enabled.
-    # Check welcome email
-    # welcome_email = ActionMailer::Base.deliveries[-2]
-    # assert_not_nil welcome_email, "Welcome email should have been sent"
-    # assert_equal "Welcome to The Gross Profit Podcast", welcome_email.subject
-    # assert_equal ["subscriber@example.com"], welcome_email.to
-    
-    # Check admin notification
-    # admin_notification = ActionMailer::Base.deliveries.last
-    # assert_not_nil admin_notification, "Admin notification should have been sent"
-    # assert_equal "New Newsletter Subscriber - The Gross Profit Podcast", admin_notification.subject
-    # assert_equal [Rails.application.config.podcast_admin_email], admin_notification.to
+    # No emails are expected.
   end
 
   test "should not subscribe without email" do

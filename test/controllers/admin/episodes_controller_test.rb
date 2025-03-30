@@ -329,11 +329,12 @@ class Admin::EpisodesControllerTest < ActionDispatch::IntegrationTest
     mock_service.expect :call, mock_summary # Expect 'call' to be called and return the mock summary
 
     mock_summary = "This is a mocked summary of the video."
+    mock_service_instance = Minitest::Mock.new
+    mock_service_instance.expect :call, mock_summary # Expect 'call' to be called on the instance
 
-    # Stub the 'call' method on any instance of the service
-    YoutubeSummarizerService.any_instance.stubs(:call).returns(mock_summary)
-
-    # Assert job is enqueued when action is posted
+    # Stub the .new method to return our mock instance
+    YoutubeSummarizerService.stub :new, mock_service_instance do
+      # Assert job is enqueued when action is posted
     assert_enqueued_with(job: SummarizeYoutubeVideoJob, args: [episode.id]) do
       post summarize_admin_episode_url(episode)
     end
@@ -342,8 +343,12 @@ class Admin::EpisodesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_episode_url(episode)
     assert_equal "Summarization job queued for Episode ##{episode.number}.", flash[:notice]
 
-    # Perform the job inline
-    perform_enqueued_jobs
+      # Perform the job inline *within the stub block*
+      perform_enqueued_jobs
+    end
+
+    # Verify the mock was called
+    mock_service_instance.verify
 
     # Reload the episode and check if the summary was updated
     episode.reload
