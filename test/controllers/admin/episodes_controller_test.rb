@@ -1,4 +1,5 @@
 require "test_helper"
+require 'minitest/mock' # Add this line to require the mock library
 
 class Admin::EpisodesControllerTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
