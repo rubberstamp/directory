@@ -15,12 +15,8 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
     )
 
     # Mock the Vertex AI client and model chain
-    @mock_model = Minitest::Mock.new
-    @mock_client = Minitest::Mock.new
-    # Stub the method chain: Google::Cloud::AIPlatform.generative_model returns our mock model
-    Google::Cloud::AIPlatform.stubs(:generative_model)
-                             .with(model_name: YoutubeSummarizerService::MODEL_NAME)
-                             .returns(@mock_model)
+    # Mock the model object that the service expects to get
+    @mock_model = Minitest::Mock.new 
 
     # Stub credentials for most tests (override for specific credential tests)
     Rails.application.credentials.stubs(:google_cloud).returns({ project_id: "test-project", location: "us-central1" })
@@ -40,13 +36,17 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
     mock_candidate = OpenStruct.new(content: mock_content)
     mock_response = OpenStruct.new(candidates: [mock_candidate])
 
-    @mock_model.expect :generate_content, mock_response, [[{ file_data: { mime_type: "video/youtube", file_uri: @episode.youtube_url } }, { text: String }]] # Match args
+    @mock_model.expect :generate_content, mock_response, [Array] # Expect generate_content call
+
+    # Stub the class method *before* initializing the service
+    Google::Cloud::AIPlatform.stubs(:generative_model)
+                             .with(model_name: YoutubeSummarizerService::MODEL_NAME)
+                             .returns(@mock_model)
 
     service = YoutubeSummarizerService.new(@episode)
     summary = service.call
 
     assert_equal expected_summary, summary
-    # @mock_client.verify # No longer needed as we stub the class method directly
     @mock_model.verify
   end
 
@@ -65,9 +65,14 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
     @mock_model.expect :generate_content, nil do |_args| # Expect call but raise error
       raise api_error
     end
+    
+    # Stub the class method *before* initializing the service
+    Google::Cloud::AIPlatform.stubs(:generative_model)
+                             .with(model_name: YoutubeSummarizerService::MODEL_NAME)
+                             .returns(@mock_model)
 
     service = YoutubeSummarizerService.new(@episode)
-    
+
     exception = assert_raises YoutubeSummarizerService::SummarizationError do
       service.call
     end
@@ -84,6 +89,11 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
     mock_response = OpenStruct.new(candidates: [mock_candidate])
 
     @mock_model.expect :generate_content, mock_response, [Array] # Match any array arg
+    
+    # Stub the class method *before* initializing the service
+    Google::Cloud::AIPlatform.stubs(:generative_model)
+                             .with(model_name: YoutubeSummarizerService::MODEL_NAME)
+                             .returns(@mock_model)
 
     service = YoutubeSummarizerService.new(@episode)
 
