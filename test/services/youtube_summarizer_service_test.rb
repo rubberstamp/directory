@@ -38,15 +38,20 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
 
     @mock_model.expect :generate_content, mock_response, [Array] # Expect generate_content call
 
-    # Stub the class method *before* initializing the service
-    Google::Cloud::AIPlatform.stubs(:generative_model)
-                             .with(model_name: YoutubeSummarizerService::MODEL_NAME)
-                             .returns(@mock_model)
+    # Define the stub logic for the class method
+    generative_model_stub = ->(model_name:) {
+      assert_equal YoutubeSummarizerService::MODEL_NAME, model_name
+      @mock_model # Return the mock model object
+    }
 
-    service = YoutubeSummarizerService.new(@episode)
-    summary = service.call
-
-    assert_equal expected_summary, summary
+    # Stub the necessary methods within the block
+    Rails.application.credentials.stub :google_cloud, @test_credentials do
+      Google::Cloud::AIPlatform.stub :generative_model, generative_model_stub do
+        service = YoutubeSummarizerService.new(@episode)
+        summary = service.call
+        assert_equal expected_summary, summary
+      end
+    end
     @mock_model.verify
   end
 
@@ -65,15 +70,18 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
     @mock_model.expect :generate_content, nil do |_args| # Expect call but raise error
       raise api_error
     end
-    
-    # Stub the class method *before* initializing the service
-    Google::Cloud::AIPlatform.stubs(:generative_model)
-                             .with(model_name: YoutubeSummarizerService::MODEL_NAME)
-                             .returns(@mock_model)
 
-    service = YoutubeSummarizerService.new(@episode)
+    # Define the stub logic for the class method
+    generative_model_stub = ->(model_name:) {
+      assert_equal YoutubeSummarizerService::MODEL_NAME, model_name
+      @mock_model # Return the mock model object
+    }
 
-    exception = assert_raises YoutubeSummarizerService::SummarizationError do
+    # Stub the necessary methods within the block
+    Rails.application.credentials.stub :google_cloud, @test_credentials do
+      Google::Cloud::AIPlatform.stub :generative_model, generative_model_stub do
+        service = YoutubeSummarizerService.new(@episode)
+        exception = assert_raises YoutubeSummarizerService::SummarizationError do
       service.call
     end
     assert_match(/API Error: #{api_error.message}/, exception.message)
@@ -89,15 +97,18 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
     mock_response = OpenStruct.new(candidates: [mock_candidate])
 
     @mock_model.expect :generate_content, mock_response, [Array] # Match any array arg
-    
-    # Stub the class method *before* initializing the service
-    Google::Cloud::AIPlatform.stubs(:generative_model)
-                             .with(model_name: YoutubeSummarizerService::MODEL_NAME)
-                             .returns(@mock_model)
 
-    service = YoutubeSummarizerService.new(@episode)
+    # Define the stub logic for the class method
+    generative_model_stub = ->(model_name:) {
+      assert_equal YoutubeSummarizerService::MODEL_NAME, model_name
+      @mock_model # Return the mock model object
+    }
 
-    exception = assert_raises YoutubeSummarizerService::SummarizationError do
+    # Stub the necessary methods within the block
+    Rails.application.credentials.stub :google_cloud, @test_credentials do
+      Google::Cloud::AIPlatform.stub :generative_model, generative_model_stub do
+        service = YoutubeSummarizerService.new(@episode)
+        exception = assert_raises YoutubeSummarizerService::SummarizationError do
       service.call
     end
     assert_match "No summary content received from API.", exception.message
@@ -106,12 +117,12 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
     @mock_model.verify
   end
   test "should raise SummarizationError if Google Cloud Project ID is missing" do
-    # Re-stub credentials for this specific test to be missing the project_id
-    Rails.application.credentials.stubs(:google_cloud).returns({ location: "us-central1" })
-
-    exception = assert_raises YoutubeSummarizerService::SummarizationError do
-      YoutubeSummarizerService.new(@episode) # Error should happen during initialization
+    # Stub credentials to be missing the project_id for this test
+    Rails.application.credentials.stub :google_cloud, { location: "us-central1" } do
+      exception = assert_raises YoutubeSummarizerService::SummarizationError do
+        YoutubeSummarizerService.new(@episode) # Error should happen during initialization
+      end
+      assert_match "Google Cloud Project ID (google_cloud.project_id) is not configured in Rails credentials.", exception.message
     end
-    assert_match "Google Cloud Project ID is not configured in credentials.", exception.message
   end
 end
