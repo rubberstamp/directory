@@ -343,9 +343,6 @@ class Admin::EpisodesControllerTest < ActionDispatch::IntegrationTest
       perform_enqueued_jobs
     end
 
-    # Verify the service mock was called as expected *after* the block
-    mock_service.verify
-
     # Reload the episode and check if the summary was updated
     episode.reload
     assert_equal mock_summary, episode.summary

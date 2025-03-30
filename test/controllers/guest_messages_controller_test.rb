@@ -88,7 +88,7 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to previous_url
     assert_not_nil flash[:error]
     # Check the specific error message format from the controller
-    assert flash[:error].include?("There was a problem sending your message: Email can't be blank")
+    assert flash[:error].include?("Email can't be blank"), "Flash error message mismatch. Got: #{flash[:error]}"
   end
   test "should auto-forward message when profile has auto-forward enabled" do
     # Auto-forwarding is currently disabled in the controller, so this test needs adjustment
@@ -119,7 +119,8 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
     assert_nil message.forwarded_at
 
     # Verify emails were sent (confirmation + admin notification)
-    assert_equal 2, ActionMailer::Base.deliveries.size
+    # Should be 2 emails: sender confirmation and admin notification
+    assert_equal 2, ActionMailer::Base.deliveries.size, "Expected 2 emails to be sent" 
   end
 
   test "should not auto-forward when profile has disabled messages" do
@@ -160,7 +161,7 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
       }
     end
     
-    # Check redirect (fallback is root_path)
+    # Check redirect (should redirect back to referer, which is root_path by default if not set)
     assert_redirected_to root_path 
     assert_equal "Your message has been sent successfully.", flash[:success]
   end

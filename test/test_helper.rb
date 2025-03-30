@@ -27,6 +27,11 @@ module ActiveSupport
     Rails.application.config.action_mailer.default_url_options ||= { host: 'localhost', port: 3000 }
     Rails.application.config.podcast_admin_email ||= "admin-test@example.com" # Default admin email for tests
     Rails.application.config.podcast_email ||= "podcast-test@example.com" # Default from email for tests
+    
+    # Ensure mailer settings for tests
+    ActionMailer::Base.delivery_method = :test
+    ActionMailer::Base.perform_deliveries = true
+    ActionMailer::Base.deliveries.clear
   end
 end
 
