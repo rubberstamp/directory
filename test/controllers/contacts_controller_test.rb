@@ -6,14 +6,20 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", "Contact Us"
   end
+
   test "should create contact" do
-    assert_difference 'ActionMailer::Base.deliveries.size', 2 do
-      post contacts_path, params: { 
-        name: "Test User", 
-        email: "test@example.com", 
-        phone: "123-456-7890", 
-        message: "This is a test message" 
-      }
+    # Ensure mailer queue is empty before test
+    ActionMailer::Base.deliveries.clear
+
+    assert_difference('GuestMessage.count', 0) do # Contacts don't create GuestMessages
+      assert_difference('ActionMailer::Base.deliveries.size', 2) do # Expect 2 emails: confirmation + admin
+        post contacts_url, params: {
+          name: "Test User",
+          email: "test@example.com",
+          phone: "123-456-7890", 
+          message: "This is a test message" 
+        }
+      end
     end
     
     assert_redirected_to contact_path
