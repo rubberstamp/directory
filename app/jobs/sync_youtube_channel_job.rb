@@ -81,43 +81,71 @@ class SyncYoutubeChannelJob < ApplicationJob
         return stats
       end
       
-      Rails.logger.info "Found #{videos.count} videos to process"
-      
-      videos.each do |youtube_video|
-        stats[:total_processed] += 1
-        
-        # Track the oldest video date for pagination
-        if youtube_video.published_at
-          if stats[:oldest_video_date].nil? || youtube_video.published_at < stats[:oldest_video_date]
-            stats[:oldest_video_date] = youtube_video.published_at
-          end
-        end
-        
+      Rails.logger.info "Found #{videos.count} videos to potentially process. Fetching details in bulk."
+
+      # Extract video IDs for bulk fetching
+      video_ids = videos.map(&:id)
+
+      if video_ids.any?
+        # Fetch details for all videos in one API call
+        # Requesting snippet (title, description, publishedAt, thumbnails) and contentDetails (duration)
         begin
-          # Check if the episode already exists
-          existing_episode = Episode.find_by(video_id: youtube_video.id)
-          
-          if existing_episode && options[:update_existing]
-            # Update existing episode
-            update_episode_from_youtube(existing_episode, youtube_video, options)
-            stats[:updated] += 1
-            Rails.logger.info "Updated episode ##{existing_episode.number}: #{existing_episode.title}"
-          elsif existing_episode
-            # Skip existing episodes if update_existing is false
-            stats[:skipped] += 1
-            Rails.logger.info "Skipped existing episode ##{existing_episode.number}: #{existing_episode.title}"
-          else
-            # Create new episode
-            create_episode_from_youtube(youtube_video)
-            stats[:created] += 1
-            Rails.logger.info "Created new episode from video: #{youtube_video.title}"
-          end
+          bulk_videos_collection = Yt::Collections::Videos.new
+          detailed_videos = bulk_videos_collection.where(id: video_ids.join(','), part: 'snippet,contentDetails')
+          Rails.logger.info "Fetched details for #{detailed_videos.count} videos via bulk API call."
+
+          # Process videos using the detailed data
+          detailed_videos.each do |detailed_video|
+            stats[:total_processed] += 1
+
+            # Track the oldest video date for pagination (using the detailed video object)
+            if detailed_video.published_at
+              if stats[:oldest_video_date].nil? || detailed_video.published_at < stats[:oldest_video_date]
+                stats[:oldest_video_date] = detailed_video.published_at
+              end
+            end
+
+            begin
+              # Check if the episode already exists
+              existing_episode = Episode.find_by(video_id: detailed_video.id)
+
+              if existing_episode && options[:update_existing]
+                # Update existing episode using detailed data
+                update_episode_from_youtube(existing_episode, detailed_video, options)
+                stats[:updated] += 1
+                Rails.logger.info "Updated episode ##{existing_episode.number}: #{existing_episode.title}"
+              elsif existing_episode
+                # Skip existing episodes if update_existing is false
+                stats[:skipped] += 1
+                Rails.logger.info "Skipped existing episode ##{existing_episode.number}: #{existing_episode.title}"
+              else
+                # Create new episode using detailed data
+                create_episode_from_youtube(detailed_video, options) # Pass options for consistency
+                stats[:created] += 1
+                Rails.logger.info "Created new episode from video: #{detailed_video.title}"
+              end
+            rescue => e
+              stats[:errors] += 1
+              Rails.logger.error "Error processing video #{detailed_video.id}: #{e.message}"
+              Rails.logger.error e.backtrace.join("\n") # Add backtrace for debugging
+            end
+          end # end detailed_videos.each
+
+        rescue Yt::Errors::RequestError => e
+          stats[:errors] += video_ids.count # Assume all failed if the bulk request fails
+          Rails.logger.error "YouTube API Error during bulk fetch: #{e.message}"
+          # Potentially re-raise or handle specific errors (like quota exceeded)
+          raise e # Re-raise for standard job retry mechanisms
         rescue => e
-          stats[:errors] += 1
-          Rails.logger.error "Error processing video #{youtube_video.id}: #{e.message}"
+          stats[:errors] += video_ids.count # Assume all failed
+          Rails.logger.error "Generic Error during bulk fetch or processing: #{e.message}"
+          Rails.logger.error e.backtrace.join("\n")
+          raise e # Re-raise
         end
+      else
+         Rails.logger.info "No video IDs found to process after filtering."
       end
-      
+
       # Log summary
       Rails.logger.info "YouTube sync completed. Stats: #{stats.inspect}"
       
@@ -133,87 +161,74 @@ class SyncYoutubeChannelJob < ApplicationJob
       raise e
     end
   end
-  
   private
-  
-  # Get all necessary data from a YouTube video object with minimal API calls
-  def extract_video_data(youtube_video)
-    # The Yt gem makes an API call for EACH property access
-    # To minimize API calls, fetch all needed data at once and cache it
-    
-    # We make one API call to get all data we need
-    begin
-      # IMPORTANT: Make a single request to get all data we need at once
-      video_data = {
-        id: youtube_video.id,
-        title: youtube_video.title,
-        description: youtube_video.description,
-        published_at: youtube_video.published_at,
-        duration: youtube_video.duration
-      }
-      
-      # Thumbnail URLs require a separate API call - only make if necessary
-      # (YouTube won't include this in the same response as other data)
-      video_data[:thumbnail_url] = youtube_video.thumbnail_url(:high)
-      
-      return video_data
-    rescue => e
-      Rails.logger.error "Error extracting video data: #{e.message}"
-      return {}
+
+  # Update an existing episode with YouTube data (now expects a detailed Yt::Video object)
+  def update_episode_from_youtube(episode, detailed_video, options = {})
+    # Access properties directly from the detailed_video object
+    # Assumes 'snippet' and 'contentDetails' were fetched
+    episode.title = detailed_video.title
+    episode.duration_seconds = detailed_video.duration # duration is in seconds
+    episode.notes = detailed_video.description if episode.notes.blank?
+
+    # Set thumbnail if enabled
+    # Access thumbnail_url directly - :high might still be preferred if available
+    if options[:sync_thumbnails] && detailed_video.respond_to?(:thumbnail_url)
+       begin
+         # Prefer high quality, fallback gracefully if method/size isn't available
+         episode.thumbnail_url = detailed_video.thumbnail_url(:high)
+       rescue NoMethodError, ArgumentError
+         # Fallback to default or medium if high isn't available or causes error
+         episode.thumbnail_url = detailed_video.thumbnail_url rescue nil
+       end
     end
+
+    # Set air date if not already set
+    if episode.air_date.blank? && detailed_video.published_at
+      episode.air_date = detailed_video.published_at.to_date
+    end
+
+    # Save only if changes were made
+    episode.save! if episode.changed?
   end
 
-  # Update an existing episode with YouTube data
-  def update_episode_from_youtube(episode, youtube_video, options = {})
-    # Extract all needed data with minimal API calls
-    video_data = extract_video_data(youtube_video)
-    return false if video_data.empty?
-    
-    episode.title = video_data[:title]
-    episode.duration_seconds = video_data[:duration] 
-    episode.notes = video_data[:description] if episode.notes.blank?
-    
-    # Set thumbnail if enabled
-    if options[:sync_thumbnails] && video_data[:thumbnail_url]
-      episode.thumbnail_url = video_data[:thumbnail_url]
-    end
-    
-    # Set air date if not already set
-    if episode.air_date.blank? && video_data[:published_at]
-      episode.air_date = video_data[:published_at].to_date
-    end
-    
-    episode.save!
-  end
-  
-  # Create a new episode from YouTube data
-  def create_episode_from_youtube(youtube_video)
-    # Extract all needed data with minimal API calls
-    video_data = extract_video_data(youtube_video)
-    return false if video_data.empty?
-    
+  # Create a new episode from YouTube data (now expects a detailed Yt::Video object)
+  def create_episode_from_youtube(detailed_video, options = {})
+    # Access properties directly from the detailed_video object
+    # Assumes 'snippet' and 'contentDetails' were fetched
+
     # Try to determine episode number from the title
-    number = extract_episode_number(video_data[:title])
-    
+    number = extract_episode_number(detailed_video.title)
+
     # If we can't determine the number, use the highest existing number + 1
     if number.nil?
       max_number = Episode.maximum(:number) || 0
       number = max_number + 1
     end
-    
+
+    # Prepare thumbnail URL
+    thumbnail_url_to_save = nil
+    if options[:sync_thumbnails] && detailed_video.respond_to?(:thumbnail_url)
+       begin
+         thumbnail_url_to_save = detailed_video.thumbnail_url(:high)
+       rescue NoMethodError, ArgumentError
+         thumbnail_url_to_save = detailed_video.thumbnail_url rescue nil
+       end
+    end
+
     # Create the episode
     Episode.create!(
-      video_id: video_data[:id],
-      title: video_data[:title],
+      video_id: detailed_video.id,
+      title: detailed_video.title,
       number: number,
-      air_date: video_data[:published_at]&.to_date,
-      duration_seconds: video_data[:duration],
-      notes: video_data[:description],
-      thumbnail_url: video_data[:thumbnail_url]
+      air_date: detailed_video.published_at&.to_date,
+      duration_seconds: detailed_video.duration, # duration is in seconds
+      notes: detailed_video.description,
+      thumbnail_url: thumbnail_url_to_save
     )
   end
-  
-  # Try to extract episode number from the title
+
+  # Try to extract episode number from the title (no changes needed here)
   def extract_episode_number(title)
     # Common patterns:
     # "EP 123: Title"
