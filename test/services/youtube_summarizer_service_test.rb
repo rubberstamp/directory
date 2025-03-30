@@ -14,18 +14,16 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
       air_date: Date.today
     )
 
-    # Mock the Vertex AI client and model chain
     # Mock the model object that the service expects to get
-    @mock_model = Minitest::Mock.new 
-
-    # Stub credentials for most tests (override for specific credential tests)
-    Rails.application.credentials.stubs(:google_cloud).returns({ project_id: "test-project", location: "us-central1" })
+    @mock_model = Minitest::Mock.new
+    # Define standard test credentials
+    @test_credentials = { project_id: "test-project", location: "us-central1" }
   end
 
   teardown do
     # Ensure mocks are verified and episode is destroyed
     @episode.destroy if @episode&.persisted?
-    # Mocha unstubs automatically
+    # Minitest stub cleans up automatically
   end
 
   test "should return summary on successful API call" do
