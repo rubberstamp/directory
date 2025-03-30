@@ -4,11 +4,11 @@ require "google/cloud/ai_platform"
 
 # Service to summarize a YouTube video using Vertex AI Gemini API
 class YoutubeSummarizerService
-  # Define constants for configuration
-  PROJECT_ID = Rails.application.credentials.dig(:google_cloud, :project_id)
-  LOCATION = Rails.application.credentials.dig(:google_cloud, :location) || "us-central1" # Default location
-  API_KEY = Rails.application.credentials.dig(:google_cloud, :api_key)
-  MODEL_NAME = "gemini-1.5-flash" # Or use gemini-1.5-pro for higher quality/cost
+  # Define constants for configuration - check environment variables first, then fall back to credentials
+  PROJECT_ID = ENV["GOOGLE_CLOUD_PROJECT_ID"] || Rails.application.credentials.dig(:google_cloud, :project_id)
+  LOCATION = ENV["GOOGLE_CLOUD_LOCATION"] || Rails.application.credentials.dig(:google_cloud, :location) || "us-central1"
+  API_KEY = ENV["GOOGLE_API_KEY"] || Rails.application.credentials.dig(:google_cloud, :api_key)
+  MODEL_NAME = ENV["GEMINI_MODEL_NAME"] || "gemini-1.5-flash" # Or use gemini-1.5-pro for higher quality/cost
 
   # Allow for response stubbing in tests
   attr_writer :stub_response
