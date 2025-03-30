@@ -1,0 +1,20 @@
+New Mastermind Registration
+========================
+
+Someone has registered for the Fractional CFO Mastermind event.
+
+REGISTRATION DETAILS:
+---------------------
+Name: <%= @name %>
+Email: <%= @email %>
+<% if @company.present? %>Company: <%= @company %><% end %>
+Event Date: <%= @event_date %>
+<% if @message.present? %>
+Message:
+<%= @message %>
+<% end %>
+Registration Time: <%= @date.strftime("%B %d, %Y at %I:%M %p %Z") %>
+
+Please follow up with the registrant to confirm their participation.
+
+This is an automated notification from The Gross Profit Podcast website.

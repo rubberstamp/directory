@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background-color: #f8f8f8; padding: 15px; border-bottom: 1px solid #ddd; }
+    .content { padding: 20px 0; }
+    .footer { color: #777; font-size: 0.8em; padding-top: 15px; border-top: 1px solid #ddd; }
+    h1 { color: #3a86ff; }
+    .details { background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0; }
+    .label { font-weight: bold; margin-right: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>New Mastermind Registration</h1>
+    </div>
+    
+    <div class="content">
+      <p>Someone has registered for the Fractional CFO Mastermind event.</p>
+      
+      <div class="details">
+        <p><span class="label">Name:</span> <%= @name %></p>
+        <p><span class="label">Email:</span> <%= @email %></p>
+        <% if @company.present? %>
+        <p><span class="label">Company:</span> <%= @company %></p>
+        <% end %>
+        <p><span class="label">Event Date:</span> <%= @event_date %></p>
+        <% if @message.present? %>
+        <p><span class="label">Message:</span></p>
+        <p><%= @message %></p>
+        <% end %>
+        <p><span class="label">Registration Time:</span> <%= @date.strftime("%B %d, %Y at %I:%M %p %Z") %></p>
+      </div>
+      
+      <p>Please follow up with the registrant to confirm their participation.</p>
+    </div>
+    
+    <div class="footer">
+      <p>This is an automated notification from The Gross Profit Podcast website.</p>
+    </div>
+  </div>
+</body>
+</html>

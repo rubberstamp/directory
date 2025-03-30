@@ -24,4 +24,19 @@ class AdminMailer < ApplicationMailer
       subject: "New Newsletter Subscriber - The Gross Profit Podcast"
     )
   end
+  
+  # Notify admin about new event registration
+  def event_registration_notification(name, email, company, message, event_date)
+    @name = name
+    @email = email
+    @company = company
+    @message = message
+    @event_date = event_date
+    @date = Time.current
+    
+    mail(
+      to: "james.kennedy@procurementexpress.com",
+      subject: "New Mastermind Registration - The Gross Profit Podcast"
+    )
+  end
 end
