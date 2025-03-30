@@ -25,13 +25,13 @@ class GeocodeProfileJobTest < ActiveJob::TestCase
     profile.save
     
     # Mock Geocoder to return predictable results
-    result = Minitest::Mock.new
     # Mock the result object using OpenStruct for simplicity
+    # Ensure latitude and longitude are directly available attributes
     mock_result = OpenStruct.new(
-      latitude: 40.7128,
+      latitude: 40.7128, 
       longitude: -74.0060,
       # Mock the method used by the Profile model to extract city/country
-      address_components_of_type: lambda do |type|
+      address_components_of_type: lambda do |type| 
         case type
         when "locality"
           [{"long_name" => "New York"}]
