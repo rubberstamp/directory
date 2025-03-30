@@ -32,6 +32,10 @@ console_command = "/rails/bin/rails console"
   min_machines_running = 1
   processes = ["app"]
 
+[processes]
+  app = "bin/rails server -p 3000"
+  worker = "bin/rails solid_queue:start"
+
 [[statics]]
   guest_path = "/rails/public"
   url_prefix = "/"
