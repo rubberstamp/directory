@@ -25,7 +25,9 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
         }
       end
     end
-    
+
+    perform_enqueued_jobs # Ensure any mailer jobs are performed
+
     assert_redirected_to contact_path
     assert_equal "Thank you for your message! We'll get back to you soon.", flash[:success]
 

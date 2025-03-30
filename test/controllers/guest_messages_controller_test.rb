@@ -120,7 +120,7 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
     assert_nil message.forwarded_at
 
     # Verify emails were sent (confirmation + admin notification)
-    # Perform jobs first, then check deliveries
+    ActionMailer::Base.deliveries.clear # Clear before performing jobs for this assertion
     perform_enqueued_jobs # Perform mailer jobs
     assert_equal 2, ActionMailer::Base.deliveries.size, "Expected 2 emails to be sent"
   end
@@ -163,8 +163,8 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    # Check redirect (should redirect back to contact_path as per controller logic)
-    assert_redirected_to contact_path
+    # Check redirect (fallback is root_path when no referer is set)
+    assert_redirected_to root_path 
     assert_equal "Your message has been sent successfully.", flash[:success]
   end
 end
