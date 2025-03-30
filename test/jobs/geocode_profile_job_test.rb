@@ -1,4 +1,5 @@
 require "test_helper"
+require "ostruct" # Add this line
 
 class GeocodeProfileJobTest < ActiveJob::TestCase
   include ActiveJob::TestHelper

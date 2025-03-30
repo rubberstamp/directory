@@ -30,8 +30,8 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
       }, headers: { "HTTP_REFERER" => contact_url } # Set referer
     end
 
-    assert_redirected_to contact_path
-    assert_equal "Your message has been sent successfully.", flash[:success] # Check correct flash key
+    assert_redirected_to contact_url # Assert redirect back to the referer
+    assert_equal "Your message has been sent successfully.", flash[:success]
     # Check that the message was created with correct attributes
     message = GuestMessage.last
     assert_equal "Test Sender", message.sender_name
@@ -87,8 +87,9 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to previous_url
     assert_not_nil flash[:error]
     # Check the specific error message format from the controller
-    assert_match /Email can't be blank/, flash[:error], "Flash error message mismatch. Got: #{flash[:error]}"
-    assert_match /Email is invalid/, flash[:error], "Flash error message mismatch. Got: #{flash[:error]}"
+    # The controller joins errors, so check for both parts.
+    expected_error = "There was a problem sending your message: Sender email can't be blank, Sender email is invalid"
+    assert_equal expected_error, flash[:error]
   end
   test "should auto-forward message when profile has auto-forward enabled" do
     # Auto-forwarding is currently disabled in the controller, so this test needs adjustment
