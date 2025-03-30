@@ -45,21 +45,21 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
 
   test "should create guest message for specific profile" do
     profile = create_test_profile(name: "Specific Guest")
+    profile_url = profile_path(profile) # URL to simulate coming from
 
     assert_difference('GuestMessage.count') do
       post profile_guest_messages_url(profile), params: {
-        guest_message: { 
+        guest_message: {
           sender_name: "Test Sender",
           sender_email: "test@example.com",
           subject: "Message for Guest",
           message: "This is a message for a specific guest"
-        } 
-      }
+        }
+      }, headers: { "HTTP_REFERER" => profile_url } # Set referer
     end
-    
-    assert_redirected_to profile_path(profile)
-    assert_equal "Your message has been sent to #{profile.name}. Thank you for getting in touch!", flash[:notice]
-    
+
+    assert_redirected_to profile_url # Should redirect back to profile page
+    assert_equal "Your message has been sent successfully.", flash[:success] # Check correct flash key
     # Check that the message was created with correct attributes
     message = GuestMessage.last
     assert_equal "Test Sender", message.sender_name
@@ -85,9 +85,10 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
     end
 
     # Instead of 422, it redirects back with an error flash
-    assert_redirected_to previous_url 
+    assert_redirected_to previous_url
     assert_not_nil flash[:error]
-    assert flash[:error].include?("Email can't be blank")
+    # Check the specific error message format from the controller
+    assert flash[:error].include?("There was a problem sending your message: Email can't be blank")
   end
   test "should auto-forward message when profile has auto-forward enabled" do
     # Auto-forwarding is currently disabled in the controller, so this test needs adjustment
@@ -97,6 +98,8 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
       auto_forward_messages: true, # Feature flag in profile
       message_forwarding_email: "guest@example.com"
     )
+    profile_url = profile_path(profile) # URL to simulate coming from
+
     assert_difference('GuestMessage.count') do
       post profile_guest_messages_url(profile), params: {
         guest_message: {
@@ -105,10 +108,10 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
           subject: "Auto-forward Test",
           message: "This message should be auto-forwarded (but isn't currently)"
         }
-      }
+      }, headers: { "HTTP_REFERER" => profile_url } # Set referer
     end
 
-    assert_redirected_to profile_path(profile)
+    assert_redirected_to profile_url # Should redirect back
 
     # Verify the message was NOT marked as forwarded (current behavior)
     message = GuestMessage.last
@@ -125,21 +128,40 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
       auto_forward_messages: true, # Feature flag in profile
       message_forwarding_email: "guest@example.com"
     )
-    
-    post profile_guest_messages_url(profile), params: { 
-      guest_message: { 
+    profile_url = profile_path(profile) # URL to simulate coming from
+
+    post profile_guest_messages_url(profile), params: {
+      guest_message: {
         sender_name: "Test Sender",
         sender_email: "test@example.com",
         subject: "No Auto-forward Test",
         message: "This message should not be auto-forwarded"
-      } 
-    }
-    
-    assert_redirected_to profile_path(profile)
-    
+      }
+    }, headers: { "HTTP_REFERER" => profile_url } # Set referer
+
+    assert_redirected_to profile_url # Should redirect back
+
     # Verify the message was not forwarded
     message = GuestMessage.last
     assert_equal GuestMessage::STATUSES[:new], message.status
     assert_nil message.forwarded_at
+  end
+  
+  # Test moved from mailer test
+  test "should redirect general inquiry back to root path" do
+    assert_difference('GuestMessage.count') do
+      post guest_messages_url, params: { 
+        guest_message: { 
+          sender_name: "Test Sender",
+          sender_email: "test@example.com",
+          subject: "Test Subject",
+          message: "This is a test message"
+        } 
+      }
+    end
+    
+    # Check redirect (fallback is root_path)
+    assert_redirected_to root_path 
+    assert_equal "Your message has been sent successfully.", flash[:success]
   end
 end

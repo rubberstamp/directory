@@ -22,6 +22,11 @@ module ActiveSupport
       ProfileSpecialization.destroy_all
       ProfileEpisode.destroy_all
     end
+    
+    # Set default mailer config for tests if not set
+    Rails.application.config.action_mailer.default_url_options ||= { host: 'localhost', port: 3000 }
+    Rails.application.config.podcast_admin_email ||= "admin-test@example.com" # Default admin email for tests
+    Rails.application.config.podcast_email ||= "podcast-test@example.com" # Default from email for tests
   end
 end
 

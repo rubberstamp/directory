@@ -334,16 +334,16 @@ class Admin::EpisodesControllerTest < ActionDispatch::IntegrationTest
       assert_enqueued_with(job: SummarizeYoutubeVideoJob, args: [episode.id]) do
         post summarize_admin_episode_url(episode)
       end
+      
+      # Assert redirection and flash notice after enqueuing
+      assert_redirected_to admin_episode_url(episode)
+      assert_equal "Summarization job queued for Episode ##{episode.number}.", flash[:notice]
+
+      # Perform the job inline *within the stub block*
+      perform_enqueued_jobs
     end
 
-    # Assert redirection and flash notice after enqueuing
-    assert_redirected_to admin_episode_url(episode)
-    assert_equal "Summarization job queued for Episode ##{episode.number}.", flash[:notice]
-
-    # Perform the job inline
-    perform_enqueued_jobs
-
-    # Verify the service mock was called as expected
+    # Verify the service mock was called as expected *after* the block
     mock_service.verify
 
     # Reload the episode and check if the summary was updated

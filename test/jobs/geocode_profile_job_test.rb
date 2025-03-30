@@ -29,12 +29,12 @@ class GeocodeProfileJobTest < ActiveJob::TestCase
     mock_result = Minitest::Mock.new
     mock_result.expect :latitude, 40.7128
     mock_result.expect :longitude, -74.0060
-    # Mock the [] method for address components
-    mock_result.expect :[], "New York", ["city"] 
-    mock_result.expect :[], "USA", ["country"] 
+    # Mock address_components_of_type for city and country extraction
+    mock_result.expect :address_components_of_type, [{"long_name" => "New York"}], ["locality"]
+    mock_result.expect :address_components_of_type, [{"long_name" => "USA"}], ["country"]
 
     # Mock Geocoder.search to return an array containing the mock result
-    Geocoder.stub :search, [mock_result] do
+    Geocoder.stub :search, ->(address, *) { address == profile.location ? [mock_result] : [] } do
       # Perform the job
       GeocodeProfileJob.perform_now(profile.id)
     end
