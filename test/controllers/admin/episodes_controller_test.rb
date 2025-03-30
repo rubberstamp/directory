@@ -2,13 +2,20 @@ require "test_helper"
 
 class Admin::EpisodesControllerTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
-  
+
   setup do
-    @admin = users(:admin)
-    @episode = episodes(:one)
-    sign_in @admin
+    # Use the helper to create/sign in admin user. It sets @admin.
+    sign_in_as_admin 
+    
+    # Create a default episode for tests that need one
+    @episode = Episode.create!(
+      number: 1, 
+      title: "Default Test Episode", 
+      video_id: "default_test_id", 
+      air_date: Date.today
+    )
   end
-  
+
   test "should get index" do
     get admin_episodes_path
     assert_response :success
