@@ -1,6 +1,56 @@
 #!/usr/bin/env ruby
 
-require_relative "../config/environment"
-require "solid_queue/cli"
+# Load Rails environment
+begin
+  require_relative "../config/environment"
+rescue => e
+  puts "Error loading Rails environment: #{e.message}"
+  puts e.backtrace.join("\n")
+  exit 1
+end
 
-SolidQueue::Cli.start(ARGV)
+# Check if SolidQueue schema exists and load if needed
+begin
+  ActiveRecord::Base.establish_connection(:queue)
+  
+  unless ActiveRecord::Base.connection.table_exists?('solid_queue_jobs')
+    puts "SolidQueue schema not found. Running db:prepare:queue..."
+    require 'rake'
+    Rails.application.load_tasks
+    Rake::Task["db:prepare:queue"].invoke
+  end
+rescue => e
+  puts "Error checking SolidQueue schema: #{e.message}"
+  puts e.backtrace.join("\n")
+  exit 1
+end
+
+# Try to fix permissions if needed
+begin
+  puts "Checking database file permissions..."
+  queue_db_path = ENV.fetch("SQLITE_QUEUE_DATABASE", "storage/production_queue.sqlite3")
+  
+  if File.exist?(queue_db_path)
+    puts "Queue database exists at #{queue_db_path}"
+    if File.writable?(queue_db_path)
+      puts "Queue database is writable."
+    else
+      puts "Queue database is not writable. Attempting to fix permissions..."
+      system("chmod", "666", queue_db_path)
+    end
+  else
+    puts "Queue database does not exist yet at #{queue_db_path}"
+  end
+rescue => e
+  puts "Error checking database permissions: #{e.message}"
+end
+
+# Start SolidQueue
+begin
+  require "solid_queue/cli"
+  SolidQueue::Cli.start(ARGV)
+rescue => e
+  puts "Error starting SolidQueue: #{e.message}"
+  puts e.backtrace.join("\n")
+  exit 1
+end

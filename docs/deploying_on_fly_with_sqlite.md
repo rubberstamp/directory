@@ -2,6 +2,17 @@
 
 This guide provides instructions for deploying this Rails application on Fly.io using SQLite as the database with a persistent volume and AWS S3 for file storage.
 
+## Deployment Architecture
+
+The application uses multiple SQLite databases:
+
+1. **Primary database** - Main application data (profiles, episodes, etc.)
+2. **Queue database** - For SolidQueue background job processing
+3. **Cache database** - For ActiveSupport::Cache
+4. **Cable database** - For ActionCable (WebSocket) functionality
+
+All databases are stored in a persistent volume mounted at `/data`.
+
 ## Prerequisites
 
 - Fly.io account
@@ -40,10 +51,15 @@ This guide provides instructions for deploying this Rails application on Fly.io 
    fly secrets set RAILS_MASTER_KEY=your_master_key
    ```
 
-7. Deploy the application:
+7. Deploy the application using our custom deploy script:
    ```bash
-   fly deploy
+   bin/fly-deploy
    ```
+   
+   This script:
+   - Deploys the app
+   - Runs migrations on the primary database
+   - Runs migrations on all secondary databases (queue, cache, cable)
 
 ## Configuration Files
 
@@ -70,10 +86,14 @@ console_command = "/rails/bin/rails console"
 [http_service]
   internal_port = 3000  # Important: Must match the port in the Dockerfile and Puma config
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = false
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ["app"]
+
+[processes]
+  app = "bin/rails server -p 3000"
+  worker = "bin/jobs"
 
 [[statics]]
   guest_path = "/rails/public"
@@ -146,6 +166,8 @@ fly ssh console -C "/bin/bash -c 'cd /rails && bin/rails db:migrate'"
 
 ### Troubleshooting
 
+#### Database Migration Issues
+
 If the database migration doesn't run automatically during deployment:
 
 1. Check the volume permissions:
@@ -161,6 +183,32 @@ If the database migration doesn't run automatically during deployment:
 3. Run migrations manually:
    ```bash
    fly ssh console -C "/bin/bash -c 'cd /rails && bin/rails db:migrate'"
+   ```
+
+#### Background Worker Issues
+
+If the worker process fails with errors about SolidQueue tables:
+
+1. Manually run the queue database preparation:
+   ```bash
+   fly ssh console -C "cd /rails && bin/rails db:prepare:queue"
+   ```
+
+2. Restart the worker process:
+   ```bash
+   fly machine restart --process worker
+   ```
+
+If there are permission issues with the databases:
+
+1. Fix permissions with our rake task:
+   ```bash
+   fly ssh console -C "cd /rails && bin/rails fly:fix_permissions"
+   ```
+
+2. Restart the worker process:
+   ```bash
+   fly machine restart --process worker
    ```
 
 ### Port Configuration Issues

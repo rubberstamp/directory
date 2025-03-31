@@ -1,25 +1,29 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 
-# Check if Fly CLI is installed
-if ! command -v fly &> /dev/null; then
-  echo "Fly CLI not found. Installing..."
-  curl -L https://fly.io/install.sh | sh
-fi
-
-# Check if volume exists, create if not
-if ! fly volumes list | grep -q "sqlite_data"; then
-  echo "Creating SQLite data volume..."
-  fly volumes create sqlite_data --size 1 --region iad
-fi
-
-# Update dependencies
-echo "Updating dependencies..."
-bundle install
-
-# Deploy the app
-echo "Deploying to Fly.io..."
+# Build and deploy the app
+echo "-----> Building and deploying app..."
 fly deploy
 
-echo "Deployment completed successfully!"
-echo "Your app will be available at: https://$(fly info --json | jq -r '.Hostname').fly.dev"
+# Wait for the main app to be up
+echo "-----> Waiting for app to be available..."
+sleep 5
+
+# Run migrations on the primary database
+echo "-----> Running migrations on primary database..."
+fly ssh console -C "cd /rails && bin/rails db:prepare"
+
+# Run migrations on the queue database
+echo "-----> Running migrations on queue database..."
+fly ssh console -C "cd /rails && bin/rails db:prepare:queue"
+
+# Run migrations on the cache database
+echo "-----> Running migrations on cache database..."
+fly ssh console -C "cd /rails && bin/rails db:prepare:cache"
+
+# Run migrations on the cable database
+echo "-----> Running migrations on cable database..."
+fly ssh console -C "cd /rails && bin/rails db:prepare:cable"
+
+echo "-----> All migrations completed!"
+echo "-----> Deployment complete."
