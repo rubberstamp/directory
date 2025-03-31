@@ -46,6 +46,10 @@ class Admin::ProfilesController < Admin::BaseController
         @profiles = @profiles.where(interested_in_procurement: true)
       when 'missing_location'
         @profiles = @profiles.where(latitude: nil).or(@profiles.where(longitude: nil))
+      when 'on_map'
+        @profiles = @profiles.where.not(latitude: nil).where.not(longitude: nil)
+      when 'not_on_map'
+        @profiles = @profiles.where("latitude IS NULL OR longitude IS NULL")
       end
     end
     
@@ -93,6 +97,41 @@ class Admin::ProfilesController < Admin::BaseController
     redirect_to admin_profiles_path, notice: 'Profile was successfully deleted.'
   end
   
+  def geocode
+    @profile = Profile.find(params[:id])
+    
+    if @profile.location.blank? && @profile.mailing_address.blank?
+      redirect_to admin_profile_path(@profile), alert: 'Profile needs a location or mailing address to be geocoded.'
+      return
+    end
+    
+    # Queue geocoding job
+    GeocodeProfileJob.perform_later(@profile.id)
+    
+    redirect_to admin_profile_path(@profile), notice: 'Geocoding job has been queued. Location will be updated shortly.'
+  end
+  
+  # Batch geocoding
+  def geocode_all
+    # Find all profiles that have location or mailing address but no coordinates
+    profiles = Profile.where("(location IS NOT NULL AND location != '') OR (mailing_address IS NOT NULL AND mailing_address != '')")
+                    .where("latitude IS NULL OR longitude IS NULL")
+    
+    if profiles.empty?
+      redirect_to admin_profiles_path, alert: 'No profiles found that need geocoding.'
+      return
+    end
+    
+    # Queue geocoding jobs for each profile
+    count = 0
+    profiles.each do |profile|
+      GeocodeProfileJob.perform_later(profile.id)
+      count += 1
+    end
+    
+    redirect_to admin_profiles_path, notice: "Geocoding jobs have been queued for #{count} profiles."
+  end
+  
   def export
     # Get profiles to export (with the same filters as index)
     profiles = Profile.all
@@ -136,6 +175,12 @@ class Admin::ProfilesController < Admin::BaseController
         profiles = profiles.where.not(submission_date: nil).where(deprecated_episode_url: nil)
       when 'interested'
         profiles = profiles.where(interested_in_procurement: true)
+      when 'missing_location'
+        profiles = profiles.where(latitude: nil).or(profiles.where(longitude: nil))
+      when 'on_map'
+        profiles = profiles.where.not(latitude: nil).where.not(longitude: nil)
+      when 'not_on_map'
+        profiles = profiles.where("latitude IS NULL OR longitude IS NULL")
       end
     end
     
@@ -144,6 +189,7 @@ class Admin::ProfilesController < Admin::BaseController
       # Add headers
       csv << [
         "ID", "Name", "Email", "Phone", "Company", "Title", "Location",
+        "Latitude", "Longitude", "Formatted Location",
         "Bio", "Website", "LinkedIn URL", "Twitter URL", "Facebook URL",
         "Instagram URL", "TikTok URL", "YouTube URL",
         "Submission Date", "Interested in Procurement",
@@ -161,6 +207,9 @@ class Admin::ProfilesController < Admin::BaseController
           profile.company,
           profile.headline,
           profile.location,
+          profile.latitude,
+          profile.longitude,
+          profile.formatted_location,
           profile.bio,
           profile.website,
           profile.linkedin_url,

@@ -120,8 +120,13 @@ class Profile < ApplicationRecord
   end
   
   # Get a full address for geocoding
+  # Prioritize location field over mailing address to avoid mixed-location issues
   def full_address
-    [mailing_address, location].reject(&:blank?).join(', ')
+    # If location is present, use it exclusively for mapping purposes
+    return location if location.present?
+    
+    # Otherwise fall back to mailing address
+    mailing_address
   end
   
   # Get formatted location using geocoding data

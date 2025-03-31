@@ -27,9 +27,13 @@ Rails.application.routes.draw do
     get "dashboard/index"
     get '/', to: 'dashboard#index', as: :dashboard
     resources :profiles do
+      member do
+        post :geocode
+      end
       collection do
         get :export
         post :import
+        post :geocode_all
       end
     end
     resources :specializations
