@@ -92,6 +92,7 @@
               options_for_select([
                 ["All Profiles", ""], 
                 ["Podcast Guests", "guest"],
+                ["Guest Applicants", "applicant"],
                 ["With Episodes", "episode"],
                 ["Missing Episodes", "missing_episode"],
                 ["Interested in Procurement", "interested"],
@@ -125,14 +126,18 @@
   </div>
 
   <!-- Stats Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
     <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
       <h3 class="text-lg font-medium mb-2">Total Profiles</h3>
       <p class="text-3xl font-bold"><%= Profile.count %></p>
     </div>
     <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
       <h3 class="text-lg font-medium mb-2">Podcast Guests</h3>
-      <p class="text-3xl font-bold"><%= Profile.where.not(submission_date: nil).count %></p>
+      <p class="text-3xl font-bold"><%= Profile.where(status: 'guest').count %></p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
+      <h3 class="text-lg font-medium mb-2">Guest Applicants</h3>
+      <p class="text-3xl font-bold"><%= Profile.where(status: 'applicant').count %></p>
     </div>
     <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
       <h3 class="text-lg font-medium mb-2">With Episodes</h3>
@@ -203,14 +208,27 @@
               <% end %>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <% if profile.submission_date.present? %>
+              <% if profile.status == 'applicant' %>
+                <div class="text-sm">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200">
+                    Applicant
+                  </span>
+                </div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                  Applied: <%= profile.created_at.strftime("%b %d, %Y") %>
+                </div>
+              <% elsif profile.status == 'guest' || profile.submission_date.present? %>
                 <div class="text-sm">
                   <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200">
                     Podcast Guest
                   </span>
                 </div>
                 <div class="text-sm text-gray-500 dark:text-gray-400">
-                  Submitted: <%= profile.submission_date.strftime("%b %d, %Y") %>
+                  <% if profile.submission_date.present? %>
+                    Submitted: <%= profile.submission_date.strftime("%b %d, %Y") %>
+                  <% else %>
+                    Created: <%= profile.created_at.strftime("%b %d, %Y") %>
+                  <% end %>
                 </div>
               <% end %>
               

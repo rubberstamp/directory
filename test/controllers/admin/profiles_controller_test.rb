@@ -52,7 +52,7 @@ class Admin::ProfilesControllerTest < ActionDispatch::IntegrationTest
     end
   end
   
-  # Skip the index test since we can't easily mock the SQL without changing the view
+  # Skip the full index test since we can't easily mock the SQL without changing the view
   # test "should get index" do
   #   # Sign in as admin
   #   post user_session_path, params: { 
@@ -63,6 +63,27 @@ class Admin::ProfilesControllerTest < ActionDispatch::IntegrationTest
   #   get admin_profiles_url
   #   assert_response :success
   # end
+  
+  test "should filter by applicant status" do
+    # Sign in as admin
+    post user_session_path, params: { 
+      user: { email: @admin.email, password: 'password123' } 
+    }
+    
+    # Create an applicant
+    applicant = Profile.create!(
+      name: "Test Applicant",
+      email: "test-applicant-#{rand(1000)}@example.com",
+      status: "applicant"
+    )
+    
+    # Access profiles index with applicant filter
+    get admin_profiles_url, params: { status: "applicant" }
+    assert_response :success
+    
+    # Clean up
+    applicant.destroy
+  end
   
   test "should get new" do
     # Sign in as admin
@@ -98,6 +119,31 @@ class Admin::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_profiles_url
   end
   
+  test "should create profile with specific status" do
+    # Sign in as admin
+    post user_session_path, params: { 
+      user: { email: @admin.email, password: 'password123' } 
+    }
+    
+    # Create a profile with applicant status
+    email = "applicant-#{rand(1000)}@example.com"
+    
+    post admin_profiles_url, params: {
+      profile: {
+        name: "New Applicant Profile",
+        email: email,
+        status: "applicant"
+      }
+    }
+    
+    # Check that the profile was created with the correct status
+    profile = Profile.find_by(email: email)
+    assert_equal "applicant", profile.status
+    
+    # Clean up
+    profile.destroy
+  end
+  
   test "should update profile" do
     # Sign in as admin
     post user_session_path, params: { 
@@ -119,6 +165,34 @@ class Admin::ProfilesControllerTest < ActionDispatch::IntegrationTest
     @profile.reload
     assert_equal "Updated Profile Name", @profile.name
     assert_equal "Updated Headline", @profile.headline
+  end
+  
+  test "should change profile status from applicant to guest" do
+    # Sign in as admin
+    post user_session_path, params: { 
+      user: { email: @admin.email, password: 'password123' } 
+    }
+    
+    # Create an applicant
+    applicant = Profile.create!(
+      name: "Test Applicant To Approve",
+      email: "approve-me-#{rand(1000)}@example.com",
+      status: "applicant"
+    )
+    
+    # Update the status to 'guest'
+    patch admin_profile_url(applicant), params: {
+      profile: {
+        status: "guest"
+      }
+    }
+    
+    # Verify status changed
+    applicant.reload
+    assert_equal "guest", applicant.status
+    
+    # Clean up
+    applicant.destroy
   end
   
   test "should destroy profile" do

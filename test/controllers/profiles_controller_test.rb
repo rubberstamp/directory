@@ -20,6 +20,35 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     get profiles_url
     assert_response :success
   end
+  
+  test "index should only show profiles with 'guest' status" do
+    # Create an applicant (should not be visible)
+    applicant = Profile.create!(
+      name: "Test Applicant",
+      email: "applicant-#{rand(1000)}@example.com",
+      status: 'applicant'
+    )
+    
+    # Create a guest (should be visible)
+    guest = Profile.create!(
+      name: "Test Guest",
+      email: "guest-#{rand(1000)}@example.com",
+      status: 'guest'
+    )
+    
+    # Visit the profiles index
+    get profiles_url
+    assert_response :success
+    
+    # We can't check the exact content because it's rendered with Tailwind
+    # But we can check the page source to make sure it doesn't contain the applicant name
+    assert_match(/Test Guest/, response.body)
+    assert_no_match(/Test Applicant/, response.body)
+    
+    # Clean up
+    applicant.destroy
+    guest.destroy
+  end
 
   test "should get show" do
     get profile_url(@profile)

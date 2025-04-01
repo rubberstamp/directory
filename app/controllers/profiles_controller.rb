@@ -1,6 +1,7 @@
 class ProfilesController < ApplicationController
   def index
-    @profiles = Profile.includes(:specializations).all.order(name: :asc)
+    # Only show profiles with status 'guest' by default
+    @profiles = Profile.includes(:specializations).where(status: 'guest').order(name: :asc)
     
     # Filter by specialization
     if params[:specialization_id].present?
@@ -32,7 +33,8 @@ class ProfilesController < ApplicationController
             # Safety checks for valid coordinates
             if lat.present? && lon.present? && lat.to_f.between?(-90, 90) && lon.to_f.between?(-180, 180)
               # Search within ~50 miles/80km
-              nearby_profiles = Profile.where.not(latitude: nil, longitude: nil)
+              nearby_profiles = Profile.where(status: 'guest')
+                                       .where.not(latitude: nil, longitude: nil)
                                        .near([lat, lon], 80, units: :km)
                                        
               # Apply the other filters to maintain consistency

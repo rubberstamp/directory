@@ -1,0 +1,126 @@
+<% content_for :title, "Become a Guest - The Gross Profit Podcast" %>
+
+<main class="container mx-auto mt-20 mb-12 p-6 max-w-5xl">
+  <section class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-custom p-6 md:p-10 border border-gray-100 dark:border-gray-700">
+    <h1 class="text-4xl font-bold text-blue-700 dark:text-blue-400 mb-6 text-center">Become a Guest</h1>
+    
+    <div class="mb-8">
+      <p class="text-gray-700 dark:text-gray-300 text-lg mb-6">
+        Thank you for your interest in appearing as a guest on The Gross Profit Podcast. Please fill out the form below, and we'll review your application and get back to you soon.
+      </p>
+    </div>
+    
+    <% if flash[:error].present? %>
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <span class="block sm:inline"><%= flash[:error] %></span>
+      </div>
+    <% end %>
+    
+    <%= form_with model: @profile, url: guest_applications_path, class: "space-y-6 bg-white/50 dark:bg-gray-700/50 backdrop-blur-md rounded-xl p-6 shadow-md border border-gray-100 dark:border-gray-600", local: true do |form| %>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="space-y-6">
+          <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Personal Information</h2>
+          
+          <div>
+            <label for="name" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Name*</label>
+            <%= form.text_field :name, placeholder: "Your Full Name", required: true, class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
+            <% if @profile.errors[:name].any? %>
+              <p class="text-red-500 text-xs italic mt-1"><%= @profile.errors[:name].first %></p>
+            <% end %>
+          </div>
+          
+          <div>
+            <label for="email" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Email*</label>
+            <%= form.email_field :email, placeholder: "Your Email", required: true, class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
+            <% if @profile.errors[:email].any? %>
+              <p class="text-red-500 text-xs italic mt-1"><%= @profile.errors[:email].first %></p>
+            <% end %>
+          </div>
+          
+          <div>
+            <label for="phone" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Phone Number</label>
+            <%= form.telephone_field :phone, placeholder: "Your Phone Number", class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
+          </div>
+          
+          <div>
+            <label for="company" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Company</label>
+            <%= form.text_field :company, placeholder: "Your Company", class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
+          </div>
+          
+          <div>
+            <label for="location" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Location*</label>
+            <%= form.text_field :location, placeholder: "City, Country", required: true, class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
+            <% if @profile.errors[:location].any? %>
+              <p class="text-red-500 text-xs italic mt-1"><%= @profile.errors[:location].first %></p>
+            <% end %>
+          </div>
+          
+          <div>
+            <label for="practice_size" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Practice Size</label>
+            <%= form.select :practice_size, 
+                options_for_select([
+                  ["Select practice size", ""],
+                  ["Solo practice", "Solo practice"],
+                  ["Small (2-10 employees)", "Small (2-10 employees)"],
+                  ["Medium (11-50 employees)", "Medium (11-50 employees)"],
+                  ["Large (51-200 employees)", "Large (51-200 employees)"],
+                  ["Enterprise (201+ employees)", "Enterprise (201+ employees)"]
+                ]), 
+                {}, 
+                { class: "shadow border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" } %>
+          </div>
+          
+          <div>
+            <label for="headline" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Professional Title/Headline</label>
+            <%= form.text_field :headline, placeholder: "e.g. CEO, Finance Director, etc.", class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
+          </div>
+        </div>
+        
+        <div class="space-y-6">
+          <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Additional Information</h2>
+          
+          <div>
+            <label for="bio" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Professional Bio</label>
+            <%= form.text_area :bio, placeholder: "Tell us about your professional background...", rows: 4, class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
+          </div>
+          
+          <div>
+            <label for="podcast_objectives" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Your Objectives for Being on the Podcast*</label>
+            <%= form.text_area :podcast_objectives, placeholder: "What topics would you like to discuss? What expertise can you share?", required: true, rows: 4, class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
+          </div>
+          
+          <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mt-6 mb-4">Social Media & Website</h3>
+          
+          <div>
+            <label for="website" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Website</label>
+            <%= form.url_field :website, placeholder: "https://your-website.com", class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
+          </div>
+          
+          <div>
+            <label for="linkedin_url" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">LinkedIn Profile</label>
+            <%= form.url_field :linkedin_url, placeholder: "https://linkedin.com/in/yourprofile", class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
+          </div>
+          
+          <div>
+            <label for="twitter_url" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Twitter/X Profile</label>
+            <%= form.url_field :twitter_url, placeholder: "https://twitter.com/yourhandle", class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
+          </div>
+          
+          <div>
+            <label for="facebook_url" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Facebook Profile/Page</label>
+            <%= form.url_field :facebook_url, placeholder: "https://facebook.com/yourpage", class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
+          </div>
+          
+          <div>
+            <label for="instagram_url" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Instagram Profile</label>
+            <%= form.url_field :instagram_url, placeholder: "https://instagram.com/yourhandle", class: "shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-50 dark:bg-gray-800 dark:border-gray-700" %>
+          </div>
+        </div>
+      </div>
+      
+      <div class="pt-6">
+        <%= form.submit "Submit Application", class: "bg-brand-orange hover:bg-opacity-90 text-white font-semibold py-3 px-6 rounded-full text-lg transition duration-300 shadow-md hover:shadow-xl w-full cursor-pointer" %>
+      </div>
+    <% end %>
+  </section>
+</main>

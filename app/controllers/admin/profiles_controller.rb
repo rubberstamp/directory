@@ -37,7 +37,9 @@ class Admin::ProfilesController < Admin::BaseController
     if params[:status].present?
       case params[:status]
       when 'guest'
-        @profiles = @profiles.where.not(submission_date: nil)
+        @profiles = @profiles.where(status: 'guest')
+      when 'applicant'
+        @profiles = @profiles.where(status: 'applicant')
       when 'episode'
         @profiles = @profiles.where.not(deprecated_episode_url: nil)
       when 'missing_episode'
@@ -168,7 +170,9 @@ class Admin::ProfilesController < Admin::BaseController
     if params[:status].present?
       case params[:status]
       when 'guest'
-        profiles = profiles.where.not(submission_date: nil)
+        profiles = profiles.where(status: 'guest')
+      when 'applicant'
+        profiles = profiles.where(status: 'applicant')
       when 'episode'
         profiles = profiles.where.not(deprecated_episode_url: nil)
       when 'missing_episode'
@@ -192,6 +196,7 @@ class Admin::ProfilesController < Admin::BaseController
         "Latitude", "Longitude", "Formatted Location",
         "Bio", "Website", "LinkedIn URL", "Twitter URL", "Facebook URL",
         "Instagram URL", "TikTok URL", "YouTube URL",
+        "Status", "Practice Size", "Podcast Objectives",
         "Submission Date", "Interested in Procurement",
         "Episode Number", "Episode Title", "Episode URL", "Episode Date"
       ]
@@ -218,6 +223,9 @@ class Admin::ProfilesController < Admin::BaseController
           profile.instagram_url,
           profile.tiktok_url,
           profile.youtube_url,
+          profile.status,
+          profile.practice_size,
+          profile.podcast_objectives,
           profile.submission_date&.strftime("%Y-%m-%d"),
           profile.interested_in_procurement ? "Yes" : "No",
           profile.deprecated_episode_number,
@@ -360,6 +368,7 @@ class Admin::ProfilesController < Admin::BaseController
       :deprecated_episode_number, :deprecated_episode_title, 
       :deprecated_episode_url, :deprecated_episode_date,
       :headshot, # ActiveStorage attachment
+      :status, :practice_size, :podcast_objectives,
       specialization_ids: []
     )
   end
@@ -384,6 +393,9 @@ class Admin::ProfilesController < Admin::BaseController
       deprecated_episode_number: row["Episode Number"],
       deprecated_episode_title: row["Episode Title"],
       deprecated_episode_url: row["Episode URL"],
+      status: row["Status"],
+      practice_size: row["Practice Size"],
+      podcast_objectives: row["Podcast Objectives"],
     }
     
     # Parse date fields

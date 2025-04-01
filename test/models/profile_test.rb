@@ -25,6 +25,19 @@ class ProfileTest < ActiveSupport::TestCase
     profile = Profile.new(name: "New Name", email: "duplicate@example.com")
     assert_not profile.save, "Saved the profile with duplicate email"
   end
+  
+  test "profile should have 'guest' status by default" do
+    profile = Profile.create!(name: "Default Status Test", email: "status-test@example.com")
+    assert_equal "guest", profile.status
+  end
+  
+  test "should accept valid status values" do
+    guest_profile = Profile.new(name: "Guest", email: "guest@example.com", status: "guest")
+    assert guest_profile.valid?
+    
+    applicant_profile = Profile.new(name: "Applicant", email: "applicant@example.com", status: "applicant")
+    assert applicant_profile.valid?
+  end
 
   test "should allow valid website URL" do
     profile = Profile.new(name: "Test Name", email: "test@example.com", website: "https://example.com")
