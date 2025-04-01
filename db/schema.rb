@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_29_063414) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_01_184946) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -49,6 +49,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_29_063414) do
     t.integer "duration_seconds"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "summary"
     t.index ["number"], name: "index_episodes_on_number", unique: true
     t.index ["video_id"], name: "index_episodes_on_video_id", unique: true
   end
@@ -64,6 +65,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_29_063414) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "subject"
+    t.string "location"
+    t.string "practice_size"
+    t.string "specialty"
+    t.boolean "is_podcast_application", default: false
     t.index ["profile_id"], name: "index_guest_messages_on_profile_id"
   end
 

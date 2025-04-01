@@ -5,7 +5,7 @@ Yt.configure do |config|
   config.api_key = Rails.application.credentials.GOOGLE_API_KEY
   
   # Set log level to info to reduce excessive logging (debug generates too much output)
-  config.log_level = :info
+  config.log_level = :debug
 end
 
 # Enable caching for YouTube API requests

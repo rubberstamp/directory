@@ -150,6 +150,36 @@ git push heroku main
 * Admin dashboard
 * Map view of profiles
 * Headshot management with ActiveStorage
+* YouTube video summarization with Gemini AI
+
+## YouTube Video Summarization Setup
+
+This application uses Google Cloud's Vertex AI with Gemini models to automatically generate summaries for podcast episodes from their YouTube videos. To set up:
+
+### 1. Get a Gemini API Key
+
+1. Go to [Google MakerSuite](https://makersuite.google.com/app/apikey)
+2. Create a new API key
+
+### 2. Add your API key to Rails credentials
+
+```bash
+EDITOR="code --wait" rails credentials:edit
+```
+
+Add the following to your credentials file:
+```yaml
+google_cloud:
+  project_id: your-project-id
+  api_key: your-gemini-api-key
+```
+
+### 5. Restart your Rails server
+
+After configuring everything, restart your Rails server to apply the changes:
+```bash
+bin/dev
+```
 
 ## License
 

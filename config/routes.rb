@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   resources :contacts, only: [:index, :create]
   post '/subscribe', to: 'contacts#subscribe', as: :subscribe
   get '/contact', to: 'contacts#index', as: :contact
+  get '/apply', to: 'guest_messages#new', as: :apply
   get '/events', to: 'events#index', as: :events
   post '/event_registrations', to: 'registrations#create', as: :event_registrations
   get '/map', to: 'map#index', as: :map

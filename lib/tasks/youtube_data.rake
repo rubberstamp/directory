@@ -65,7 +65,7 @@ namespace :youtube do
   desc "List videos from a YouTube channel"
   task :list_channel_videos, [:channel_id, :max_results] => :environment do |t, args|
     channel_id = args[:channel_id] || "UCFfHVZhyEiN1QXX4s3Z_How"
-    max_results = (args[:max_results] || 10).to_i
+    max_results = (args[:max_results] || 100).to_i
     
     puts "Fetching up to #{max_results} videos from channel #{channel_id}..."
     
