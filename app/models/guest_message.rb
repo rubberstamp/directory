@@ -4,6 +4,13 @@ class GuestMessage < ApplicationRecord
   validates :sender_email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :message, presence: true
   
+  # Only validate these fields when it's a podcast application
+  with_options if: :is_podcast_application? do |app|
+    app.validates :location, presence: true
+    app.validates :specialty, presence: true
+    app.validates :practice_size, presence: true
+  end
+  
   # Define status constants
   STATUSES = {
     new: 'new',
@@ -43,5 +50,9 @@ class GuestMessage < ApplicationRecord
   
   def can_be_forwarded?
     profile && profile.allow_messages? && profile.message_forwarding_email.present?
+  end
+  
+  def is_podcast_application?
+    is_podcast_application
   end
 end

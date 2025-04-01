@@ -15,6 +15,13 @@ class Admin::EpisodesController < Admin::BaseController
       )
     end
     
+    # Check for import errors
+    if params[:import_errors].present?
+      @import_errors = Rails.cache.read("episode_import_errors_#{params[:import_errors]}")
+      # Delete the cache entry to prevent it from being accessed again
+      Rails.cache.delete("episode_import_errors_#{params[:import_errors]}") if @import_errors
+    end
+    
     # Paginate if Kaminari is available
     @episodes = @episodes.page(params[:page]).per(20) if @episodes.respond_to?(:page)
   end
@@ -138,8 +145,8 @@ class Admin::EpisodesController < Admin::BaseController
       return
     end
 
-    # Validate headers
-    required_columns = ["Episode Number", "Episode Title", "Video ID"]
+    # Validate headers - Episode Title and Video ID are required
+    required_columns = ["Episode Title", "Video ID"]
     headers = csv.headers.compact.map(&:strip)
     missing_columns = required_columns - headers
     if missing_columns.any?
@@ -159,12 +166,14 @@ class Admin::EpisodesController < Admin::BaseController
     ActiveRecord::Base.transaction do
       csv.each_with_index do |row, index|
         begin
-          # Skip empty rows
-          next if row.values_at(*required_columns).all?(&:blank?)
+          # Skip empty rows - only require video ID and title
+          required_for_import = ["Episode Title", "Video ID"]
+          next if row.values_at(*required_for_import).all?(&:blank?)
 
           # Extract data from row
           video_id = extract_video_id(row["Video ID"])
-          number = row["Episode Number"].to_i
+          raw_number = row["Episode Number"].to_s.strip
+          number = raw_number.present? ? raw_number.to_i : nil
           title = row["Episode Title"]
           
           # Optional fields
@@ -175,8 +184,8 @@ class Admin::EpisodesController < Admin::BaseController
           guest_name = row["Guest Name"]
 
           # Check if episode already exists (by video_id or number)
-          existing_by_video = Episode.find_by(video_id: video_id)
-          existing_by_number = Episode.find_by(number: number)
+          existing_by_video = video_id.present? ? Episode.find_by(video_id: video_id) : nil
+          existing_by_number = number.present? ? Episode.find_by(number: number) : nil
           existing_episode = nil
           match_type = nil
           
@@ -204,8 +213,8 @@ class Admin::EpisodesController < Admin::BaseController
               update_data[:video_id] = video_id
             end
             
-            # If match is by video_id only, number might be changing
-            if match_type == "video_id" && existing_episode.number != number
+            # If match is by video_id only and we have a number in the CSV, check if it's different
+            if match_type == "video_id" && number.present? && existing_episode.number != number
               # Check if the new number is already used by another episode
               if Episode.where(number: number).where.not(id: existing_episode.id).exists?
                 errors << "Row #{index + 2}: Cannot update episode ##{existing_episode.number} to number #{number} - number already in use"
@@ -237,10 +246,20 @@ class Admin::EpisodesController < Admin::BaseController
           else
             # Create new episode
             episode_data = {
-              number: number,
               title: title,
               video_id: video_id
             }
+            
+            # Only add the number if it's present
+            episode_data[:number] = number if number.present?
+            
+            # If no number was provided, we need to generate a unique number
+            if number.nil?
+              # Find the next available episode number
+              last_episode_number = Episode.maximum(:number) || 0
+              episode_data[:number] = last_episode_number + 1
+            end
+            
             episode_data[:air_date] = air_date if air_date.present?
             episode_data[:notes] = notes if notes.present?
             episode_data[:duration_seconds] = duration_seconds if duration_seconds.present?
@@ -251,7 +270,7 @@ class Admin::EpisodesController < Admin::BaseController
             if episode.save
               created_count += 1
             else
-              errors << "Row #{index + 2}: Failed to create episode ##{number}: #{episode.errors.full_messages.join(', ')}"
+              errors << "Row #{index + 2}: Failed to create episode ##{episode_data[:number]}: #{episode.errors.full_messages.join(', ')}"
               next
             end
           end
@@ -291,13 +310,19 @@ class Admin::EpisodesController < Admin::BaseController
 
     # Redirect with success/error message
     if errors.any?
+      # Generate a unique ID for this set of errors
+      error_id = SecureRandom.hex(8)
+      
+      # Store errors in cache instead of session to avoid cookie overflow
+      Rails.cache.write("episode_import_errors_#{error_id}", errors, expires_in: 1.hour)
+      
       flash[:alert] = "Import completed with #{errors.count} issues. Created: #{created_count}, Updated: #{updated_count}, Skipped: #{skipped_count}, Linked guests: #{guest_count}."
-      session[:import_errors] = errors
+      redirect_to admin_episodes_path(import_errors: error_id)
     else
       flash[:notice] = "Successfully imported episodes. Created: #{created_count}, Updated: #{updated_count}, Skipped: #{skipped_count}, Linked guests: #{guest_count}."
+      redirect_to admin_episodes_path
     end
-    
-    redirect_to admin_episodes_path
+    # No need for the redirect_to here since we've already redirected above
   end
   
   def template
@@ -307,6 +332,10 @@ class Admin::EpisodesController < Admin::BaseController
       # Add a few example rows
       csv << ["John Doe", "42", "How to Optimize Procurement", "abcd1234xyz", "2025-01-15", "Example notes", "1800", "https://example.com/thumbnail.jpg"]
       csv << ["Jane Smith", "43", "Finance Best Practices", "efgh5678abc", "2025-01-22", "More example notes", "2400", ""]
+      # Example with no episode number (will create a new episode)
+      csv << ["Alex Johnson", "", "Supply Chain Innovations", "hijk9012def", "2025-01-29", "Missing episode number example", "1950", ""]
+      # Example to update by video ID
+      csv << ["Maria Garcia", "", "New Title for Existing Episode", "abcd1234xyz", "2025-02-05", "This will update episode #42 based on video ID", "2100", ""]
     end
     
     send_data csv_data, 

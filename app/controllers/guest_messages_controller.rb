@@ -1,6 +1,11 @@
 class GuestMessagesController < ApplicationController
   before_action :set_profile, only: [:create]
   
+  def new
+    @guest_message = GuestMessage.new
+    @guest_message.is_podcast_application = true
+  end
+  
   def create
     @guest_message = GuestMessage.new(guest_message_params)
     @guest_message.profile = @profile if @profile
@@ -39,6 +44,7 @@ class GuestMessagesController < ApplicationController
   end
   
   def guest_message_params
-    params.require(:guest_message).permit(:sender_name, :sender_email, :subject, :message)
+    params.require(:guest_message).permit(:sender_name, :sender_email, :subject, :message, 
+                                         :location, :practice_size, :specialty, :is_podcast_application)
   end
 end

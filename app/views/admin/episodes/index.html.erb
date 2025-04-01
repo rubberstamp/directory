@@ -141,6 +141,18 @@ bundle exec rake youtube:sync_all
                 to see the expected format.
               </p>
               
+              <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-md mb-4">
+                <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">Import Behavior:</h4>
+                <ul class="list-disc text-xs text-blue-700 dark:text-blue-300 ml-5 space-y-1">
+                  <li>Required fields: Episode Title and Video ID</li>
+                  <li>Episode Number is optional</li>
+                  <li>If an episode with the same Video ID exists, it will be updated</li>
+                  <li>If Episode Number is missing but Video ID matches, the existing episode will be updated</li>
+                  <li>If both Episode Number and Video ID are new, a new episode will be created</li>
+                  <li>If Episode Number is missing and Video ID is new, a new episode will be created with the next available number</li>
+                </ul>
+              </div>
+              
               <%= form_with url: import_admin_episodes_path, method: :post, local: true, class: "space-y-4", multipart: true do |f| %>
                 <div>
                   <%= f.label :file, "CSV File", class: "block text-sm font-medium text-gray-700 dark:text-gray-300" %>
@@ -181,7 +193,7 @@ bundle exec rake youtube:sync_all
 </div>
 
 <!-- Import Errors Modal -->
-<% if session[:import_errors].present? %>
+<% if @import_errors.present? %>
 <div id="errors-modal" class="fixed inset-0 z-50 overflow-y-auto">
   <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
     <!-- Background overlay -->
@@ -207,16 +219,16 @@ bundle exec rake youtube:sync_all
               
               <div class="max-h-60 overflow-y-auto">
                 <ul class="list-disc pl-5 text-sm text-red-600 dark:text-red-400 space-y-1">
-                  <% session[:import_errors].each do |error| %>
+                  <% @import_errors.each do |error| %>
                     <li><%= error %></li>
                   <% end %>
                 </ul>
               </div>
               
               <div class="mt-4 flex justify-end">
-                <button type="button" id="close-errors-modal" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <a href="<%= admin_episodes_path %>" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                   Close
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -225,7 +237,6 @@ bundle exec rake youtube:sync_all
     </div>
   </div>
 </div>
-<% session.delete(:import_errors) %>
 <% end %>
 
 <!-- Search and Filters -->
