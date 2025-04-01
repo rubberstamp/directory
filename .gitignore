@@ -43,3 +43,6 @@
 # Ignore test credential files
 test_credentials.rb
 test_s3_connection.rb
+
+# Ignore credentials files
+/config/credentials.yml.enc
