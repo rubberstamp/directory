@@ -168,4 +168,66 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path 
     assert_equal "Your message has been sent successfully.", flash[:success]
   end
+  
+  test "should create podcast application with required fields" do
+    assert_difference('GuestMessage.count') do
+      post guest_messages_url, params: {
+        guest_message: {
+          sender_name: "Podcast Applicant",
+          sender_email: "applicant@example.com",
+          subject: "My Podcast Topic Idea",
+          message: "I would like to discuss accounting trends.",
+          location: "New York, USA",
+          practice_size: "Medium",
+          specialty: "Financial Planning",
+          is_podcast_application: true
+        }
+      }, headers: { "HTTP_REFERER" => apply_url }
+    end
+    
+    assert_redirected_to apply_url
+    assert_equal "Your message has been sent successfully.", flash[:success]
+    
+    # Check that the application was created with correct attributes
+    message = GuestMessage.last
+    assert_equal "Podcast Applicant", message.sender_name
+    assert_equal "applicant@example.com", message.sender_email
+    assert_equal "My Podcast Topic Idea", message.subject
+    assert_equal "I would like to discuss accounting trends.", message.message
+    assert_equal "New York, USA", message.location
+    assert_equal "Medium", message.practice_size
+    assert_equal "Financial Planning", message.specialty
+    assert message.is_podcast_application
+    assert_equal GuestMessage::STATUSES[:new], message.status
+  end
+  
+  test "should validate podcast application specific fields" do
+    assert_no_difference('GuestMessage.count') do
+      post guest_messages_url, params: {
+        guest_message: {
+          sender_name: "Incomplete Applicant",
+          sender_email: "incomplete@example.com",
+          message: "I want to be on your podcast.",
+          is_podcast_application: true
+          # Missing required fields: location, practice_size, specialty
+        }
+      }, headers: { "HTTP_REFERER" => apply_url }
+    end
+    
+    assert_redirected_to apply_url
+    assert_match(/Location can't be blank/, flash[:error])
+    assert_match(/Specialty can't be blank/, flash[:error])
+    assert_match(/Practice size can't be blank/, flash[:error])
+  end
+  
+  test "visiting apply page should initialize podcast application" do
+    get apply_url
+    assert_response :success
+    assert_select "title", "Apply to be a Podcast Guest - The Gross Profit Podcast"
+    assert_select "form[action=?]", guest_messages_path
+    assert_select "input[name='guest_message[is_podcast_application]'][value='true']"
+    assert_select "input[name='guest_message[location]'][required='required']"
+    assert_select "select[name='guest_message[practice_size]'][required='required']"
+    assert_select "input[name='guest_message[specialty]'][required='required']"
+  end
 end

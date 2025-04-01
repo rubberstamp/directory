@@ -106,14 +106,14 @@ class ProfileTest < ActiveSupport::TestCase
     # This test needs to be updated to match the actual schema in the test database
   end
   
-  test "full_address combines location and mailing_address" do
+  test "full_address prioritizes location over mailing_address" do
     profile = Profile.new(
       name: "Test Name", 
       email: "test@example.com",
       mailing_address: "123 Main St",
       location: "Anytown, USA"
     )
-    assert_equal "123 Main St, Anytown, USA", profile.full_address
+    assert_equal "Anytown, USA", profile.full_address
   end
   
   test "full_address handles partial address information" do
