@@ -197,7 +197,7 @@ class Admin::ProfilesController < Admin::BaseController
         "Bio", "Website", "LinkedIn URL", "Twitter URL", "Facebook URL",
         "Instagram URL", "TikTok URL", "YouTube URL",
         "Status", "Practice Size", "Podcast Objectives",
-        "Submission Date", "Interested in Procurement",
+        "Submission Date", "Interested in Procurement", "Partner",
         "Episode Number", "Episode Title", "Episode URL", "Episode Date"
       ]
       
@@ -228,6 +228,7 @@ class Admin::ProfilesController < Admin::BaseController
           profile.podcast_objectives,
           profile.submission_date&.strftime("%Y-%m-%d"),
           profile.interested_in_procurement ? "Yes" : "No",
+          profile.partner ? "Yes" : "No",
           profile.deprecated_episode_number,
           profile.deprecated_episode_title,
           profile.deprecated_episode_url,
@@ -368,7 +369,7 @@ class Admin::ProfilesController < Admin::BaseController
       :deprecated_episode_number, :deprecated_episode_title, 
       :deprecated_episode_url, :deprecated_episode_date,
       :headshot, # ActiveStorage attachment
-      :status, :practice_size, :podcast_objectives,
+      :status, :practice_size, :podcast_objectives, :partner,
       specialization_ids: []
     )
   end
@@ -405,6 +406,10 @@ class Admin::ProfilesController < Admin::BaseController
     # Parse boolean fields
     if row["Interested in Procurement"].present?
       data[:interested_in_procurement] = row["Interested in Procurement"].to_s.downcase == "yes"
+    end
+    
+    if row["Partner"].present?
+      data[:partner] = row["Partner"].to_s.downcase == "yes"
     end
     
     # Remove nil values to avoid overwriting existing data with nil

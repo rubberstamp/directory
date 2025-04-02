@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_01_192655) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_02_210741) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -137,6 +137,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_01_192655) do
     t.string "status", default: "guest"
     t.string "practice_size"
     t.text "podcast_objectives"
+    t.boolean "partner", default: false
+    t.index ["partner"], name: "index_profiles_on_partner"
     t.index ["status"], name: "index_profiles_on_status"
   end
 

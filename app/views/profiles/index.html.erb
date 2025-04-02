@@ -41,6 +41,7 @@
           <%= select_tag :guest_filter, 
               options_for_select([
                 ["All Profiles", ""], 
+                ["Partners", "partners"],
                 ["Podcast Guests", "podcast_guests"], 
                 ["Interested in Procurement", "procurement"]
               ], params[:guest_filter]), 
@@ -92,9 +93,9 @@
         <%= link_to profile_path(profile), class: "block group", data: { turbo_frame: "_top" } do %>
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-all duration-300 transform group-hover:shadow-xl group-hover:-translate-y-1">
             <!-- Profile Header -->
-            <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-20 relative">
+            <div class="bg-gradient-to-r <%= profile.partner? ? 'from-purple-500 to-indigo-600' : 'from-blue-500 to-purple-600' %> h-20 relative">
               <!-- Profile image -->
-              <div class="absolute left-6 top-6 w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
+              <div class="absolute left-6 top-6 w-20 h-20 rounded-full overflow-hidden border-4 <%= profile.partner? ? 'border-purple-100 dark:border-purple-900' : 'border-white dark:border-gray-800' %> shadow-lg">
                 <% if profile.headshot.attached? %>
                   <%= image_tag profile.headshot, alt: profile.name, class: "w-full h-full object-cover" %>
                 <% elsif profile.headshot_url.present? %>
@@ -147,6 +148,12 @@
               
               <!-- Guest badges -->
               <div class="mt-4 flex flex-wrap gap-2">
+                <% if profile.partner? %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-200">
+                    Partner
+                  </span>
+                <% end %>
+              
                 <% if profile.submission_date.present? %>
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200">
                     Podcast Guest

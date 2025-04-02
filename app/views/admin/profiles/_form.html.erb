@@ -212,6 +212,17 @@
       </div>
       
       <div class="mb-6">
+        <div class="flex items-center mb-3">
+          <%= form.check_box :partner, class: "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+          <%= form.label :partner, "Mark as Partner", class: "ml-2 block text-sm text-gray-700 dark:text-gray-300" %>
+          <span class="ml-2 px-2 py-1 text-xs rounded-full bg-indigo-100 dark:bg-indigo-800 text-indigo-800 dark:text-indigo-200">Featured</span>
+        </div>
+        <p class="ml-6 text-xs text-gray-500 dark:text-gray-400 mb-4">
+          Partners will be displayed first on the profiles listing page and on the front page featured section.
+        </p>
+      </div>
+      
+      <div class="mb-6">
         <div class="flex items-center">
           <%= form.check_box :interested_in_procurement, class: "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
           <%= form.label :interested_in_procurement, "Interested in Procurement Express", class: "ml-2 block text-sm text-gray-700 dark:text-gray-300" %>

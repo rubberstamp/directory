@@ -1,7 +1,8 @@
 class ProfilesController < ApplicationController
   def index
-    # Only show profiles with status 'guest' by default
-    @profiles = Profile.includes(:specializations).where(status: 'guest').order(name: :asc)
+    # Only show profiles with status 'guest' by default, partners first, then alphabetical
+    @profiles = Profile.includes(:specializations).where(status: 'guest')
+                     .order(partner: :desc, name: :asc)
     
     # Filter by specialization
     if params[:specialization_id].present?
@@ -45,6 +46,8 @@ class ProfilesController < ApplicationController
               
               if params[:guest_filter].present?
                 case params[:guest_filter]
+                when 'partners'
+                  nearby_profiles = nearby_profiles.where(partner: true)
                 when 'podcast_guests'
                   nearby_profiles = nearby_profiles.where.not(submission_date: nil)
                 when 'procurement'
@@ -67,6 +70,8 @@ class ProfilesController < ApplicationController
     # Filter by guest status
     if params[:guest_filter].present?
       case params[:guest_filter]
+      when 'partners'
+        @profiles = @profiles.where(partner: true)
       when 'podcast_guests'
         @profiles = @profiles.where.not(submission_date: nil)
       when 'procurement'
