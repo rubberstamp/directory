@@ -84,6 +84,67 @@
     document.getElementById('timeGMT').textContent = formatTime(eventTimeGMT) + ' GMT';
     document.getElementById('timeEastern').textContent = formatTime(eventTimeEastern) + ' Eastern';
     document.getElementById('timePacific').textContent = formatTime(eventTimePacific) + ' Pacific';
+    
+    // Set the event date for the registration form
+    document.getElementById('event_date').value = formatDate(nextEventDate);
+    
+    // Get the CSRF token from the meta tag
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    if (csrfToken) {
+      document.getElementById('authenticity_token').value = csrfToken;
+    }
+    
+    // Handle form submission
+    const registrationForm = document.getElementById('registrationForm');
+    if (registrationForm) {
+      registrationForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Check if form is valid (HTML5 validation)
+        if (!this.checkValidity()) {
+          return;
+        }
+        
+        // Create FormData object
+        const formData = new FormData(this);
+        
+        // Submit form via fetch
+        fetch('/event_registrations', {
+          method: 'POST',
+          headers: {
+            'X-CSRF-Token': csrfToken,
+            'Accept': 'application/json',
+          },
+          body: formData,
+          credentials: 'same-origin'
+        })
+        .then(response => {
+          if (response.ok) {
+            // Show success message
+            document.getElementById('registrationSuccess').classList.remove('hidden');
+            document.getElementById('registrationError').classList.add('hidden');
+            registrationForm.reset();
+          } else {
+            // Show error message
+            document.getElementById('registrationError').classList.remove('hidden');
+            document.getElementById('registrationSuccess').classList.add('hidden');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('registrationError').classList.remove('hidden');
+          document.getElementById('registrationSuccess').classList.add('hidden');
+        });
+      });
+    }
+    
+    // Check for URL parameters to show success/error messages
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('registration') && urlParams.get('registration') === 'success') {
+      document.getElementById('registrationSuccess').classList.remove('hidden');
+    } else if (urlParams.has('registration') && urlParams.get('registration') === 'error') {
+      document.getElementById('registrationError').classList.remove('hidden');
+    }
   });
 </script>
         
@@ -117,33 +178,46 @@
         <div class="mt-8">
           <h3 class="text-xl font-semibold mb-4 text-center text-gray-800 dark:text-gray-200">Register for the Next Session</h3>
           
-          <%= form_with url: event_registrations_path, class: "bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md", local: true do |f| %>
-            <%= hidden_field_tag :event_date, @next_mastermind_date&.strftime('%A, %B %d, %Y') %>
+          <form id="registrationForm" action="/event_registrations" method="post" class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
+            <input type="hidden" name="authenticity_token" value="" id="authenticity_token">
+            <input type="hidden" name="event_date" id="event_date" value="">
             
             <div class="mb-4">
-              <%= f.label :name, "Name *", class: "block text-gray-700 dark:text-gray-300 font-medium mb-2" %>
-              <%= f.text_field :name, required: true, class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue dark:bg-gray-800 dark:text-white" %>
+              <label for="name" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Name *</label>
+              <input type="text" name="name" id="name" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue dark:bg-gray-800 dark:text-white">
             </div>
             
             <div class="mb-4">
-              <%= f.label :email, "Email *", class: "block text-gray-700 dark:text-gray-300 font-medium mb-2" %>
-              <%= f.email_field :email, required: true, class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue dark:bg-gray-800 dark:text-white" %>
+              <label for="email" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Email *</label>
+              <input type="email" name="email" id="email" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue dark:bg-gray-800 dark:text-white">
             </div>
             
             <div class="mb-4">
-              <%= f.label :company, "Company", class: "block text-gray-700 dark:text-gray-300 font-medium mb-2" %>
-              <%= f.text_field :company, class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue dark:bg-gray-800 dark:text-white" %>
+              <label for="company" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Company</label>
+              <input type="text" name="company" id="company" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue dark:bg-gray-800 dark:text-white">
             </div>
             
             <div class="mb-4">
-              <%= f.label :message, "Message or Questions (Optional)", class: "block text-gray-700 dark:text-gray-300 font-medium mb-2" %>
-              <%= f.text_area :message, rows: 3, class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue dark:bg-gray-800 dark:text-white" %>
+              <label for="message" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Message or Questions (Optional)</label>
+              <textarea name="message" id="message" rows="3" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue dark:bg-gray-800 dark:text-white"></textarea>
             </div>
             
             <div class="text-center">
-              <%= f.submit "Register", class: "bg-brand-orange hover:bg-opacity-90 text-white font-semibold py-3 px-6 rounded-full transition duration-300 shadow-md hover:shadow-lg inline-flex items-center" %>
+              <button type="submit" class="bg-brand-orange hover:bg-opacity-90 text-white font-semibold py-3 px-6 rounded-full transition duration-300 shadow-md hover:shadow-lg inline-flex items-center">
+                Register
+              </button>
             </div>
-          <% end %>
+          </form>
+          
+          <div id="registrationSuccess" class="hidden mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+            <strong class="font-bold">Thank you!</strong>
+            <span class="block sm:inline"> We've received your registration and will be in touch soon with more details.</span>
+          </div>
+          
+          <div id="registrationError" class="hidden mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <strong class="font-bold">Sorry!</strong>
+            <span class="block sm:inline"> There was a problem processing your registration. Please try again or contact us directly.</span>
+          </div>
         </div>
       </div>
     </div>
