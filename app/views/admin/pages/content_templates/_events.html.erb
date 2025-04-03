@@ -30,7 +30,8 @@
         </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  // Initialize event calendar and registration form
+  function initializeEventPage() {
     // Calculate the date for the last Wednesday of the next month
     function getLastWednesday() {
       const today = new Date();
@@ -141,11 +142,27 @@
     // Check for URL parameters to show success/error messages
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('registration') && urlParams.get('registration') === 'success') {
-      document.getElementById('registrationSuccess').classList.remove('hidden');
+      const successElement = document.getElementById('registrationSuccess');
+      if (successElement) {
+        successElement.classList.remove('hidden');
+      }
     } else if (urlParams.has('registration') && urlParams.get('registration') === 'error') {
-      document.getElementById('registrationError').classList.remove('hidden');
+      const errorElement = document.getElementById('registrationError');
+      if (errorElement) {
+        errorElement.classList.remove('hidden');
+      }
     }
-  });
+    
+    // Clear URL parameters after showing messages
+    if (urlParams.has('registration')) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }
+  
+  // Run initialization on both DOMContentLoaded and turbo:load events
+  document.addEventListener('DOMContentLoaded', initializeEventPage);
+  document.addEventListener('turbo:load', initializeEventPage);
+  document.addEventListener('turbolinks:load', initializeEventPage);
 </script>
         
         <div class="mt-6">
