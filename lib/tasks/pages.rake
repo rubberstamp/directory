@@ -1,4 +1,37 @@
 namespace :pages do
+  desc "Migrate events page to the CMS"
+  task migrate_events: :environment do
+    if defined?(Page)
+      # Read the content template
+      template_path = Rails.root.join('app/views/admin/pages/content_templates/_events.html.erb')
+      if File.exist?(template_path)
+        events_content = File.read(template_path)
+        
+        # Create the Events page
+        page = Page.find_or_initialize_by(slug: 'events')
+        page.assign_attributes({
+          title: 'Fractional CFO Events',
+          content: events_content,
+          meta_description: 'Join our monthly Fractional CFO Mastermind sessions for collaboration, networking, and problem-solving among finance professionals.',
+          meta_keywords: 'fractional cfo, mastermind, cfo events, finance networking',
+          published: true,
+          show_in_menu: true,
+          position: 50
+        })
+        
+        if page.save
+          puts "Events page created/updated successfully!"
+        else
+          puts "Error creating Events page: #{page.errors.full_messages.join(', ')}"
+        end
+      else
+        puts "Events template not found at #{template_path}"
+      end
+    else
+      puts "Page model not defined. Ensure CMS migration has been run."
+    end
+  end
+  
   desc "Create a sample CFO quiz page"
   task create_cfo_quiz: :environment do
     if defined?(Page)

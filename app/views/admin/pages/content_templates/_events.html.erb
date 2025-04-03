@@ -1,0 +1,111 @@
+<div class="container mx-auto px-4 pt-24 md:pt-32 pb-12">
+  <h1 class="text-3xl md:text-4xl font-bold mb-8 text-center text-brand-blue">Events</h1>
+  
+  <div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-10">
+    <div class="md:flex">
+      <div class="p-8">
+        <div class="uppercase tracking-wide text-sm text-brand-orange font-semibold">Monthly Event</div>
+        <h2 class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">Fractional CFO Mastermind</h2>
+        
+        <div class="mt-4 bg-blue-50 dark:bg-gray-700 p-4 rounded-lg">
+          <div class="flex items-center mb-2">
+            <svg class="w-5 h-5 text-brand-blue mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <span class="font-semibold">Next Event:</span>
+            <span class="ml-2"><%= @next_mastermind_date&.strftime('%A, %B %d, %Y') %></span>
+          </div>
+          
+          <div class="flex items-center">
+            <svg class="w-5 h-5 text-brand-blue mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="font-semibold">Time:</span>
+            <div class="ml-2">
+              <div><%= @mastermind_time_gmt&.strftime('%l:%M %p') %> GMT</div>
+              <div><%= @mastermind_time_eastern&.strftime('%l:%M %p') %> Eastern</div>
+              <div><%= @mastermind_time_pacific&.strftime('%l:%M %p') %> Pacific</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-6">
+          <h3 class="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200">How It Works</h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-4">
+            The Fractional CFO Mastermind is an exclusive monthly gathering for fractional CFOs to connect and collaborate. Each month, we meet on the last Wednesday to discuss challenges and share insights.
+          </p>
+          
+          <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold text-gray-800 dark:text-gray-200 mb-2">Format:</h4>
+            <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-1">
+              <li>Participants are placed in small groups of 3-4 peers</li>
+              <li>Each participant gets time to present a business challenge</li>
+              <li>Fellow CFOs provide feedback and insights</li>
+              <li>Exclusive to fractional CFOs</li>
+            </ul>
+          </div>
+          
+          <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <h4 class="font-semibold text-gray-800 dark:text-gray-200 mb-2">Benefits:</h4>
+            <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-1">
+              <li>Get tailored feedback on your specific challenges</li>
+              <li>Learn from the experiences of your peers</li>
+              <li>Expand your professional network</li>
+              <li>Develop new perspectives and strategies</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="mt-8">
+          <h3 class="text-xl font-semibold mb-4 text-center text-gray-800 dark:text-gray-200">Register for the Next Session</h3>
+          
+          <%= form_with url: event_registrations_path, class: "bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md", local: true do |f| %>
+            <%= hidden_field_tag :event_date, @next_mastermind_date&.strftime('%A, %B %d, %Y') %>
+            
+            <div class="mb-4">
+              <%= f.label :name, "Name *", class: "block text-gray-700 dark:text-gray-300 font-medium mb-2" %>
+              <%= f.text_field :name, required: true, class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue dark:bg-gray-800 dark:text-white" %>
+            </div>
+            
+            <div class="mb-4">
+              <%= f.label :email, "Email *", class: "block text-gray-700 dark:text-gray-300 font-medium mb-2" %>
+              <%= f.email_field :email, required: true, class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue dark:bg-gray-800 dark:text-white" %>
+            </div>
+            
+            <div class="mb-4">
+              <%= f.label :company, "Company", class: "block text-gray-700 dark:text-gray-300 font-medium mb-2" %>
+              <%= f.text_field :company, class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue dark:bg-gray-800 dark:text-white" %>
+            </div>
+            
+            <div class="mb-4">
+              <%= f.label :message, "Message or Questions (Optional)", class: "block text-gray-700 dark:text-gray-300 font-medium mb-2" %>
+              <%= f.text_area :message, rows: 3, class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue dark:bg-gray-800 dark:text-white" %>
+            </div>
+            
+            <div class="text-center">
+              <%= f.submit "Register", class: "bg-brand-orange hover:bg-opacity-90 text-white font-semibold py-3 px-6 rounded-full transition duration-300 shadow-md hover:shadow-lg inline-flex items-center" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% 
+# Calculate the date for the last Wednesday of the next month
+today = Date.today
+next_month = today.next_month
+last_day = Date.new(next_month.year, next_month.month, -1)
+last_wednesday = last_day - ((last_day.wday - 3) % 7)
+
+# Set up instance variables for rendering
+@next_mastermind_date = last_wednesday
+@mastermind_time_gmt = Time.new(last_wednesday.year, last_wednesday.month, last_wednesday.day, 16, 30, 0, "+00:00")
+
+# Calculate Eastern time (GMT-4 or GMT-5 depending on DST)
+@mastermind_time_eastern = @mastermind_time_gmt.getlocal("-04:00")
+
+# Calculate Pacific time (GMT-7 or GMT-8 depending on DST)
+@mastermind_time_pacific = @mastermind_time_gmt.getlocal("-07:00")
+%>
