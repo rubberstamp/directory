@@ -1,0 +1,15 @@
+<% content_for :title, @page.title %>
+
+<% if @page.meta_description.present? %>
+  <% content_for :meta_description, @page.meta_description %>
+<% end %>
+
+<% if @page.meta_keywords.present? %>
+  <% content_for :meta_keywords, @page.meta_keywords %>
+<% end %>
+
+<div class="container mx-auto px-4 py-8">
+  <div class="prose dark:prose-invert lg:prose-xl max-w-none">
+    <%= @page.content&.html_safe %>
+  </div>
+</div>

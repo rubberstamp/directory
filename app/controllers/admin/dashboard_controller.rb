@@ -4,5 +4,6 @@ class Admin::DashboardController < Admin::BaseController
     @specialization_count = Specialization.count
     @new_messages_count = GuestMessage.where(status: GuestMessage::STATUSES[:new]).count
     @total_messages_count = GuestMessage.count
+    @pages_count = Page.count if defined?(Page)
   end
 end

@@ -1,0 +1,87 @@
+<%= form_with(model: [:admin, page], class: "space-y-6") do |form| %>
+  <% if page.errors.any? %>
+    <div class="bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-200 p-4 rounded mb-6">
+      <h2><%= pluralize(page.errors.count, "error") %> prohibited this page from being saved:</h2>
+      <ul class="list-disc pl-5 mt-2">
+        <% page.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <h2 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">Page Details</h2>
+      
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <%= form.label :title, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+            <%= form.text_field :title, class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Page Title" %>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Required. The title of the page.</p>
+          </div>
+
+          <div>
+            <%= form.label :slug, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+            <%= form.text_field :slug, class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "page-url-slug" %>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">URL-friendly version of the title. Will be auto-generated if left blank.</p>
+          </div>
+        </div>
+
+        <div>
+          <%= form.label :content, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= form.text_area :content, rows: 20, class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Page content in HTML format..." %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">The main content of the page. HTML is supported.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <%= form.label :meta_description, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+            <%= form.text_area :meta_description, rows: 3, class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Brief description for search engines..." %>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Optional. Helps with SEO.</p>
+          </div>
+
+          <div>
+            <%= form.label :meta_keywords, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+            <%= form.text_field :meta_keywords, class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "keyword1, keyword2, keyword3" %>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Optional. Comma-separated keywords for SEO.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <%= form.label :position, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+            <%= form.number_field :position, class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Order position in menus (lower numbers appear first).</p>
+          </div>
+
+          <div class="flex items-center">
+            <div class="flex items-center h-5">
+              <%= form.check_box :published, class: "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" %>
+            </div>
+            <div class="ml-3 text-sm">
+              <%= form.label :published, "Published", class: "font-medium text-gray-700 dark:text-gray-300" %>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Make this page publicly visible.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center">
+            <div class="flex items-center h-5">
+              <%= form.check_box :show_in_menu, class: "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" %>
+            </div>
+            <div class="ml-3 text-sm">
+              <%= form.label :show_in_menu, "Show in Menu", class: "font-medium text-gray-700 dark:text-gray-300" %>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Display in the navigation menu.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6 bg-gray-50 dark:bg-gray-900 flex items-center justify-end space-x-3">
+      <%= link_to "Cancel", admin_pages_path, class: "rounded-md bg-white dark:bg-gray-800 py-2 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700" %>
+      <%= form.submit class: "rounded-md bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" %>
+    </div>
+  </div>
+<% end %>

@@ -11,19 +11,19 @@ sleep 5
 
 # Run migrations on the primary database
 echo "-----> Running migrations on primary database..."
-fly ssh console -C "cd /rails && bin/rails db:prepare"
+fly ssh console -C "bin/rails db:prepare"
 
 # Run migrations on the queue database
 echo "-----> Running migrations on queue database..."
-fly ssh console -C "cd /rails && bin/rails db:prepare:queue"
+fly ssh console -C "bin/rails db:prepare:queue"
 
 # Run migrations on the cache database
 echo "-----> Running migrations on cache database..."
-fly ssh console -C "cd /rails && bin/rails db:prepare:cache"
+fly ssh console -C "bin/rails db:prepare:cache"
 
 # Run migrations on the cable database
 echo "-----> Running migrations on cable database..."
-fly ssh console -C "cd /rails && bin/rails db:prepare:cable"
+fly ssh console -C "bin/rails db:prepare:cable"
 
 echo "-----> All migrations completed!"
 echo "-----> Deployment complete."

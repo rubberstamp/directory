@@ -113,6 +113,44 @@ class Admin::ProfilesController < Admin::BaseController
     redirect_to admin_profile_path(@profile), notice: 'Geocoding job has been queued. Location will be updated shortly.'
   end
   
+  def generate_bio
+    @profile = Profile.find(params[:id])
+    
+    if @profile.episodes.empty?
+      redirect_to admin_profile_path(@profile), alert: 'Profile needs at least one podcast episode to generate a bio.'
+      return
+    end
+    
+    if @profile.bio.present?
+      redirect_to admin_profile_path(@profile), alert: 'Profile already has a bio. AI generation is only for profiles with blank bios.'
+      return
+    end
+    
+    # Queue bio generation job
+    GenerateGuestBioJob.perform_later(@profile.id)
+    
+    redirect_to admin_profile_path(@profile), notice: 'Bio generation job has been queued. Bio will be updated shortly.'
+  end
+  
+  def generate_all_bios
+    # Find all profiles that have episodes but no bio or empty bio
+    profiles = Profile.joins(:episodes).where("profiles.bio IS NULL OR profiles.bio = ''").distinct
+    
+    if profiles.empty?
+      redirect_to admin_profiles_path, alert: 'No profiles found that need bio generation.'
+      return
+    end
+    
+    # Queue bio generation jobs for each profile
+    count = 0
+    profiles.each do |profile|
+      GenerateGuestBioJob.perform_later(profile.id)
+      count += 1
+    end
+    
+    redirect_to admin_profiles_path, notice: "Bio generation jobs have been queued for #{count} profiles."
+  end
+  
   # Batch geocoding
   def geocode_all
     # Find all profiles that have location or mailing address but no coordinates

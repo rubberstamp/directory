@@ -210,14 +210,31 @@
       </div>
 
       <!-- Bio -->
-      <% if @profile.bio.present? %>
-        <div class="mt-6">
-          <h3 class="text-lg font-semibold mb-4">Bio</h3>
+      <div class="mt-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Bio</h3>
+          <% if @profile.episodes.any? && @profile.bio.blank? %>
+            <%= button_to generate_bio_admin_profile_path(@profile), method: :post, class: "px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 inline-flex items-center" do %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              Generate AI Bio
+            <% end %>
+          <% end %>
+        </div>
+        <% if @profile.bio.present? %>
           <div class="prose dark:prose-invert max-w-none">
             <%= simple_format(@profile.bio) %>
           </div>
-        </div>
-      <% end %>
+        <% else %>
+          <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded text-gray-500 dark:text-gray-400 text-center">
+            <p>No bio available.</p>
+            <% unless @profile.episodes.any? %>
+              <p class="mt-2 text-xs">This profile needs podcast episodes to generate an AI bio.</p>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
 
       <!-- Message Preferences -->
       <div class="mt-6">

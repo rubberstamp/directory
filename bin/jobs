@@ -45,10 +45,26 @@ rescue => e
   puts "Error checking database permissions: #{e.message}"
 end
 
-# Start SolidQueue
+# Create marker file to help with monitoring
 begin
+  marker_file = "/tmp/solid_queue_worker_running"
+  File.write(marker_file, Time.now.to_s)
+  puts "Created worker marker file at #{marker_file}"
+rescue => e
+  puts "Warning: Could not create worker marker file: #{e.message}"
+end
+
+# Start SolidQueue with explicit configuration
+begin
+  puts "Starting SolidQueue worker with environment: #{Rails.env}"
+  puts "Queue database path: #{ENV.fetch("SQLITE_QUEUE_DATABASE", "storage/production_queue.sqlite3")}"
+  puts "Rails queue adapter: #{Rails.application.config.active_job.queue_adapter.inspect}"
+  
+  concurrency = ENV.fetch("SOLID_QUEUE_CONCURRENCY", "3").to_i
+  puts "Using worker concurrency: #{concurrency}"
+  
   require "solid_queue/cli"
-  SolidQueue::Cli.start(ARGV)
+  SolidQueue::Cli.start(["--threads=#{concurrency}"] + ARGV)
 rescue => e
   puts "Error starting SolidQueue: #{e.message}"
   puts e.backtrace.join("\n")

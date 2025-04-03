@@ -277,4 +277,27 @@ class Profile < ApplicationRecord
       @queue_geocoding_after_create = false
     end
   end
+  
+  # Generate an AI bio for this profile based on their podcast appearances
+  # Only generates if the profile has no existing bio
+  def generate_ai_bio
+    # Only generate if the profile has podcast episodes and no existing bio
+    if episodes.any? && bio.blank?
+      GenerateGuestBioJob.perform_later(id)
+      true
+    else
+      false
+    end
+  end
+  
+  # Queue the bio generation job to run later
+  # Only queues if the profile has no existing bio
+  def generate_ai_bio_later
+    if bio.blank?
+      GenerateGuestBioJob.perform_later(id)
+      true
+    else
+      false
+    end
+  end
 end

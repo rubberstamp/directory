@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_02_210741) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_04_000001) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -70,6 +70,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_210741) do
     t.string "specialty"
     t.boolean "is_podcast_application", default: false
     t.index ["profile_id"], name: "index_guest_messages_on_profile_id"
+  end
+
+  create_table "pages", force: :cascade do |t|
+    t.string "title", null: false
+    t.string "slug", null: false
+    t.text "content"
+    t.boolean "published", default: false
+    t.integer "position", default: 0
+    t.text "meta_description"
+    t.string "meta_keywords"
+    t.boolean "show_in_menu", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_pages_on_slug", unique: true
   end
 
   create_table "profile_episodes", force: :cascade do |t|

@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   resources :testimonials, only: [:index]
   resources :contacts, only: [:index, :create]
   resources :guest_applications, only: [:new, :create]
+  resources :pages, only: [:show]
   post '/subscribe', to: 'contacts#subscribe', as: :subscribe
   get '/contact', to: 'contacts#index', as: :contact
   get '/become-a-guest', to: 'guest_applications#new', as: :become_a_guest
@@ -31,14 +32,17 @@ Rails.application.routes.draw do
     resources :profiles do
       member do
         post :geocode
+        post :generate_bio
       end
       collection do
         get :export
         post :import
         post :geocode_all
+        post :generate_all_bios
       end
     end
     resources :specializations
+    resources :pages
     resources :episodes do
       member do
         post :attach_profile
@@ -79,4 +83,14 @@ Rails.application.routes.draw do
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  
+  # Catch-all route for dynamic pages at root level
+  get '/:id', to: 'pages#show', as: :page_permalink, constraints: lambda { |req|
+    # Exclude certain paths that we know are handled by other routes
+    !%w[
+      profiles episodes testimonials contacts guest_applications
+      subscribe contact become-a-guest events map about mastermind
+      rails admin up manifest service-worker
+    ].include?(req.path_parameters[:id])
+  }
 end

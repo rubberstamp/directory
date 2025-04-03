@@ -52,6 +52,9 @@
               <span class="ml-2 inline-flex items-center rounded-full bg-brand-orange px-2 py-0.5 text-xs font-medium text-white"><%= new_message_count %></span>
             <% end %>
           </a>
+          <a href="<%= admin_pages_path %>" class="block p-3 rounded hover:bg-opacity-90 <%= controller_name == 'pages' ? 'bg-brand-orange' : '' %>">
+            Pages
+          </a>
           <a href="<%= root_path %>" class="block p-3 rounded hover:bg-brand-orange hover:bg-opacity-90">
             View Public Site
           </a>
@@ -103,6 +106,9 @@
               <% if new_message_count > 0 %>
                 <span class="ml-2 inline-flex items-center rounded-full bg-brand-orange px-2 py-0.5 text-xs font-medium text-white"><%= new_message_count %></span>
               <% end %>
+            </a>
+            <a href="<%= admin_pages_path %>" class="block p-3 rounded hover:bg-brand-orange hover:bg-opacity-90">
+              Pages
             </a>
             <a href="<%= root_path %>" class="block p-3 rounded hover:bg-brand-orange hover:bg-opacity-90">
               View Public Site
