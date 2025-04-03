@@ -13,7 +13,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
             </svg>
             <span class="font-semibold">Next Event:</span>
-            <span class="ml-2"><%= @next_mastermind_date&.strftime('%A, %B %d, %Y') %></span>
+            <span class="ml-2" id="nextEventDate">Calculating...</span>
           </div>
           
           <div class="flex items-center">
@@ -22,12 +22,70 @@
             </svg>
             <span class="font-semibold">Time:</span>
             <div class="ml-2">
-              <div><%= @mastermind_time_gmt&.strftime('%l:%M %p') %> GMT</div>
-              <div><%= @mastermind_time_eastern&.strftime('%l:%M %p') %> Eastern</div>
-              <div><%= @mastermind_time_pacific&.strftime('%l:%M %p') %> Pacific</div>
+              <div id="timeGMT">4:30 PM GMT</div>
+              <div id="timeEastern">Calculating...</div>
+              <div id="timePacific">Calculating...</div>
             </div>
           </div>
         </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Calculate the date for the last Wednesday of the next month
+    function getLastWednesday() {
+      const today = new Date();
+      
+      // Get next month
+      let nextMonth = new Date(today);
+      nextMonth.setMonth(today.getMonth() + 1);
+      
+      // Get the last day of the next month
+      const lastDay = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0);
+      
+      // Calculate the last Wednesday (3 is Wednesday in JavaScript's Date where 0 is Sunday)
+      const lastDayOfWeek = lastDay.getDay();
+      let offset = lastDayOfWeek >= 3 ? lastDayOfWeek - 3 : lastDayOfWeek + 4;
+      const lastWednesday = new Date(lastDay);
+      lastWednesday.setDate(lastDay.getDate() - offset);
+      
+      return lastWednesday;
+    }
+    
+    // Format the date in a readable format
+    function formatDate(date) {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      return date.toLocaleDateString('en-US', options);
+    }
+    
+    // Format time (12-hour format with AM/PM)
+    function formatTime(date) {
+      return date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      });
+    }
+    
+    // Get next event date
+    const nextEventDate = getLastWednesday();
+    
+    // Set the event time (16:30 GMT)
+    const eventTimeGMT = new Date(nextEventDate);
+    eventTimeGMT.setHours(16, 30, 0, 0);
+    
+    // Create Eastern time version (GMT-4/5 depending on DST)
+    const eventTimeEastern = new Date(eventTimeGMT.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    
+    // Create Pacific time version (GMT-7/8 depending on DST)
+    const eventTimePacific = new Date(eventTimeGMT.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    
+    // Update the HTML elements
+    document.getElementById('nextEventDate').textContent = formatDate(nextEventDate);
+    document.getElementById('timeGMT').textContent = formatTime(eventTimeGMT) + ' GMT';
+    document.getElementById('timeEastern').textContent = formatTime(eventTimeEastern) + ' Eastern';
+    document.getElementById('timePacific').textContent = formatTime(eventTimePacific) + ' Pacific';
+  });
+</script>
         
         <div class="mt-6">
           <h3 class="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200">How It Works</h3>
@@ -92,20 +150,3 @@
   </div>
 </div>
 
-<% 
-# Calculate the date for the last Wednesday of the next month
-today = Date.today
-next_month = today.next_month
-last_day = Date.new(next_month.year, next_month.month, -1)
-last_wednesday = last_day - ((last_day.wday - 3) % 7)
-
-# Set up instance variables for rendering
-@next_mastermind_date = last_wednesday
-@mastermind_time_gmt = Time.new(last_wednesday.year, last_wednesday.month, last_wednesday.day, 16, 30, 0, "+00:00")
-
-# Calculate Eastern time (GMT-4 or GMT-5 depending on DST)
-@mastermind_time_eastern = @mastermind_time_gmt.getlocal("-04:00")
-
-# Calculate Pacific time (GMT-7 or GMT-8 depending on DST)
-@mastermind_time_pacific = @mastermind_time_gmt.getlocal("-07:00")
-%>
