@@ -32,6 +32,39 @@ namespace :pages do
     end
   end
   
+  desc "Migrate about page to the CMS"
+  task migrate_about: :environment do
+    if defined?(Page)
+      # Read the content template
+      template_path = Rails.root.join('app/views/admin/pages/content_templates/_about.html.erb')
+      if File.exist?(template_path)
+        about_content = File.read(template_path)
+        
+        # Create the About page
+        page = Page.find_or_initialize_by(slug: 'about')
+        page.assign_attributes({
+          title: 'About The Gross Profit Podcast',
+          content: about_content,
+          meta_description: 'Learn how The Gross Profit Podcast connects finance professionals with businesses that need their expertise.',
+          meta_keywords: 'gross profit podcast, james kennedy, fractional cfo, podcast about, finance podcast',
+          published: true,
+          show_in_menu: true,
+          position: 40
+        })
+        
+        if page.save
+          puts "About page created/updated successfully!"
+        else
+          puts "Error creating About page: #{page.errors.full_messages.join(', ')}"
+        end
+      else
+        puts "About template not found at #{template_path}"
+      end
+    else
+      puts "Page model not defined. Ensure CMS migration has been run."
+    end
+  end
+  
   desc "Create a sample CFO quiz page"
   task create_cfo_quiz: :environment do
     if defined?(Page)

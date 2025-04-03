@@ -17,11 +17,11 @@ Rails.application.routes.draw do
   post '/subscribe', to: 'contacts#subscribe', as: :subscribe
   get '/contact', to: 'contacts#index', as: :contact
   get '/become-a-guest', to: 'guest_applications#new', as: :become_a_guest
-  # Events page now handled by pages controller with explicit route
+  # CMS pages with explicit routes
   get '/events', to: 'pages#show', id: 'events', as: :events
+  get '/about', to: 'pages#show', id: 'about', as: :about
   post '/event_registrations', to: 'registrations#create', as: :event_registrations
   get '/map', to: 'map#index', as: :map
-  get '/about', to: 'about#index', as: :about
   
   # Mastermind timer
   get '/mastermind/timer', to: 'mastermind#timer', as: :mastermind_timer
@@ -90,7 +90,7 @@ Rails.application.routes.draw do
     # Exclude certain paths that we know are handled by other routes
     !%w[
       profiles episodes testimonials contacts guest_applications
-      subscribe contact become-a-guest events map about mastermind
+      subscribe contact become-a-guest events about map mastermind
       rails admin up manifest service-worker
     ].include?(req.path_parameters[:id])
   }
