@@ -47,7 +47,6 @@
                     <li><%= link_to "Episodes", episodes_path, class: "hover:text-brand-orange dark:hover:text-brand-orange transition duration-300 text-gray-700 dark:text-gray-300" %></li>
                     <li><%= link_to "Testimonials", testimonials_path, class: "hover:text-brand-orange dark:hover:text-brand-orange transition duration-300 text-gray-700 dark:text-gray-300" %></li>
                     <li><%= link_to "About", about_path, class: "hover:text-brand-orange dark:hover:text-brand-orange transition duration-300 text-gray-700 dark:text-gray-300" %></li>
-                    <li><%= link_to "Events", events_path, class: "hover:text-brand-orange dark:hover:text-brand-orange transition duration-300 text-gray-700 dark:text-gray-300" %></li>
                     <% if defined?(Page) && Page.respond_to?(:menu_items) %>
                       <% Page.menu_items.each do |page| %>
                         <li><%= link_to page.title, page_permalink_path(page.slug), class: "hover:text-brand-orange dark:hover:text-brand-orange transition duration-300 text-gray-700 dark:text-gray-300" %></li>
