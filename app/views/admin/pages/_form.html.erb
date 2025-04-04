@@ -29,10 +29,34 @@
           </div>
         </div>
 
-        <div>
-          <%= form.label :content, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
-          <%= form.text_area :content, rows: 20, class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Page content in HTML format..." %>
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">The main content of the page. HTML is supported.</p>
+        <div data-controller="markdown-editor">
+          <div class="flex items-center justify-between mb-2">
+            <%= form.label :content, class: "block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+            <div class="inline-flex items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-400 mr-2">Format:</span>
+              <div class="inline-flex bg-gray-200 dark:bg-gray-700 rounded-md p-1">
+                <label class="<%= page.content_format == 'markdown' ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-600 dark:text-gray-400' %> inline-flex items-center px-3 py-1 text-sm font-medium rounded-md cursor-pointer">
+                  <%= form.radio_button :content_format, 'markdown', class: "sr-only peer", data: { markdown_editor_target: "formatRadio" } %>
+                  Markdown
+                </label>
+                <label class="<%= page.content_format == 'html' ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-600 dark:text-gray-400' %> inline-flex items-center px-3 py-1 text-sm font-medium rounded-md cursor-pointer">
+                  <%= form.radio_button :content_format, 'html', class: "sr-only peer", data: { markdown_editor_target: "formatRadio" } %>
+                  HTML
+                </label>
+              </div>
+            </div>
+          </div>
+          <%= form.text_area :content, rows: 20, 
+                            class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm #{'font-mono' if page.content_format == 'markdown'}", 
+                            placeholder: page.content_format == 'markdown' ? "# Page Title\n\nWrite your content in **Markdown** format..." : "Page content in HTML format...",
+                            data: { markdown_editor_target: "content" } %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" data-markdown-editor-target="helpText">
+            <% if page.content_format == 'markdown' %>
+              Content in Markdown format. See the <a href="https://www.markdownguide.org/cheat-sheet/" target="_blank" class="text-indigo-500 hover:text-indigo-600">Markdown Cheat Sheet</a> for syntax reference.
+            <% else %>
+              The main content of the page. HTML is supported.
+            <% end %>
+          </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

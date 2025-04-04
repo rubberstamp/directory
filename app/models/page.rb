@@ -7,8 +7,24 @@ class Page < ApplicationRecord
   
   before_validation :set_slug, if: -> { slug.blank? && title.present? }
   
+  # Default to HTML format for existing pages
+  attribute :content_format, :string, default: "html"
+  
+  validates :content_format, inclusion: { in: %w[html markdown] }
+  
   def to_param
     slug
+  end
+  
+  def formatted_content
+    if content_format == "markdown"
+      # Let the helper handle the markdown rendering
+      # This will be called from the view using a helper method
+      content
+    else
+      # For HTML format, return as is
+      content
+    end
   end
   
   private

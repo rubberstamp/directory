@@ -89,3 +89,5 @@ group :test do
 end
 
 gem "devise", "~> 4.9"
+
+gem "redcarpet", "~> 3.6"

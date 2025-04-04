@@ -10,6 +10,10 @@
 
 <div class="container mx-auto px-4 py-8">
   <div class="prose dark:prose-invert lg:prose-xl max-w-none">
-    <%= @page.content&.html_safe %>
+    <% if @page.content_format == 'markdown' %>
+      <%= markdown(@page.content) %>
+    <% else %>
+      <%= @page.content&.html_safe %>
+    <% end %>
   </div>
 </div>

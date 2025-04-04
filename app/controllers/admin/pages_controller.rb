@@ -11,6 +11,21 @@ module Admin
     
     def new
       @page = Page.new
+      
+      # Set default template content if requested
+      if params[:template].present?
+        case params[:template]
+        when 'about'
+          @page.content = render_to_string(partial: 'content_templates/about', formats: [:html])
+          @page.content_format = 'html'
+        when 'events'
+          @page.content = render_to_string(partial: 'content_templates/events', formats: [:html])
+          @page.content_format = 'html'
+        when 'markdown'
+          @page.content = render_to_string(partial: 'content_templates/markdown_example', formats: [:html])
+          @page.content_format = 'markdown'
+        end
+      end
     end
     
     def edit
@@ -47,7 +62,7 @@ module Admin
     end
     
     def page_params
-      params.require(:page).permit(:title, :slug, :content, :published, :position, :meta_description, :meta_keywords, :show_in_menu)
+      params.require(:page).permit(:title, :slug, :content, :content_format, :published, :position, :meta_description, :meta_keywords, :show_in_menu)
     end
   end
 end
