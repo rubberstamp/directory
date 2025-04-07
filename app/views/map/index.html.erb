@@ -110,9 +110,14 @@
           <label for="specialization_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Specialization
           </label>
+          <% 
+            # Debug statement to help troubleshoot
+            Rails.logger.debug "Map form specialization_id: #{params[:specialization_id].inspect}" 
+          %>
           <%= select_tag :specialization_id, 
-              options_for_select([["All Specializations", ""]] + @specializations.map { |s| [s.name, s.id] }, params[:specialization_id]), 
-              class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3" %>
+              options_for_select([["All Specializations", ""]] + @specializations.map { |s| [s.name, s.id.to_s] }, params[:specialization_id]), 
+              class: "block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3",
+              data: { 'turbo-track': 'reload' } %>
         </div>
 
         <!-- Location filter -->

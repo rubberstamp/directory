@@ -1,14 +1,28 @@
 class MapController < ApplicationController
   def index
+    # Debug params to understand what's happening
+    Rails.logger.debug "MAP PARAMS: #{params.inspect}"
+    Rails.logger.debug "MAP SPECIALIZATION ID: #{params[:specialization_id].inspect}"
+    
     @profiles = Profile.where.not(latitude: nil, longitude: nil)
     
     # Log the initial count of profiles with coordinates
     Rails.logger.debug "Found #{@profiles.count} profiles with coordinates"
     
     # Allow filtering by specialization
-    if params[:specialization_id].present?
-      @profiles = @profiles.joins(:specializations).where(specializations: { id: params[:specialization_id] })
-      Rails.logger.debug "After specialization filter: #{@profiles.count} profiles"
+    if params[:specialization_id].present? && params[:specialization_id] != ""
+      specialization_id = params[:specialization_id].to_i
+      Rails.logger.debug "Filtering by specialization ID: #{specialization_id.inspect}, class: #{specialization_id.class}"
+      # Only apply filter if ID is valid (greater than 0)
+      if specialization_id > 0
+        # Join with profile_specializations to find profiles with this specialization
+        @profiles = @profiles.joins(:profile_specializations)
+                            .where(profile_specializations: { specialization_id: specialization_id })
+                            .distinct
+        Rails.logger.debug "After specialization filter: #{@profiles.count} profiles"
+      else
+        Rails.logger.warn "Invalid specialization ID value: #{params[:specialization_id]}"
+      end
     end
     
     # Filter by location - enhanced with geocoding
