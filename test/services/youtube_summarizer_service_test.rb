@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
-require 'minitest/mock'
+require "minitest/mock"
 require "google/cloud/errors" # Required for specific error types
 
 class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
@@ -30,11 +30,11 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
     expected_summary = "This is the expected summary text."
     # Mock the API response structure
     mock_part = OpenStruct.new(text: expected_summary)
-    mock_content = OpenStruct.new(parts: [mock_part])
+    mock_content = OpenStruct.new(parts: [ mock_part ])
     mock_candidate = OpenStruct.new(content: mock_content)
-    mock_response = OpenStruct.new(candidates: [mock_candidate])
+    mock_response = OpenStruct.new(candidates: [ mock_candidate ])
 
-    @mock_model.expect :generate_content, mock_response, [Array] # Expect generate_content call
+    @mock_model.expect :generate_content, mock_response, [ Array ] # Expect generate_content call
 
     # Define the stub logic for the class method
     generative_model_stub = ->(model_name:) {
@@ -55,7 +55,7 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
 
   test "should return nil if episode has no youtube_url" do
     @episode.update_column(:video_id, "EPISODE_PLACEHOLDER") # Update without callbacks/validations
-    
+
     service = YoutubeSummarizerService.new(@episode)
     summary = service.call
 
@@ -94,9 +94,9 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
     # Mock response with missing parts/text
     mock_content = OpenStruct.new(parts: [])
     mock_candidate = OpenStruct.new(content: mock_content)
-    mock_response = OpenStruct.new(candidates: [mock_candidate])
+    mock_response = OpenStruct.new(candidates: [ mock_candidate ])
 
-    @mock_model.expect :generate_content, mock_response, [Array] # Match any array arg
+    @mock_model.expect :generate_content, mock_response, [ Array ] # Match any array arg
 
     # Define the stub logic for the class method
     generative_model_stub = ->(model_name:) {
