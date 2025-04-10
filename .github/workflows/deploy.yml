@@ -22,11 +22,9 @@ jobs:
         with:
           node-version: '16.15.1'
           
-      - name: Install Fly CLI
-        uses: superfly/flyctl-actions/setup-flyctl@master
-        
-      - name: Deploy to Fly.io
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Deploy to fly
         run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          FLYCTL_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
