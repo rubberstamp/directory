@@ -12,6 +12,7 @@ jobs:
       - uses: actions/checkout@v3
         
       - name: Deploy to Fly.io
-        uses: fly-apps/fly-deploy-action@v0.1.1
+        uses: fly-apps/flyctl-actions@master
         with:
           api_token: ${{ secrets.FLY_API_TOKEN }}
+          args: "deploy"
