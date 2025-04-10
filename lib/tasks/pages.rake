@@ -3,22 +3,22 @@ namespace :pages do
   task migrate_events: :environment do
     if defined?(Page)
       # Read the content template
-      template_path = Rails.root.join('app/views/admin/pages/content_templates/_events.html.erb')
+      template_path = Rails.root.join("app/views/admin/pages/content_templates/_events.html.erb")
       if File.exist?(template_path)
         events_content = File.read(template_path)
-        
+
         # Create the Events page
-        page = Page.find_or_initialize_by(slug: 'events')
+        page = Page.find_or_initialize_by(slug: "events")
         page.assign_attributes({
-          title: 'Fractional CFO Events',
+          title: "Fractional CFO Events",
           content: events_content,
-          meta_description: 'Join our monthly Fractional CFO Mastermind sessions for collaboration, networking, and problem-solving among finance professionals.',
-          meta_keywords: 'fractional cfo, mastermind, cfo events, finance networking',
+          meta_description: "Join our monthly Fractional CFO Mastermind sessions for collaboration, networking, and problem-solving among finance professionals.",
+          meta_keywords: "fractional cfo, mastermind, cfo events, finance networking",
           published: true,
           show_in_menu: true,
           position: 50
         })
-        
+
         if page.save
           puts "Events page created/updated successfully!"
         else
@@ -31,27 +31,27 @@ namespace :pages do
       puts "Page model not defined. Ensure CMS migration has been run."
     end
   end
-  
+
   desc "Migrate about page to the CMS"
   task migrate_about: :environment do
     if defined?(Page)
       # Read the content template
-      template_path = Rails.root.join('app/views/admin/pages/content_templates/_about.html.erb')
+      template_path = Rails.root.join("app/views/admin/pages/content_templates/_about.html.erb")
       if File.exist?(template_path)
         about_content = File.read(template_path)
-        
+
         # Create the About page
-        page = Page.find_or_initialize_by(slug: 'about')
+        page = Page.find_or_initialize_by(slug: "about")
         page.assign_attributes({
-          title: 'About The Gross Profit Podcast',
+          title: "About The Gross Profit Podcast",
           content: about_content,
-          meta_description: 'Learn how The Gross Profit Podcast connects finance professionals with businesses that need their expertise.',
-          meta_keywords: 'gross profit podcast, james kennedy, fractional cfo, podcast about, finance podcast',
+          meta_description: "Learn how The Gross Profit Podcast connects finance professionals with businesses that need their expertise.",
+          meta_keywords: "gross profit podcast, james kennedy, fractional cfo, podcast about, finance podcast",
           published: true,
           show_in_menu: true,
           position: 40
         })
-        
+
         if page.save
           puts "About page created/updated successfully!"
         else
@@ -64,7 +64,7 @@ namespace :pages do
       puts "Page model not defined. Ensure CMS migration has been run."
     end
   end
-  
+
   desc "Create a sample CFO quiz page"
   task create_cfo_quiz: :environment do
     if defined?(Page)
@@ -680,17 +680,17 @@ document.addEventListener('DOMContentLoaded', () => {
       HTML
 
       # Create the CFO Quiz page
-      page = Page.find_or_initialize_by(slug: 'cfo-quiz')
+      page = Page.find_or_initialize_by(slug: "cfo-quiz")
       page.assign_attributes({
-        title: 'Is Your Business Ready for a CFO? - Quiz',
+        title: "Is Your Business Ready for a CFO? - Quiz",
         content: cfo_quiz_content,
-        meta_description: 'Take this quiz to determine if your business needs a bookkeeper, controller, or a strategic CFO (Fractional or Full-Time).',
-        meta_keywords: 'cfo quiz, fractional cfo, financial leadership, business finance',
+        meta_description: "Take this quiz to determine if your business needs a bookkeeper, controller, or a strategic CFO (Fractional or Full-Time).",
+        meta_keywords: "cfo quiz, fractional cfo, financial leadership, business finance",
         published: true,
         show_in_menu: true,
         position: 100
       })
-      
+
       if page.save
         puts "CFO Quiz page created/updated successfully!"
       else

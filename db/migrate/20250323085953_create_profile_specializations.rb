@@ -6,7 +6,7 @@ class CreateProfileSpecializations < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
-    add_index :profile_specializations, [:profile_id, :specialization_id], unique: true, name: 'idx_profiles_specializations'
+
+    add_index :profile_specializations, [ :profile_id, :specialization_id ], unique: true, name: 'idx_profiles_specializations'
   end
 end

@@ -11,19 +11,19 @@ CHANNEL_ID = "UCFfHVZhyEiN1QXX4s3Z_How"
 begin
   puts "Fetching channel info for ID: #{CHANNEL_ID}"
   channel = Yt::Channel.new(id: CHANNEL_ID)
-  
+
   puts "Channel: #{channel.title}"
   puts "Subscriber count: #{channel.subscriber_count}"
   puts "Video count: #{channel.video_count}"
-  
+
   puts "\nFetching videos (limited to last 10):"
   videos = channel.videos.take(10)
-  
+
   if videos.any?
     videos.each_with_index do |video, index|
       published = video.published_at&.strftime('%Y-%m-%d') || 'Unknown date'
       duration = video.duration ? "#{video.duration / 60}:#{video.duration % 60}" : 'Unknown'
-      
+
       puts "#{index + 1}. #{video.title}"
       puts "   ID: #{video.id}"
       puts "   Published: #{published}"

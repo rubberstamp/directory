@@ -11,7 +11,7 @@ class CreatePages < ActiveRecord::Migration[7.1]
       t.boolean :show_in_menu, default: false
       t.timestamps
     end
-    
+
     add_index :pages, :slug, unique: true
   end
 end

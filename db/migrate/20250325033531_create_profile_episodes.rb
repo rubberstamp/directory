@@ -12,8 +12,8 @@ class CreateProfileEpisodes < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
+
     # Ensure a profile can only appear once per episode
-    add_index :profile_episodes, [:profile_id, :episode_id], unique: true, name: 'idx_profile_episodes'
+    add_index :profile_episodes, [ :profile_id, :episode_id ], unique: true, name: 'idx_profile_episodes'
   end
 end

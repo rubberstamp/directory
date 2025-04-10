@@ -18,10 +18,10 @@ class SummarizeYoutubeVideoJob < ApplicationJob
     begin
       # Log the video ID that we're working with
       Rails.logger.info "SummarizeYoutubeVideoJob: Processing Episode ##{episode.number} with video_id: #{episode.video_id.inspect}"
-      
+
       # Initialize service with more debugging
       service = YoutubeSummarizerService.new(episode)
-      
+
       # Call the service to get a summary
       Rails.logger.info "SummarizeYoutubeVideoJob: Calling YouTube summarizer for Episode ##{episode.number}"
       summary = service.call
@@ -38,7 +38,7 @@ class SummarizeYoutubeVideoJob < ApplicationJob
       end
     rescue YoutubeSummarizerService::SummarizationError => e
       Rails.logger.error "SummarizeYoutubeVideoJob: Failed to summarize Episode ##{episode.number}: #{e.message}"
-      
+
       # Store the error in the episode record if possible
       begin
         # Add an admin note about the failure
@@ -50,7 +50,7 @@ class SummarizeYoutubeVideoJob < ApplicationJob
       end
     rescue => e
       Rails.logger.error "SummarizeYoutubeVideoJob: Unexpected error for Episode ##{episode.number}: #{e.message}\n#{e.backtrace.join("\n")}"
-      
+
       # Store the error in the episode record if possible
       begin
         # Add an admin note about the failure

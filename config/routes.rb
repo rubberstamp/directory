@@ -1,35 +1,35 @@
 Rails.application.routes.draw do
   devise_for :users
-  
+
   # Public routes
   root "home#index"
   get "home/index"
-  
-  resources :profiles, only: [:index, :show] do
-    resources :guest_messages, only: [:create]
+
+  resources :profiles, only: [ :index, :show ] do
+    resources :guest_messages, only: [ :create ]
   end
-  resources :guest_messages, only: [:create]
-  resources :episodes, only: [:index, :show]
-  resources :testimonials, only: [:index]
-  resources :contacts, only: [:index, :create]
-  resources :guest_applications, only: [:new, :create]
-  resources :pages, only: [:show]
-  post '/subscribe', to: 'contacts#subscribe', as: :subscribe
-  get '/contact', to: 'contacts#index', as: :contact
-  get '/become-a-guest', to: 'guest_applications#new', as: :become_a_guest
+  resources :guest_messages, only: [ :create ]
+  resources :episodes, only: [ :index, :show ]
+  resources :testimonials, only: [ :index ]
+  resources :contacts, only: [ :index, :create ]
+  resources :guest_applications, only: [ :new, :create ]
+  resources :pages, only: [ :show ]
+  post "/subscribe", to: "contacts#subscribe", as: :subscribe
+  get "/contact", to: "contacts#index", as: :contact
+  get "/become-a-guest", to: "guest_applications#new", as: :become_a_guest
   # CMS pages with explicit routes
-  get '/events', to: 'pages#show', id: 'events', as: :events
-  get '/about', to: 'pages#show', id: 'about', as: :about
-  post '/event_registrations', to: 'registrations#create', as: :event_registrations
-  get '/map', to: 'map#index', as: :map
-  
+  get "/events", to: "pages#show", id: "events", as: :events
+  get "/about", to: "pages#show", id: "about", as: :about
+  post "/event_registrations", to: "registrations#create", as: :event_registrations
+  get "/map", to: "map#index", as: :map
+
   # Mastermind timer
-  get '/mastermind/timer', to: 'mastermind#timer', as: :mastermind_timer
-  
+  get "/mastermind/timer", to: "mastermind#timer", as: :mastermind_timer
+
   # Admin routes
   namespace :admin do
     get "dashboard/index"
-    get '/', to: 'dashboard#index', as: :dashboard
+    get "/", to: "dashboard#index", as: :dashboard
     resources :profiles do
       member do
         post :geocode
@@ -57,16 +57,16 @@ Rails.application.routes.draw do
         post :sync_youtube
       end
     end
-    
+
     # Guest messages management
     resources :guest_messages do
       member do
         post :forward
       end
     end
-    
+
     # Headshots management
-    resources :headshots, only: [:index, :update] do
+    resources :headshots, only: [ :index, :update ] do
       member do
         post :create_placeholder
       end
@@ -84,9 +84,9 @@ Rails.application.routes.draw do
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-  
+
   # Catch-all route for dynamic pages at root level
-  get '/:id', to: 'pages#show', as: :page_permalink, constraints: lambda { |req|
+  get "/:id", to: "pages#show", as: :page_permalink, constraints: lambda { |req|
     # Exclude certain paths that we know are handled by other routes
     !%w[
       profiles episodes testimonials contacts guest_applications

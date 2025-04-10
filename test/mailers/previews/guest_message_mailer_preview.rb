@@ -2,7 +2,7 @@
 class GuestMessageMailerPreview < ActionMailer::Preview
   # Helper method to create a sample guest message
   def sample_guest_message(options = {})
-    profile = Profile.find_by(name: "John Doe") || 
+    profile = Profile.find_by(name: "John Doe") ||
               Profile.create!(
                 name: "John Doe",
                 email: "john@example.com",
@@ -10,7 +10,7 @@ class GuestMessageMailerPreview < ActionMailer::Preview
                 allow_messages: true,
                 auto_forward_messages: false
               )
-    
+
     GuestMessage.new(
       sender_name: "Jane Smith",
       sender_email: "jane@example.com",
@@ -20,7 +20,7 @@ class GuestMessageMailerPreview < ActionMailer::Preview
       status: GuestMessage::STATUSES[:new]
     )
   end
-  
+
   # Preview this email at http://localhost:3000/rails/mailers/guest_message_mailer/sender_confirmation
   def sender_confirmation
     GuestMessageMailer.sender_confirmation(sample_guest_message)
@@ -35,7 +35,7 @@ class GuestMessageMailerPreview < ActionMailer::Preview
   def forward_to_guest
     GuestMessageMailer.forward_to_guest(sample_guest_message)
   end
-  
+
   # Preview this email at http://localhost:3000/rails/mailers/guest_message_mailer/forward_general_inquiry
   def forward_general_inquiry
     GuestMessageMailer.forward_to_guest(sample_guest_message(general: true))
