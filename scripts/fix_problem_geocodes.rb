@@ -14,18 +14,18 @@ puts "Fixing geocoding for problematic profiles..."
 
 problem_profiles.each do |profile_id, data|
   profile = Profile.find_by(id: profile_id)
-  
+
   if profile
     puts "Profile ##{profile_id} (#{profile.name}):"
     puts "  Original mailing: #{profile.mailing_address.inspect}"
     puts "  Setting location: #{data[:location]}"
-    
+
     # Update the location field
     profile.location = data[:location]
-    
+
     # Queue geocoding
     profile.save
-    
+
     # Tell the user what we did
     puts "  ✓ Updated and queued for geocoding"
   else

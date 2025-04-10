@@ -13,11 +13,11 @@ puts "Postmark API token: #{Rails.application.config.action_mailer.postmark_sett
 begin
   test_email = "test@example.com"
   test_message = "This is a test message sent at #{Time.now}"
-  
+
   # Send test email
   email = PodcastMailer.contact_confirmation(test_email, test_message)
   result = email.deliver_now
-  
+
   puts "Email sent successfully!"
   puts "Email details:"
   puts "  From: #{email.from}"

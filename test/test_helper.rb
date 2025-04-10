@@ -13,7 +13,7 @@ module ActiveSupport
     # fixtures :all
 
     # Add more helper methods to be used by all tests here...
-    
+
     # Clear database before tests
     setup do
       User.destroy_all
@@ -23,12 +23,12 @@ module ActiveSupport
       ProfileSpecialization.destroy_all
       ProfileEpisode.destroy_all
     end
-    
+
     # Set default mailer config for tests if not set
-    Rails.application.config.action_mailer.default_url_options ||= { host: 'localhost', port: 3000 }
+    Rails.application.config.action_mailer.default_url_options ||= { host: "localhost", port: 3000 }
     Rails.application.config.podcast_admin_email ||= "admin-test@example.com" # Default admin email for tests
     Rails.application.config.podcast_email ||= "podcast-test@example.com" # Default from email for tests
-    
+
     # Ensure mailer settings for tests
     ActionMailer::Base.delivery_method = :test
     ActionMailer::Base.perform_deliveries = true
@@ -42,28 +42,28 @@ class ActionDispatch::IntegrationTest
 
   def sign_in_as_admin
     @admin = User.create!(
-      email: "admin-#{rand(1000)}@example.com", 
-      password: 'password123', 
-      password_confirmation: 'password123',
+      email: "admin-#{rand(1000)}@example.com",
+      password: "password123",
+      password_confirmation: "password123",
       admin: true
     )
-    post '/users/sign_in', params: { 
-      user: { email: @admin.email, password: 'password123' } 
+    post "/users/sign_in", params: {
+      user: { email: @admin.email, password: "password123" }
     }
   end
 
   def sign_in_as_user
     @user = User.create!(
-      email: "user-#{rand(1000)}@example.com", 
-      password: 'password123',
-      password_confirmation: 'password123',
+      email: "user-#{rand(1000)}@example.com",
+      password: "password123",
+      password_confirmation: "password123",
       admin: false
     )
-    post '/users/sign_in', params: { 
-      user: { email: @user.email, password: 'password123' } 
+    post "/users/sign_in", params: {
+      user: { email: @user.email, password: "password123" }
     }
   end
-  
+
   # Access controller instance variables in integration tests
   def assigns(variable_name)
     @controller.instance_variable_get("@#{variable_name}")

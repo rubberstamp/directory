@@ -1,12 +1,12 @@
 module ApplicationHelper
   def markdown(text)
     return "" if text.blank?
-    
+
     renderer = Redcarpet::Render::HTML.new(
       hard_wrap: true,
       link_attributes: { target: "_blank", rel: "noopener noreferrer" }
     )
-    
+
     markdown = Redcarpet::Markdown.new(
       renderer,
       autolink: true,
@@ -19,7 +19,7 @@ module ApplicationHelper
       quote: true,
       footnotes: true
     )
-    
+
     markdown.render(text).html_safe
   end
 end

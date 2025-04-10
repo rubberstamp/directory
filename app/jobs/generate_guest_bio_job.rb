@@ -24,7 +24,7 @@ class GenerateGuestBioJob < ApplicationJob
     begin
       # Initialize service
       service = GuestBioGeneratorService.new(profile)
-      
+
       # Call the service to get a bio
       Rails.logger.info "GenerateGuestBioJob: Calling bio generator for #{profile.name}"
       bio = service.call
@@ -40,7 +40,7 @@ class GenerateGuestBioJob < ApplicationJob
       end
     rescue GuestBioGeneratorService::BioGenerationError => e
       Rails.logger.error "GenerateGuestBioJob: Failed to generate bio for #{profile.name}: #{e.message}"
-      
+
       # We don't update the existing bio in case of error - we keep the current one
     rescue => e
       Rails.logger.error "GenerateGuestBioJob: Unexpected error for #{profile.name}: #{e.message}\n#{e.backtrace.join("\n")}"
