@@ -144,7 +144,7 @@ class GuestBioGeneratorService
           - Website: #{guest_info[:website]}
 #{'          '}
           The guest has appeared on the following podcast episodes:
-          #{guest_info[:primary_episodes].map do |ep|# {' '}
+          #{guest_info[:primary_episodes].map do |ep|
             "- Episode ##{ep[:number]}: \"#{ep[:title]}\"\n" +
             "  Summary: #{ep[:summary]}\n" +
             "  Notes: #{ep[:notes]}"

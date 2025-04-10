@@ -80,12 +80,14 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
       Google::Cloud::AIPlatform.stub :generative_model, generative_model_stub do
         service = YoutubeSummarizerService.new(@episode)
         exception = assert_raises YoutubeSummarizerService::SummarizationError do
-      service.call
-    end
-    assert_match(/API Error: #{api_error.message}/, exception.message)
+          service.call
+        end
+        assert_match(/API Error: #{api_error.message}/, exception.message)
 
-    # @mock_client.verify # No longer needed
-    @mock_model.verify
+        # @mock_client.verify # No longer needed
+        @mock_model.verify
+      end
+    end
   end
 
   test "should raise SummarizationError if API response has no summary text" do
@@ -107,12 +109,14 @@ class YoutubeSummarizerServiceTest < ActiveSupport::TestCase
       Google::Cloud::AIPlatform.stub :generative_model, generative_model_stub do
         service = YoutubeSummarizerService.new(@episode)
         exception = assert_raises YoutubeSummarizerService::SummarizationError do
-      service.call
-    end
-    assert_match "No summary content received from API.", exception.message
+          service.call
+        end
+        assert_match "No summary content received from API.", exception.message
 
-    # @mock_client.verify # No longer needed
-    @mock_model.verify
+        # @mock_client.verify # No longer needed
+        @mock_model.verify
+      end
+    end
   end
   test "should raise SummarizationError if Google Cloud Project ID is missing" do
     # Stub credentials to be missing the project_id for this test
