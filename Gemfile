@@ -43,7 +43,7 @@ gem "thruster", require: false
 gem "image_processing", "~> 1.2"
 
 # Use MiniMagick for image processing
-gem "mini_magick", "~> 4.12"
+gem "mini_magick", "~> 5.2"
 
 # AWS SDK for S3 storage
 gem "aws-sdk-s3", require: false
