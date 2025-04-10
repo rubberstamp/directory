@@ -21,7 +21,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '16.15.1'
-          cache: 'npm'
           
       - name: Install Fly CLI
         uses: superfly/flyctl-actions/setup-flyctl@master
