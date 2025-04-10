@@ -22,7 +22,7 @@ TEST_VIDEO_ID = "dQw4w9WgXcQ"  # Rick Astley - Never Gonna Give You Up
 
 begin
   puts "Trying to fetch video with ID: #{TEST_VIDEO_ID}"
-  
+
   # Try direct YT gem access first for better error messages
   puts "Direct YT gem access:"
   begin
@@ -34,7 +34,7 @@ begin
       puts "    This appears to be an API key issue. Check if your key is valid and has YouTube Data API v3 access."
     end
   end
-  
+
   # Now try the wrapper model
   puts "\nUsing YoutubeVideo model:"
   video = YoutubeVideo.find(TEST_VIDEO_ID)

@@ -23,7 +23,7 @@ module Directory
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
-    
+
     # Email configuration
     config.podcast_email = "info@procurementexpress.com"
     config.podcast_admin_email = "james.kennedy@procurementexpress.com"

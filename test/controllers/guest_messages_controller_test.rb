@@ -1,5 +1,5 @@
 require "test_helper"
-require 'minitest/mock' # Required for mocking
+require "minitest/mock" # Required for mocking
 
 class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
   # Helper to create a profile for tests
@@ -19,7 +19,7 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should create general inquiry guest message" do
-    assert_difference('GuestMessage.count') do
+    assert_difference("GuestMessage.count") do
       post guest_messages_url, params: {
         guest_message: {
           sender_name: "Test Sender",
@@ -47,7 +47,7 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
     profile = create_test_profile(name: "Specific Guest")
     profile_url = profile_path(profile) # URL to simulate coming from
 
-    assert_difference('GuestMessage.count') do
+    assert_difference("GuestMessage.count") do
       post profile_guest_messages_url(profile), params: {
         guest_message: {
           sender_name: "Test Sender",
@@ -72,9 +72,9 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
 
   test "should not create guest message with invalid data" do
     # Store the referer to test redirect_back
-    previous_url = contact_url 
-    
-    assert_no_difference('GuestMessage.count') do
+    previous_url = contact_url
+
+    assert_no_difference("GuestMessage.count") do
       post guest_messages_url, params: {
         guest_message: {
           sender_name: "Test Sender",
@@ -102,7 +102,7 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
     )
     profile_url = profile_path(profile) # URL to simulate coming from
 
-    assert_difference('GuestMessage.count') do
+    assert_difference("GuestMessage.count") do
       post profile_guest_messages_url(profile), params: {
         guest_message: {
           sender_name: "Test Sender",
@@ -150,22 +150,22 @@ class GuestMessagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal GuestMessage::STATUSES[:new], message.status
     assert_nil message.forwarded_at
   end
-  
+
   # Test moved from mailer test
   test "should redirect general inquiry back to root path" do
-    assert_difference('GuestMessage.count') do
-      post guest_messages_url, params: { 
-        guest_message: { 
+    assert_difference("GuestMessage.count") do
+      post guest_messages_url, params: {
+        guest_message: {
           sender_name: "Test Sender",
           sender_email: "test@example.com",
           subject: "Test Subject",
           message: "This is a test message"
-        } 
+        }
       }
     end
 
     # Check redirect (fallback is root_path when no referer is set)
-    assert_redirected_to root_path 
+    assert_redirected_to root_path
     assert_equal "Your message has been sent successfully.", flash[:success]
   end
 end

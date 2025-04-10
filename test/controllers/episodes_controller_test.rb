@@ -7,7 +7,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
       name: "Test Profile",
       email: "test-#{rand(1000)}@example.com" # Make email unique
     )
-    
+
     # Create an episode with a profile
     @episode_with_profile = Episode.create!(
       number: 888,
@@ -16,7 +16,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
       air_date: Date.today,
       notes: "Test notes"
     )
-    
+
     # Create a relationship between the profile and episode
     ProfileEpisode.create!(
       profile: @profile,
@@ -25,7 +25,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
       appearance_type: "Guest",
       notes: "Test notes"
     )
-    
+
     # Create an episode without any associated profiles
     @episode_without_profiles = Episode.create!(
       number: 999,
@@ -39,7 +39,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
   test "should get index and only include episodes with profiles" do
     get episodes_url
     assert_response :success
-    
+
     # Only episodes with associated profiles should be in the index
     assert_select "h3", text: "No episodes found", count: 0
     assert_select "a", text: /View All Episodes on YouTube/
@@ -49,7 +49,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
     get episode_url(@episode_with_profile)
     assert_response :success
   end
-  
+
   test "should redirect from show for episode without profiles" do
     get episode_url(@episode_without_profiles)
     assert_redirected_to episodes_path

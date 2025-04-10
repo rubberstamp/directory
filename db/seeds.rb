@@ -32,7 +32,7 @@ if Rails.env.development?
   startup = Specialization.find_by(name: 'Startup Financing')
   saas = Specialization.find_by(name: 'SaaS')
   nonprofit = Specialization.find_by(name: 'Non-Profit')
-  
+
   profiles = [
     {
       name: 'Sarah Johnson',
@@ -42,7 +42,7 @@ if Rails.env.development?
       email: 'sarah@example.com',
       linkedin_url: 'https://linkedin.com/in/sarahjohnson',
       youtube_url: 'https://youtube.com/watch?v=abc123',
-      specializations: [startup, saas]
+      specializations: [ startup, saas ]
     },
     {
       name: 'Michael Chen',
@@ -52,7 +52,7 @@ if Rails.env.development?
       email: 'michael@example.com',
       linkedin_url: 'https://linkedin.com/in/michaelchen',
       youtube_url: 'https://youtube.com/watch?v=def456',
-      specializations: [saas]
+      specializations: [ saas ]
     },
     {
       name: 'Jessica Martinez',
@@ -62,10 +62,10 @@ if Rails.env.development?
       email: 'jessica@example.com',
       linkedin_url: 'https://linkedin.com/in/jessicamartinez',
       youtube_url: 'https://youtube.com/watch?v=ghi789',
-      specializations: [nonprofit]
+      specializations: [ nonprofit ]
     }
   ]
-  
+
   profiles.each do |profile_data|
     specializations = profile_data.delete(:specializations)
     profile = Profile.find_or_initialize_by(email: profile_data[:email])

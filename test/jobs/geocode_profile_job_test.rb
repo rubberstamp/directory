@@ -23,20 +23,20 @@ class GeocodeProfileJobTest < ActiveJob::TestCase
     profile.location = "New York, NY"
     profile.skip_geocoding = true
     profile.save
-    
+
     # Mock Geocoder to return predictable results
     # Mock the result object using OpenStruct for simplicity
     # Ensure latitude and longitude are directly available attributes
     mock_result = OpenStruct.new(
-      latitude: 40.7128, 
+      latitude: 40.7128,
       longitude: -74.0060,
       # Mock the method used by the Profile model to extract city/country
-      address_components_of_type: lambda do |type| 
+      address_components_of_type: lambda do |type|
         case type
         when "locality"
-          [{"long_name" => "New York"}]
+          [ { "long_name" => "New York" } ]
         when "country"
-          [{"long_name" => "USA"}]
+          [ { "long_name" => "USA" } ]
         else
           []
         end
@@ -44,14 +44,14 @@ class GeocodeProfileJobTest < ActiveJob::TestCase
     )
 
     # Mock Geocoder.search to return the mock result when the correct address is searched
-    Geocoder.stub :search, ->(address, *) { address == profile.location ? [mock_result] : [] } do
+    Geocoder.stub :search, ->(address, *) { address == profile.location ? [ mock_result ] : [] } do
       # Perform the job
       GeocodeProfileJob.perform_now(profile.id)
     end
-    
+
     # Reload the profile
     profile.reload
-    
+
     # Verify the coordinates and cached location data were updated
     assert_in_delta 40.7128, profile.latitude # Use assert_in_delta for floats
     assert_in_delta -74.0060, profile.longitude
@@ -66,21 +66,21 @@ class GeocodeProfileJobTest < ActiveJob::TestCase
     profile.location = "NonExistentPlace"
     profile.skip_geocoding = true
     profile.save
-    
+
     # Mock Geocoder to return nil results
-    Geocoder.stub :search, [nil] do
+    Geocoder.stub :search, [ nil ] do
       # This should not raise an error
       assert_nothing_raised do
         GeocodeProfileJob.perform_now(profile.id)
       end
     end
   end
-  
+
   test "should handle geocoding errors" do
     profile = @profile
-    
+
     # Force an error by making Geocoder.search raise an exception
-    Geocoder.stub :search, -> (_) { raise StandardError.new("Test error") } do
+    Geocoder.stub :search, ->(_) { raise StandardError.new("Test error") } do
       # This should not raise an error
       assert_nothing_raised do
         GeocodeProfileJob.perform_now(profile.id)

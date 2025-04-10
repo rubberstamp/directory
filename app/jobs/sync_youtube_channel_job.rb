@@ -1,19 +1,19 @@
 class SyncYoutubeChannelJob < ApplicationJob
   queue_as :default
-  
+
   # YouTube channel ID for Procurement Express
   PROCUREMENT_CHANNEL_ID = "UCFfHVZhyEiN1QXX4s3Z_How"
-  
+
   def perform(channel_id = PROCUREMENT_CHANNEL_ID, options = {})
     Rails.logger.info "Starting YouTube channel sync for channel ID: #{channel_id}"
-    
+
     # Default options
     options = {
       max_videos: 50,
       update_existing: true,
       sync_thumbnails: true
     }.merge(options)
-    
+
     begin
       stats = {
         created: 0,
@@ -23,46 +23,46 @@ class SyncYoutubeChannelJob < ApplicationJob
         total_processed: 0,
         oldest_video_date: nil
       }
-      
+
       # Track sync history
       sync_history = YoutubeSyncHistory.for_channel(channel_id)
       last_sync_date = sync_history.last_synced_at
-      
+
       # Get the channel
       channel = Yt::Channel.new(id: channel_id)
       Rails.logger.info "Found channel: #{channel.title} with #{channel.video_count} videos"
       Rails.logger.info "Last sync: #{last_sync_date || 'Never'}"
-      
+
       # Optimize API calls - fetch videos from channel
       # The Yt gem makes a separate API call for EACH video when using methods like
       # video.duration, video.thumbnail_url, etc.
       # We need to get all the data we need in a single API call
-  
+
       Rails.logger.info "Starting to fetch videos with optimized API calls"
-      
+
       # Build query with filters
       query = {}
       query_parts = []
-      
+
       # If publish_before is set, use it for pagination
       if options[:publish_before]
         query[:published_before] = options[:publish_before]
         query_parts << "published_before=#{options[:publish_before].iso8601}"
         Rails.logger.info "Filtering videos published before: #{options[:publish_before]}"
       end
-      
+
       # If publish_after is set, use it for incremental sync
       if options[:publish_after]
         query[:published_after] = options[:publish_after]
         query_parts << "published_after=#{options[:publish_after].iso8601}"
-        Rails.logger.info "Filtering videos published after: #{options[:publish_after]}" 
+        Rails.logger.info "Filtering videos published after: #{options[:publish_after]}"
       # Otherwise, if we have a last sync date and not forcing full sync, use that
       elsif last_sync_date.present? && !options[:force_full_sync]
         query[:published_after] = last_sync_date
         query_parts << "published_after=#{last_sync_date.iso8601}"
         Rails.logger.info "Fetching only videos published after #{last_sync_date}"
       end
-      
+
       # Get videos with a single API call using the where method
       # This is more efficient than multiple API calls
       if query.present?
@@ -70,17 +70,17 @@ class SyncYoutubeChannelJob < ApplicationJob
       else
         videos = channel.videos.take(options[:max_videos])
       end
-      
+
       # Log query details
       Rails.logger.info "YouTube API query: #{query_parts.join('&')}" if query_parts.any?
       Rails.logger.info "Fetched #{videos.count} videos in a single API call"
-      
+
       # Log if no videos needed processing
       if videos.empty?
         Rails.logger.info "No new videos found since last sync"
         return stats
       end
-      
+
       Rails.logger.info "Found #{videos.count} videos to potentially process. Fetching details in bulk."
 
       # Extract video IDs for bulk fetching
@@ -91,7 +91,7 @@ class SyncYoutubeChannelJob < ApplicationJob
         # Requesting snippet (title, description, publishedAt, thumbnails) and contentDetails (duration)
         begin
           bulk_videos_collection = Yt::Collections::Videos.new
-          detailed_videos = bulk_videos_collection.where(id: video_ids.join(','), part: 'snippet,contentDetails')
+          detailed_videos = bulk_videos_collection.where(id: video_ids.join(","), part: "snippet,contentDetails")
           Rails.logger.info "Fetched details for #{detailed_videos.count} videos via bulk API call."
 
           # Process videos using the detailed data
@@ -148,14 +148,14 @@ class SyncYoutubeChannelJob < ApplicationJob
 
       # Log summary
       Rails.logger.info "YouTube sync completed. Stats: #{stats.inspect}"
-      
+
       # Update sync history
       if stats[:total_processed] > 0
         sync_history.update_after_sync(stats[:total_processed])
         Rails.logger.info "Updated sync history for channel #{channel_id}"
       end
-      
-      return stats
+
+      stats
     rescue => e
       Rails.logger.error "Error syncing YouTube channel: #{e.message}"
       raise e
@@ -240,13 +240,13 @@ class SyncYoutubeChannelJob < ApplicationJob
       /Episode\s*(\d+)[:\s-]/i,
       /#(\d+)[:\s]/i
     ]
-    
+
     patterns.each do |pattern|
       if match = title.match(pattern)
         return match[1].to_i
       end
     end
-    
+
     nil
   end
 end

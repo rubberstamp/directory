@@ -22,10 +22,10 @@ class GuestApplicationsControllerTest < ActionDispatch::IntegrationTest
         }
       }
     end
-    
+
     assert_redirected_to root_path
     assert_equal "Thank you for your application! We'll review it and get back to you soon.", flash[:success]
-    
+
     # Check that the created profile has correct data
     profile = Profile.find_by(email: "applicant@example.com")
     assert_equal "applicant", profile.status
@@ -45,7 +45,7 @@ class GuestApplicationsControllerTest < ActionDispatch::IntegrationTest
         }
       }
     end
-    
+
     assert_response :unprocessable_entity
     assert_select "div", /There was a problem with your application/
   end
@@ -59,7 +59,7 @@ class GuestApplicationsControllerTest < ActionDispatch::IntegrationTest
         }
       }
     end
-    
+
     assert_response :unprocessable_entity
     assert_select "div.text-red-700", /There was a problem with your application/
   end

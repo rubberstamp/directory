@@ -17,7 +17,7 @@ class GuestMessageTest < ActiveSupport::TestCase
     message = GuestMessage.new(
       sender_name: "Test Sender",
     )
-    
+
     message = GuestMessage.new(
       sender_name: "Test Sender",
       sender_email: "test@example.com",
@@ -118,7 +118,7 @@ class GuestMessageTest < ActiveSupport::TestCase
       message: "This is a test message",
       profile: profile
     )
-    
+
     assert message.can_be_forwarded?
   end
 
@@ -131,7 +131,7 @@ class GuestMessageTest < ActiveSupport::TestCase
       message: "This is a test message",
       profile: profile
     )
-    
+
     assert_not message.can_be_forwarded?
   end
 
@@ -144,7 +144,7 @@ class GuestMessageTest < ActiveSupport::TestCase
       message: "This is a test message",
       profile: profile
     )
-    
+
     assert_not message.can_be_forwarded?
   end
 
@@ -154,7 +154,7 @@ class GuestMessageTest < ActiveSupport::TestCase
       sender_email: "test@example.com",
       message: "This is a test message"
     )
-    
+
     assert_not message.can_be_forwarded?
   end
 
@@ -167,7 +167,7 @@ class GuestMessageTest < ActiveSupport::TestCase
       message: "This is a test message",
       profile: profile
     )
-    
+
     assert message.forward_manually
   end
 
@@ -180,7 +180,7 @@ class GuestMessageTest < ActiveSupport::TestCase
       message: "This is a test message",
       profile: profile
     )
-    
+
     assert_not message.forward_manually
   end
 
@@ -197,7 +197,7 @@ class GuestMessageTest < ActiveSupport::TestCase
       status: GuestMessage::STATUSES[:new],
       profile: profile
     )
-    
+
     read_message = GuestMessage.create!(
       sender_name: "Read Sender",
       sender_email: "read@example.com",
@@ -205,30 +205,30 @@ class GuestMessageTest < ActiveSupport::TestCase
       status: GuestMessage::STATUSES[:read],
       profile: profile
     )
-    
+
     forwarded_message = GuestMessage.create!(
       sender_name: "Forwarded Sender",
       sender_email: "forwarded@example.com",
       message: "Forwarded message",
       status: GuestMessage::STATUSES[:forwarded]
     )
-    
+
     assert_includes GuestMessage.new_messages, new_message
     assert_not_includes GuestMessage.new_messages, read_message
     assert_not_includes GuestMessage.new_messages, forwarded_message
-    
+
     assert_includes GuestMessage.read_messages, read_message
     assert_not_includes GuestMessage.read_messages, new_message
     assert_not_includes GuestMessage.read_messages, forwarded_message
-    
+
     assert_includes GuestMessage.forwarded_messages, forwarded_message
     assert_not_includes GuestMessage.forwarded_messages, new_message
     assert_not_includes GuestMessage.forwarded_messages, read_message
-    
+
     assert_includes GuestMessage.for_guest(profile.id), new_message
     assert_includes GuestMessage.for_guest(profile.id), read_message
     assert_not_includes GuestMessage.for_guest(profile.id), forwarded_message
-    
+
     assert_includes GuestMessage.general_inquiries, forwarded_message
     assert_not_includes GuestMessage.general_inquiries, new_message
     assert_not_includes GuestMessage.general_inquiries, read_message
