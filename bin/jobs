@@ -64,7 +64,7 @@ begin
   puts "Using worker concurrency: #{concurrency}"
   
   require "solid_queue/cli"
-  SolidQueue::Cli.start(["--threads=#{concurrency}"] + ARGV)
+  SolidQueue::Cli.start(["start", "--threads=#{concurrency}"] + ARGV)
 rescue => e
   puts "Error starting SolidQueue: #{e.message}"
   puts e.backtrace.join("\n")
