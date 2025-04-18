@@ -53,14 +53,18 @@ class SyncYoutubeChannelJob < ApplicationJob
 
       # If publish_after is set, use it for incremental sync
       if options[:publish_after]
-        query[:published_after] = options[:publish_after]
-        query_parts << "published_after=#{options[:publish_after].iso8601}"
-        Rails.logger.info "Filtering videos published after: #{options[:publish_after]}"
+        # Format timestamp according to YouTube API requirements
+        formatted_date = options[:publish_after].utc.iso8601
+        query[:published_after] = formatted_date
+        query_parts << "published_after=#{formatted_date}"
+        Rails.logger.info "Filtering videos published after: #{formatted_date}"
       # Otherwise, if we have a last sync date and not forcing full sync, use that
       elsif last_sync_date.present? && !options[:force_full_sync]
-        query[:published_after] = last_sync_date
-        query_parts << "published_after=#{last_sync_date.iso8601}"
-        Rails.logger.info "Fetching only videos published after #{last_sync_date}"
+        # Format timestamp according to YouTube API requirements
+        formatted_date = last_sync_date.utc.iso8601
+        query[:published_after] = formatted_date
+        query_parts << "published_after=#{formatted_date}"
+        Rails.logger.info "Fetching only videos published after #{formatted_date}"
       end
 
       # Get videos with a single API call using the where method

@@ -46,7 +46,7 @@ console_command = "/rails/bin/rails console"
     cpus = 1
 
 [processes]
-  app = "bin/rails server -p 3000"
+  app = "bin/rails server -b 0.0.0.0 -p 3000"
   worker = "bin/jobs"
 
 [[vm]]
