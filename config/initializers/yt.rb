@@ -4,8 +4,8 @@ Yt.configure do |config|
   # Use the API key from Rails credentials (properly nested under google_cloud)
   config.api_key = ENV["GOOGLE_API_KEY"] || Rails.application.credentials.dig(:google_cloud, :api_key)
 
-  # Set log level to info to reduce excessive logging (debug generates too much output)
-  config.log_level = :info
+  # Set log level to debug to diagnose API issues
+  config.log_level = :debug
 end
 
 # Enable caching for YouTube API requests
