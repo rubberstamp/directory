@@ -1,8 +1,8 @@
 # Configure the YT gem with our Google API key for YouTube integration
 
 Yt.configure do |config|
-  # Use the API key from Rails credentials
-  config.api_key = Rails.application.credentials.GOOGLE_API_KEY
+  # Use the API key from Rails credentials (properly nested under google_cloud)
+  config.api_key = ENV["GOOGLE_API_KEY"] || Rails.application.credentials.dig(:google_cloud, :api_key)
 
   # Set log level to info to reduce excessive logging (debug generates too much output)
   config.log_level = :info
