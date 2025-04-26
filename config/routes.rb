@@ -28,6 +28,7 @@ Rails.application.routes.draw do
 
   # Admin routes
   namespace :admin do
+    get 'ads_feed', to: 'ads_feed#show', defaults: { format: :csv }
     get "dashboard/index"
     get "/", to: "dashboard#index", as: :dashboard
     resources :profiles do

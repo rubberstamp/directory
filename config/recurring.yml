@@ -1,4 +1,9 @@
-# production:
+production:
+  youtube_sync:
+    class: SyncYoutubeChannelJob
+    queue: default
+    args: ["UCFfHVZhyEiN1QXX4s3Z_How", {"max_videos": 50, "update_existing": true}]
+    schedule: at 2am every day
 #   periodic_cleanup:
 #     class: CleanSoftDeletedRecordsJob
 #     queue: background

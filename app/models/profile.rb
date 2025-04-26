@@ -5,6 +5,54 @@ class Profile < ApplicationRecord
   has_many :profile_episodes, dependent: :destroy
   has_many :episodes, through: :profile_episodes
 
+  # Advertising scopes / helpers
+  scope :active_for_ads, -> { where(active_for_ads: true) }
+
+  # Returns a URL suitable for ad feeds for the profile image.
+  # Prefers ActiveStorage attachment if present, falling back to legacy headshot_url.
+  def ad_image_url
+    if headshot.attached?
+      Rails.application.routes.url_helpers.url_for(headshot)
+    elsif headshot_url.present?
+      headshot_url
+    else
+      ActionController::Base.helpers.asset_url('podcast_placeholder.jpg')
+    end
+  rescue StandardError
+    nil
+  end
+
+  def ad_final_url
+    # Fixed host handling to ensure it's a string
+    host = 'example.com'
+    
+    if Rails.application.config.x.respond_to?(:default_host) && Rails.application.config.x.default_host.present?
+      host = Rails.application.config.x.default_host
+    elsif Rails.application.routes.default_url_options[:host].present?
+      host = Rails.application.routes.default_url_options[:host]
+    elsif ENV['DEFAULT_HOST'].present?
+      host = ENV['DEFAULT_HOST']
+    end
+    
+    # Ensure we have a string
+    host = host.to_s if host
+    
+    # Use the profile's slug if available, otherwise use the ID
+    if respond_to?(:slug) && slug.present?
+      Rails.application.routes.url_helpers.profile_url(slug, host: host, utm_source: 'googleads')
+    else
+      Rails.application.routes.url_helpers.profile_url(id, host: host, utm_source: 'googleads')
+    end
+  end
+
+  def ad_specializations
+    if respond_to?(:specializations) && specializations.any?
+      specializations.pluck(:name).join(', ')
+    else
+      self[:specializations].to_s
+    end
+  end
+
   has_many :guest_messages, dependent: :nullify
 
   has_one_attached :headshot

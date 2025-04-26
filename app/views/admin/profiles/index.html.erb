@@ -106,6 +106,7 @@
                 ["With Episodes", "episode"],
                 ["Missing Episodes", "missing_episode"],
                 ["Interested in Procurement", "interested"],
+                ["Active in Google Ads", "active_for_ads"],
                 ["Missing Location", "missing_location"],
                 ["On Map", "on_map"],
                 ["Not on Map", "not_on_map"]
@@ -267,6 +268,17 @@
                 <div class="text-sm mt-1">
                   <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200">
                     Interested in Procurement
+                  </span>
+                </div>
+              <% end %>
+              
+              <% if profile.active_for_ads %>
+                <div class="text-sm mt-1">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M14.121 1.879a3 3 0 00-4.242 0L8.172 3.586a1 1 0 01-1.414 0L4.172 1a3 3 0 00-4.242 4.243L2.172 7.586a1 1 0 010 1.414L.929 10.243a3 3 0 004.243 4.242l1.414-1.414a1 1 0 011.414 0l1.414 1.414a3 3 0 004.242-4.242l-1.242-1.242a1 1 0 010-1.414l1.242-1.242a3 3 0 000-4.242z" />
+                    </svg>
+                    Active in Ads
                   </span>
                 </div>
               <% end %>

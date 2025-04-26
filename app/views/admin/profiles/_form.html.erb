@@ -268,6 +268,43 @@
     </div>
 
     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <h2 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">Google Ads Settings</h2>
+      
+      <div class="mb-6">
+        <div class="flex items-center mb-4">
+          <%= form.check_box :active_for_ads, class: "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+          <%= form.label :active_for_ads, "Include in Google Ads feed", class: "ml-2 block text-sm text-gray-700 dark:text-gray-300" %>
+          <% if profile.active_for_ads? %>
+            <span class="ml-2 px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200">Active</span>
+          <% end %>
+        </div>
+        <p class="ml-6 text-xs text-gray-500 dark:text-gray-400 mb-4">
+          When enabled, this profile will be included in the Google Ads feed for advertising.
+        </p>
+        
+        <div class="mt-4">
+          <%= form.label :ranking_score, "Ad Ranking Score (0-100)", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= form.number_field :ranking_score, min: 0, max: 100, class: "block w-full sm:w-1/3 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Higher scores (80+) can be used to prioritize certain profiles in ad campaigns. Leave empty for default weight.
+          </p>
+        </div>
+
+        <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+          <p class="text-sm text-blue-700 dark:text-blue-300">
+            <strong>Ad Feed URL:</strong> 
+            <code class="px-2 py-1 bg-white dark:bg-gray-800 rounded text-xs font-mono">
+              <%= admin_ads_feed_path(format: :csv) %>
+            </code>
+          </p>
+          <p class="mt-1 text-xs text-blue-600 dark:text-blue-400">
+            Use this URL in Google Merchant Center or Business Data feeds.
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
       <h2 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">Message Preferences</h2>
       
       <div class="mb-6">

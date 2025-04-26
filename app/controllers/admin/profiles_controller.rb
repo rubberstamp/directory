@@ -46,6 +46,8 @@ class Admin::ProfilesController < Admin::BaseController
         @profiles = @profiles.where.not(submission_date: nil).where(deprecated_episode_url: nil)
       when "interested"
         @profiles = @profiles.where(interested_in_procurement: true)
+      when "active_for_ads"
+        @profiles = @profiles.where(active_for_ads: true)
       when "missing_location"
         @profiles = @profiles.where(latitude: nil).or(@profiles.where(longitude: nil))
       when "on_map"
@@ -217,6 +219,8 @@ class Admin::ProfilesController < Admin::BaseController
         profiles = profiles.where.not(submission_date: nil).where(deprecated_episode_url: nil)
       when "interested"
         profiles = profiles.where(interested_in_procurement: true)
+      when "active_for_ads"
+        profiles = profiles.where(active_for_ads: true)
       when "missing_location"
         profiles = profiles.where(latitude: nil).or(profiles.where(longitude: nil))
       when "on_map"
@@ -236,6 +240,7 @@ class Admin::ProfilesController < Admin::BaseController
         "Instagram URL", "TikTok URL", "YouTube URL",
         "Status", "Practice Size", "Podcast Objectives",
         "Submission Date", "Interested in Procurement", "Partner",
+        "Active for Ads", "Ranking Score",
         "Episode Number", "Episode Title", "Episode URL", "Episode Date"
       ]
 
@@ -267,6 +272,8 @@ class Admin::ProfilesController < Admin::BaseController
           profile.submission_date&.strftime("%Y-%m-%d"),
           profile.interested_in_procurement ? "Yes" : "No",
           profile.partner ? "Yes" : "No",
+          profile.active_for_ads ? "Yes" : "No",
+          profile.ranking_score,
           profile.deprecated_episode_number,
           profile.deprecated_episode_title,
           profile.deprecated_episode_url,
@@ -408,6 +415,7 @@ class Admin::ProfilesController < Admin::BaseController
       :deprecated_episode_url, :deprecated_episode_date,
       :headshot, # ActiveStorage attachment
       :status, :practice_size, :podcast_objectives, :partner,
+      :active_for_ads, :ranking_score, # Google Ads fields
       specialization_ids: []
     )
   end
@@ -434,7 +442,8 @@ class Admin::ProfilesController < Admin::BaseController
       deprecated_episode_url: row["Episode URL"],
       status: row["Status"],
       practice_size: row["Practice Size"],
-      podcast_objectives: row["Podcast Objectives"]
+      podcast_objectives: row["Podcast Objectives"],
+      ranking_score: row["Ranking Score"]
     }
 
     # Parse date fields
@@ -448,6 +457,10 @@ class Admin::ProfilesController < Admin::BaseController
 
     if row["Partner"].present?
       data[:partner] = row["Partner"].to_s.downcase == "yes"
+    end
+    
+    if row["Active for Ads"].present?
+      data[:active_for_ads] = row["Active for Ads"].to_s.downcase == "yes"
     end
 
     # Remove nil values to avoid overwriting existing data with nil
