@@ -61,7 +61,7 @@ gem "yt", "~> 0.32.0"
 gem "postmark-rails", "~> 0.22.1"
 
 # Use Google Cloud Vertex AI for Gemini API access
-gem "google-cloud-ai_platform", "~> 2.0" # Use latest major version
+gem "google-cloud-ai_platform", "~> 2.1" # Use latest major version
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
