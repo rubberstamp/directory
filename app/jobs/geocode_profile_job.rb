@@ -5,6 +5,7 @@ class GeocodeProfileJob < ApplicationJob
   # Waits 3s, 18s, 81s, 256s, 625s between retries
   retry_on Geocoder::Error, wait: :exponentially_longer, attempts: 5
   retry_on Timeout::Error, wait: :exponentially_longer, attempts: 5
+  retry_on Geocoder::ResponseParseError, wait: :exponentially_longer, attempts: 3
   # Add other network-related errors if needed, e.g.:
   # retry_on SocketError, wait: :exponentially_longer, attempts: 5
 
@@ -21,6 +22,10 @@ class GeocodeProfileJob < ApplicationJob
 
       # Log what we're trying to geocode
       Rails.logger.info "GeocodeProfileJob: Attempting to geocode '#{address_to_geocode}' for profile #{profile.id}"
+
+      # Rate limiting: Nominatim requires max 1 request per second
+      # Add a delay to respect their usage policy
+      sleep 1.5
 
       # Perform the geocoding
       result = Geocoder.search(address_to_geocode).first
@@ -55,6 +60,9 @@ class GeocodeProfileJob < ApplicationJob
         # try using the mailing address as a fallback
         if profile.location.present? && profile.mailing_address.present? && address_to_geocode == profile.location
           Rails.logger.info "GeocodeProfileJob: Trying mailing address as fallback for profile #{profile.id}"
+
+          # Rate limit delay before fallback attempt
+          sleep 1.5
 
           result = Geocoder.search(profile.mailing_address).first
 

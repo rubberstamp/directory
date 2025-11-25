@@ -1,6 +1,6 @@
 Geocoder.configure(
   # Geocoding options
-  timeout: 3,                 # geocoding service timeout (secs)
+  timeout: 5,                 # geocoding service timeout (secs)
   lookup: :nominatim,         # name of geocoding service (symbol)
   ip_lookup: :ipinfo_io,      # name of IP address geocoding service (symbol)
   language: :en,              # ISO-639 language code
@@ -10,6 +10,11 @@ Geocoder.configure(
   api_key: nil,               # API key for geocoding service
   cache: Rails.cache,         # use Rails cache for geocoding results
   cache_prefix: "geocoder:",  # prefix (string) to use for all cache keys
+
+  # Nominatim requires a valid User-Agent header
+  http_headers: {
+    "User-Agent" => "Directory App (https://directory.fly.dev)"
+  },
 
   # Exceptions that should not be rescued by default
   # (if you want to implement custom error handling);
