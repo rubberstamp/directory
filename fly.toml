@@ -9,7 +9,7 @@ console_command = "/rails/bin/rails console"
   [build.args]
     BUNDLER_VERSION = "2.3.7"
     NODE_VERSION = "16.15.1"
-    RUBY_VERSION = "3.2.0"
+    RUBY_VERSION = "3.2.6"
 
 [deploy]
   release_command = "bin/rails fly:release"
