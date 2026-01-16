@@ -229,7 +229,7 @@
     <!-- Pagination -->
     <% if @profiles.total_pages > 1 %>
       <nav class="mt-8 flex justify-center" aria-label="Pagination">
-        <%= paginate @profiles, theme: 'tailwind' %>
+        <%= paginate @profiles %>
       </nav>
     <% end %>
   </div>
