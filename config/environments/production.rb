@@ -58,7 +58,7 @@ Rails.application.configure do
   config.action_mailer.perform_deliveries = true
   config.action_mailer.delivery_method = :postmark
   config.action_mailer.postmark_settings = {
-    api_token: ENV.fetch("POSTMARK_API_TOKEN")
+    api_token: ENV.fetch("POSTMARK_API_TOKEN", "")
   }
 
   # Default mailer settings
