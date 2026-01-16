@@ -54,6 +54,9 @@ gem "kaminari", "~> 1.2"
 # Use Geocoder for location-based features
 gem "geocoder", "~> 1.8"
 
+# Rate limiting and throttling for protection against abuse
+gem "rack-attack", "~> 6.7"
+
 # Use YT gem for YouTube API integration
 gem "yt", "~> 0.32.0"
 

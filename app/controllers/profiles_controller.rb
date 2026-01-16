@@ -1,103 +1,62 @@
+# frozen_string_literal: true
+
 class ProfilesController < ApplicationController
   def index
-    # Debug params to understand what's happening
-    Rails.logger.debug "PARAMS: #{params.inspect}"
-    Rails.logger.debug "SPECIALIZATION ID: #{params[:specialization_id].inspect}"
+    @profiles = Profile.guests
+                       .includes(:specializations, headshot_attachment: :blob)
+                       .search_by_name(params[:name])
+                       .with_specialization(params[:specialization_id])
+                       .filtered_by_guest_type(params[:guest_filter])
+                       .then { |scope| apply_location_filter(scope) }
+                       .default_order
+                       .page(params[:page])
+                       .per(20)
 
-    # Only show profiles with status 'guest' by default, partners first, then alphabetical
-    @profiles = Profile.includes(:specializations).where(status: "guest")
-                     .order(partner: :desc, name: :asc)
-
-    # Filter by specialization
-    if params[:specialization_id].present? && params[:specialization_id] != ""
-      specialization_id = params[:specialization_id].to_i
-      Rails.logger.debug "Filtering by specialization ID: #{specialization_id.inspect}, class: #{specialization_id.class}"
-      # Only apply filter if ID is valid (greater than 0)
-      if specialization_id > 0
-        # Join with profile_specializations to find profiles with this specialization
-        @profiles = @profiles.joins(:profile_specializations)
-                            .where(profile_specializations: { specialization_id: specialization_id })
-                            .distinct
-        Rails.logger.debug "After filter, profile count: #{@profiles.count}"
-      else
-        Rails.logger.warn "Invalid specialization ID value: #{params[:specialization_id]}"
-      end
-    end
-
-    # Filter by location - enhanced with geocoding
-    if params[:location].present?
-      # Try exact location field match first
-      text_query = @profiles.where("location LIKE ?", "%#{params[:location]}%")
-
-      # Also search in cached city and country
-      text_query = text_query.or(@profiles.where("cached_city LIKE ?", "%#{params[:location]}%"))
-      text_query = text_query.or(@profiles.where("cached_country LIKE ?", "%#{params[:location]}%"))
-
-      # Set this as our base result set
-      @profiles = text_query
-
-      # If very few or no results found, try geocoding the input location and search within a radius
-      if @profiles.count < 3
-        begin
-          # Geocode the search input
-          results = Geocoder.search(params[:location])
-
-          if results.present? && results.first&.coordinates.present?
-            # Get the lat/lon coordinates
-            lat, lon = results.first.coordinates
-
-            # Safety checks for valid coordinates
-            if lat.present? && lon.present? && lat.to_f.between?(-90, 90) && lon.to_f.between?(-180, 180)
-              # Search within ~50 miles/80km
-              nearby_profiles = Profile.where(status: "guest")
-                                       .where.not(latitude: nil, longitude: nil)
-                                       .near([ lat, lon ], 80, units: :km)
-
-              # Apply the other filters to maintain consistency
-              if params[:specialization_id].present?
-                nearby_profiles = nearby_profiles.joins(:specializations)
-                                                .where(specializations: { id: params[:specialization_id] })
-              end
-
-              if params[:guest_filter].present?
-                case params[:guest_filter]
-                when "partners"
-                  nearby_profiles = nearby_profiles.where(partner: true)
-                when "podcast_guests"
-                  nearby_profiles = nearby_profiles.where.not(submission_date: nil)
-                when "procurement"
-                  nearby_profiles = nearby_profiles.where(interested_in_procurement: true)
-                end
-              end
-
-              # Combine results (keep original text matches and add any new nearby profiles)
-              if nearby_profiles.any?
-                @profiles = @profiles.or(nearby_profiles)
-              end
-            end
-          end
-        rescue => e
-          Rails.logger.error "Error geocoding search input '#{params[:location]}': #{e.message}"
-        end
-      end
-    end
-
-    # Filter by guest status
-    if params[:guest_filter].present?
-      case params[:guest_filter]
-      when "partners"
-        @profiles = @profiles.where(partner: true)
-      when "podcast_guests"
-        @profiles = @profiles.where.not(submission_date: nil)
-      when "procurement"
-        @profiles = @profiles.where(interested_in_procurement: true)
-      end
-    end
-
-    @specializations = Specialization.all.order(:name)
+    @specializations = Specialization.order(:name)
   end
 
   def show
-    @profile = Profile.find(params[:id])
+    @profile = Profile.includes(:specializations, :episodes).find(params[:id])
+  end
+
+  private
+
+  # Apply location filtering with geocoding fallback
+  def apply_location_filter(scope)
+    return scope if params[:location].blank?
+
+    # Try text-based search first
+    text_results = scope.in_location(params[:location])
+
+    # If few results, try geocoding fallback
+    if text_results.count < 3
+      geocoded_results = geocode_location_search(scope)
+      return text_results.or(geocoded_results) if geocoded_results.any?
+    end
+
+    text_results
+  end
+
+  # Search for profiles near a geocoded location
+  def geocode_location_search(base_scope)
+    results = Geocoder.search(params[:location])
+    return Profile.none unless results.present? && results.first&.coordinates.present?
+
+    lat, lon = results.first.coordinates
+    return Profile.none unless valid_coordinates?(lat, lon)
+
+    Profile.guests
+           .with_coordinates
+           .with_specialization(params[:specialization_id])
+           .filtered_by_guest_type(params[:guest_filter])
+           .near([lat, lon], 80, units: :km)
+  rescue => e
+    Rails.logger.error "Error geocoding search input '#{params[:location]}': #{e.message}"
+    Profile.none
+  end
+
+  def valid_coordinates?(lat, lon)
+    lat.present? && lon.present? &&
+      lat.to_f.between?(-90, 90) && lon.to_f.between?(-180, 180)
   end
 end

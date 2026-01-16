@@ -1,7 +1,11 @@
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
-# require "mocha/minitest" # Remove this line - use Minitest::Mock and stub
+require "minitest/mock"
+require "mocha/minitest" # Enable Mocha for stubbing/mocking
+
+# Load all test support files
+Dir[Rails.root.join("test/support/**/*.rb")].each { |f| require f }
 
 module ActiveSupport
   class TestCase
@@ -11,6 +15,9 @@ module ActiveSupport
 
     # Instead of loading all fixtures, we'll specify which ones each test needs
     # fixtures :all
+
+    # Include test helpers
+    include YtStubHelper
 
     # Add more helper methods to be used by all tests here...
 

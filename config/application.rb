@@ -16,6 +16,9 @@ module Directory
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Enable Rack::Attack middleware for rate limiting
+    config.middleware.use Rack::Attack
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
@@ -24,9 +27,9 @@ module Directory
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
 
-    # Email configuration
-    config.podcast_email = "info@procurementexpress.com"
-    config.podcast_admin_email = "james.kennedy@procurementexpress.com"
-    config.podcast_contact_email = "james.kennedy@procurementexpress.com"
+    # Email configuration - use environment variables with fallbacks
+    config.podcast_email = ENV.fetch("PODCAST_EMAIL", "info@procurementexpress.com")
+    config.podcast_admin_email = ENV.fetch("PODCAST_ADMIN_EMAIL", "james.kennedy@procurementexpress.com")
+    config.podcast_contact_email = ENV.fetch("PODCAST_CONTACT_EMAIL", "james.kennedy@procurementexpress.com")
   end
 end

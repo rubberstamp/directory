@@ -26,21 +26,11 @@ class GeocodeProfileJobTest < ActiveJob::TestCase
 
     # Mock Geocoder to return predictable results
     # Mock the result object using OpenStruct for simplicity
-    # Ensure latitude and longitude are directly available attributes
+    # The job expects result.address to be a Hash with "city" and "country" keys
     mock_result = OpenStruct.new(
       latitude: 40.7128,
       longitude: -74.0060,
-      # Mock the method used by the Profile model to extract city/country
-      address_components_of_type: lambda do |type|
-        case type
-        when "locality"
-          [ { "long_name" => "New York" } ]
-        when "country"
-          [ { "long_name" => "USA" } ]
-        else
-          []
-        end
-      end
+      address: { "city" => "New York", "country" => "USA" }
     )
 
     # Mock Geocoder.search to return the mock result when the correct address is searched
