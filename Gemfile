@@ -58,7 +58,7 @@ gem "geocoder", "~> 1.8"
 gem "rack-attack", "~> 6.7"
 
 # Use YT gem for YouTube API integration
-gem "yt", "~> 0.32.0"
+gem "yt", "~> 0.34.0"
 
 # Use Postmark for email delivery
 gem "postmark-rails", "~> 0.22.1"
